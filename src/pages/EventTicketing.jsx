@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2, CheckCircle, Copy } from "lucide-react";
 import { TicketSelector } from "@/components/ticketing/TicketSelector";
 import { TicketRegistration } from "@/components/ticketing/TicketRegistration";
+import { toast } from "sonner";
 
 export default function EventTicketing() {
   const urlParams = new URLSearchParams(window.location.search);
