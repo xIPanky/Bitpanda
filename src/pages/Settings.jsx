@@ -174,6 +174,55 @@ export default function Settings() {
 
             <div className="border-t border-slate-100" />
 
+            {/* Invitation Options */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-5">
+                Einladende Personen (Dropdown)
+              </h3>
+              <p className="text-xs text-slate-500 mb-4">
+                Diese Namen erscheinen im Formular unter "Wer hat Sie eingeladen?".
+              </p>
+              <div className="space-y-2 mb-3">
+                {(form.invitation_options || []).map((option, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      value={option}
+                      onChange={(e) => {
+                        const updated = [...form.invitation_options];
+                        updated[idx] = e.target.value;
+                        handleChange("invitation_options", updated);
+                      }}
+                      className="h-10 border-slate-200 text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0"
+                      onClick={() => {
+                        const updated = form.invitation_options.filter((_, i) => i !== idx);
+                        handleChange("invitation_options", updated);
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 text-sm border-dashed"
+                onClick={() => handleChange("invitation_options", [...(form.invitation_options || []), ""])}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Name hinzufügen
+              </Button>
+            </div>
+
+            <div className="border-t border-slate-100" />
+
             {/* Registration Toggle */}
             <div className="flex items-center justify-between">
               <div>
