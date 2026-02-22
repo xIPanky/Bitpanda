@@ -191,11 +191,38 @@ export default function GuestList() {
   return (
     <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
+        {/* Registrierungslink */}
+        {eventId && (
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Link2 className="w-4 h-4 text-slate-400" />
+              <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">Registrierungslink</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 font-mono truncate">
+                {`${window.location.origin}${createPageUrl(`EventTicketing?event_id=${eventId}`)}`}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}${createPageUrl(`EventTicketing?event_id=${eventId}`)}`);
+                  toast.success("Link kopiert!");
+                }}
+              >
+                <Copy className="w-3 h-3 mr-1" />
+                Kopieren
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Gästeliste</h1>
             <p className="text-sm text-slate-500 mt-1">
-              {tickets.length} Tickets · {tickets.filter((t) => t.status === "used").length} eingecheckt
+              {activeTab === "registrations" ? `${registrations.length} Registrierungen · ${registrations.filter(r => r.status === "approved").length} genehmigt` : `${tickets.length} Tickets · ${tickets.filter((t) => t.status === "used").length} eingecheckt`}
             </p>
           </div>
           <div className="relative w-full sm:w-72">
