@@ -149,6 +149,34 @@ export default function EventInfo() {
           </div>
 
           <div className="space-y-6">
+            {/* Registrierungslink */}
+            {eventId && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Link2 className="w-5 h-5 text-slate-400" />
+                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Registrierungslink</h3>
+                </div>
+                <p className="text-xs text-slate-500 mb-3">Diesen Link an Ihre Gäste weitergeben, damit diese sich registrieren können.</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 font-mono truncate">
+                    {`${window.location.origin}/register?event_id=${eventId}`}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/register?event_id=${eventId}`);
+                      toast.success("Link kopiert!");
+                    }}
+                  >
+                    <Copy className="w-4 h-4 mr-1.5" />
+                    Kopieren
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Basis-Infos */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-5">
               <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Veranstaltung</h3>
