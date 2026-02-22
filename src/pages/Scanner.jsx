@@ -53,10 +53,18 @@ export default function Scanner() {
       checked_in_at: new Date().toISOString(),
     });
 
+    // Load registration for full details
+    let registration = null;
+    if (ticket.registration_id) {
+      const regs = await base44.entities.Registration.filter({ id: ticket.registration_id });
+      registration = regs?.[0] || null;
+    }
+
     setResult({
       type: "success",
       message: "Check-in erfolgreich!",
       ticket: { ...ticket, status: "used" },
+      registration,
     });
     toast.success("Gast eingecheckt!");
     setLoading(false);
