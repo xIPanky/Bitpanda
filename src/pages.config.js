@@ -62,6 +62,7 @@ import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
+import RoleManagement from './pages/RoleManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -81,6 +82,7 @@ export const PAGES = {
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
+    "RoleManagement": RoleManagement,
 }
 
 export const pagesConfig = {
