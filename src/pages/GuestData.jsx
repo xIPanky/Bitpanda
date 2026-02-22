@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Search, Building2, Phone, Mail, Tag, MessageSquare, UserPlus, Edit2 } from "lucide-react";
+import { Users, Search, Building2, Phone, Mail, Tag, MessageSquare, UserPlus, Edit2, Ticket } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
