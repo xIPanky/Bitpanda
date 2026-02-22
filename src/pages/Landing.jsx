@@ -1,12 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-// OrganizerRequest entity used for storing access requests
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Ticket, CheckCircle2, ArrowRight, Users, BarChart2, Mail, Loader2, Zap, Shield, Globe } from "lucide-react";
+import { Ticket, Zap } from "lucide-react";
 import { motion } from "framer-motion";
+import { createPageUrl } from "@/utils";
 
 const features = [
   { icon: Users, title: "Gästeverwaltung", desc: "Registrierungen annehmen, Kategorien verwalten und Tickets versenden" },
