@@ -43,8 +43,19 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
     handleChange("plus_one_custom_answers", updated);
   };
 
+  const validatePhone = (phone) => {
+    if (!phone) return true; // optional field
+    // Must have at least 6 digits, can include +, spaces, -, ()
+    const stripped = phone.replace(/[\s\-\(\)\+]/g, "");
+    return /^\d{6,15}$/.test(stripped);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (form.phone && !validatePhone(form.phone)) {
+      alert("Bitte geben Sie eine gültige Telefonnummer ein (mind. 6 Ziffern).");
+      return;
+    }
     onSubmit(form);
   };
 
