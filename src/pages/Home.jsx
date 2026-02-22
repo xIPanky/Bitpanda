@@ -110,7 +110,7 @@ export default function Home() {
                     >
                       <div className="flex items-center gap-4 p-4 md:p-5">
                         {/* Cover thumb */}
-                        <Link to={createPageUrl(`GuestList?event_id=${event.id}`)} className="shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center hover:opacity-80 transition-opacity">
+                        <Link to={createPageUrl(`Dashboard?event_id=${event.id}`)} className="shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center hover:opacity-80 transition-opacity">
                           {event.cover_image_url ? (
                             <img src={event.cover_image_url} alt={event.name} className="w-full h-full object-cover" style={{ objectPosition: event.cover_image_position || "50% 50%" }} />
                           ) : (
