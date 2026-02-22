@@ -26,13 +26,14 @@ export default function Landing() {
     e.preventDefault();
     if (!form.email || !form.full_name) return;
     setSending(true);
-    // Store the request as an OrganizerRequest entity
-    await base44.entities.OrganizerRequest.create({
-      full_name: form.full_name,
-      email: form.email,
-      status: "pending",
-    });
-    setSent(true);
+    try {
+      // Invite the organizer with Magic Link
+      await base44.users.inviteUser(form.email, "user");
+      setSent(true);
+      toast.success("Magic Link wurde per Email gesendet!");
+    } catch (error) {
+      toast.error("Fehler beim Versenden des Links");
+    }
     setSending(false);
   };
 
