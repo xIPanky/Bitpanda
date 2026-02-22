@@ -178,10 +178,14 @@ export default function GuestData() {
                         <TableCell className="text-sm text-slate-600">{reg.email}</TableCell>
                         <TableCell className="text-sm text-slate-600">{reg.phone || <span className="text-slate-300">—</span>}</TableCell>
                         <TableCell className="text-sm text-slate-600">{reg.company || <span className="text-slate-300">—</span>}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={`${categoryColors[reg.category] || categoryColors.Standard} text-xs`}>
-                            {reg.category || "Standard"}
-                          </Badge>
+                        <TableCell className="text-sm">
+                          {ticketMap[reg.id] ? (
+                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
+                              {ticketMap[reg.id].ticket_code}
+                            </Badge>
+                          ) : (
+                            <span className="text-slate-300 text-xs">—</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={`${statusColors[reg.status] || ""} text-xs`}>
