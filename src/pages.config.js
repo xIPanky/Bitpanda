@@ -61,6 +61,7 @@ import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import EventDetails from './pages/EventDetails';
 import EventTicketing from './pages/EventTicketing';
+import TicketManagement from './pages/TicketManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +80,7 @@ export const PAGES = {
     "Ticket": Ticket,
     "EventDetails": EventDetails,
     "EventTicketing": EventTicketing,
+    "TicketManagement": TicketManagement,
 }
 
 export const pagesConfig = {
