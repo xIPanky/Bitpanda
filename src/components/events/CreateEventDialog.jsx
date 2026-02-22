@@ -85,7 +85,7 @@ export default function CreateEventDialog({ onClose, onCreated }) {
         </div>
         <div className="flex gap-3 mt-8">
           <Button variant="outline" onClick={onClose} className="flex-1">Abbrechen</Button>
-          <Button onClick={handleCreate} disabled={saving || !form.name.trim()} className="flex-1 bg-slate-900 hover:bg-slate-800">
+          <Button onClick={handleCreate} disabled={saving || !form.name.trim() || !form.date} className="flex-1 bg-slate-900 hover:bg-slate-800">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Event erstellen"}
           </Button>
         </div>
