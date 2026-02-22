@@ -153,6 +153,31 @@ export default function GuestList() {
     },
   });
 
+  const approveMutation = useMutation({
+    mutationFn: (id) => base44.entities.Registration.update(id, { status: "approved" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
+      toast.success("Registrierung genehmigt");
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (id) => base44.entities.Registration.update(id, { status: "rejected" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
+      toast.success("Registrierung abgelehnt");
+    },
+  });
+
+  const filteredRegistrations = registrations.filter((r) => {
+    const term = search.toLowerCase();
+    return (
+      r.first_name?.toLowerCase().includes(term) ||
+      r.last_name?.toLowerCase().includes(term) ||
+      r.email?.toLowerCase().includes(term)
+    );
+  });
+
   const filteredTickets = tickets.filter((t) => {
     const term = search.toLowerCase();
     return (
