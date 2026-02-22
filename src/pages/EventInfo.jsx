@@ -14,6 +14,8 @@ import { createPageUrl } from "@/utils";
 export default function EventInfo() {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
+  const [savedOk, setSavedOk] = useState(false);
+  const [savingTiersOk, setSavingTiersOk] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const imageRef = React.useRef(null);
