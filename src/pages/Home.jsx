@@ -170,7 +170,7 @@ export default function Home() {
                             <ExternalLink className="w-4 h-4" />
                           </a>
                           <Link
-                            to={createPageUrl(`GuestList?event_id=${event.id}`)}
+                            to={createPageUrl(`Dashboard?event_id=${event.id}`)}
                             title="Dashboard"
                             className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
                           >
