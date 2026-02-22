@@ -122,13 +122,13 @@ export default function Landing() {
             {sent ? (
               <div className="text-center py-8">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">Anfrage gesendet!</h3>
-                <p className="text-slate-400 text-sm">Wir melden uns in Kürze bei dir.</p>
+                <h3 className="text-xl font-bold mb-2">Magic Link versendet!</h3>
+                <p className="text-slate-400 text-sm">Prüfe dein Email-Postfach. Klick auf den Link zum Einloggen und starten.</p>
               </div>
             ) : (
               <>
-                <h2 className="text-2xl font-bold mb-2">Zugang anfordern</h2>
-                <p className="text-slate-400 text-sm mb-8">Als Veranstalter beitreten und Events professionell managen.</p>
+                <h2 className="text-2xl font-bold mb-2">Als Veranstalter registrieren</h2>
+                <p className="text-slate-400 text-sm mb-8">Erhalte einen sicheren Magic Link per Email.</p>
                 <form onSubmit={handleRequest} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label className="text-slate-300">Name</Label>
