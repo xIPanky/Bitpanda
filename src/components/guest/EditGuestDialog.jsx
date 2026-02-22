@@ -40,13 +40,13 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
       if (wasApproved) {
         try {
           // Fetch event data
-          const events = await base44.entities.Event.filter({ id: form.event_id });
-          const event = events?.[0];
-          const eventName = event?.name || "Event";
+          const event = await base44.entities.Event.list(0, { id: form.event_id });
+          const eventData = Array.isArray(event) ? event[0] : event;
+          const eventName = eventData?.name || "Event";
           
           // Fetch ticket
-          const tickets = await base44.entities.Ticket.filter({ registration_id: guest.id });
-          const ticket = tickets?.[0];
+          const tickets = await base44.entities.Ticket.list(0, { registration_id: guest.id });
+          const ticket = Array.isArray(tickets) ? tickets[0] : tickets;
           const ticketCode = ticket?.ticket_code || "N/A";
           
           // Generate PDF ticket
@@ -62,7 +62,7 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
           doc.setFontSize(10);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(180, 180, 180);
-          doc.text(eventName, 14, 24);
+          doc.text(eventData?.date ? new Date(eventData.date).toLocaleDateString("de-DE") : "", 14, 24);
           
           doc.setTextColor(15, 23, 42);
           doc.setFontSize(14);
@@ -106,44 +106,44 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
           const pdfUrl = URL.createObjectURL(pdfBlob);
           
           // Generate calendar file (ICS)
-          const startDate = event?.date ? new Date(event.date + (event.time ? `T${event.time}` : "T09:00")) : new Date();
+          const startDate = eventData?.date ? new Date(eventData.date + (eventData.time ? `T${eventData.time}` : "T09:00")) : new Date();
           const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-          
+
           const formatDate = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-          
+
           const icalContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Ticket Manager//DE
-BEGIN:VEVENT
-UID:${ticketCode}@ticketmanager
-DTSTAMP:${formatDate(new Date())}
-DTSTART:${formatDate(startDate)}
-DTEND:${formatDate(endDate)}
-SUMMARY:${eventName}
-DESCRIPTION:Ticket-Code: ${ticketCode}
-LOCATION:${event?.location || ""}
-END:VEVENT
-END:VCALENDAR`;
-          
+          VERSION:2.0
+          PRODID:-//Ticket Manager//DE
+          BEGIN:VEVENT
+          UID:${ticketCode}@ticketmanager
+          DTSTAMP:${formatDate(new Date())}
+          DTSTART:${formatDate(startDate)}
+          DTEND:${formatDate(endDate)}
+          SUMMARY:${eventName}
+          DESCRIPTION:Ticket-Code: ${ticketCode}
+          LOCATION:${eventData?.location || ""}
+          END:VEVENT
+          END:VCALENDAR`;
+
           const icalBlob = new Blob([icalContent], { type: "text/calendar" });
           const icalUrl = URL.createObjectURL(icalBlob);
-          
+
           // Create email body with file links
           const emailBody = `Hallo ${form.first_name},
 
-vielen Dank für deine Anmeldung! Deine Registrierung für ${eventName} wurde genehmigt.
+          vielen Dank für deine Anmeldung! Deine Registrierung für ${eventName} wurde genehmigt.
 
-VERANSTALTUNGSDETAILS:
-- Datum: ${event?.date || "N/A"}
-- Uhrzeit: ${event?.time || "N/A"}
-- Ort: ${event?.location || "N/A"}
+          VERANSTALTUNGSDETAILS:
+          - Datum: ${eventData?.date || "N/A"}
+          - Uhrzeit: ${eventData?.time || "N/A"}
+          - Ort: ${eventData?.location || "N/A"}
 
-DEIN TICKET-CODE: ${ticketCode}
+          DEIN TICKET-CODE: ${ticketCode}
 
-Dein Ticket und Kalender-Eintrag sind in dieser E-Mail beigefügt.
+          Dein Ticket und Kalender-Eintrag sind in dieser E-Mail beigefügt.
 
-Beste Grüße,
-Dein Event Team`;
+          Beste Grüße,
+          Dein Event Team`;
           
           // Send email
           await base44.integrations.Core.SendEmail({
