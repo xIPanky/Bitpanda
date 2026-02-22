@@ -20,10 +20,13 @@ export default function Settings() {
     event_time: "",
     event_location: "",
     cover_image_url: "",
+    cover_image_position: "50% 50%",
     custom_questions: [""],
     invitation_options: [],
     registration_open: true,
   });
+  const [isDragging, setIsDragging] = useState(false);
+  const imageRef = React.useRef(null);
 
   const { data: settingsArr, isLoading } = useQuery({
     queryKey: ["eventSettings"],
