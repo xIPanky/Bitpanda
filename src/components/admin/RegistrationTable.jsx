@@ -41,12 +41,20 @@ export default function RegistrationTable({
   onApprove,
   onReject,
   onCategoryChange,
+  onEdit,
   processingId,
   filterStatus,
   filterCategory,
   onFilterStatusChange,
   onFilterCategoryChange,
 }) {
+  const [editTarget, setEditTarget] = React.useState(null);
+
+  const handleSave = async (form) => {
+    await onEdit(form);
+    setEditTarget(null);
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
       {/* Filters */}
