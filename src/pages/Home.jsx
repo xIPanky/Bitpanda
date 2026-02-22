@@ -21,6 +21,7 @@ const statusConfig = {
 export default function Home() {
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
+  const [eventsExpanded, setEventsExpanded] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ["me"],
