@@ -215,16 +215,6 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           />
         </div>
 
-        <div>
-          <Label htmlFor="company" className="text-slate-700 font-medium">Firma/Organisation</Label>
-          <Input
-            id="company"
-            value={form.company}
-            onChange={(e) => handleChange("company", e.target.value)}
-            className="mt-1"
-          />
-        </div>
-
         {event.invitation_options && event.invitation_options.length > 0 && (
           <div>
             <Label htmlFor="invited_by" className="text-slate-700 font-medium">Wie hast du von dieser Veranstaltung erfahren?</Label>
@@ -244,7 +234,6 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
 
         {parsedQuestions.length > 0 && (
           <div className="border-t border-slate-200 pt-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Zusätzliche Informationen</h3>
             {parsedQuestions.map((question, idx) => (
               <div key={idx} className="mb-4">
                 <Label htmlFor={`custom_${idx}`} className="text-slate-700 font-medium">
