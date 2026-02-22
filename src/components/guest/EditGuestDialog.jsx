@@ -39,14 +39,13 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
       // Send email with PDF and calendar file if approving
       if (wasApproved) {
         try {
-          // Fetch event data
-          const event = await base44.entities.Event.list(0, { id: form.event_id });
-          const eventData = Array.isArray(event) ? event[0] : event;
+          // Fetch event and ticket data
+          const eventList = await base44.entities.Event.filter({ id: form.event_id });
+          const eventData = eventList?.[0];
           const eventName = eventData?.name || "Event";
-          
-          // Fetch ticket
-          const tickets = await base44.entities.Ticket.list(0, { registration_id: guest.id });
-          const ticket = Array.isArray(tickets) ? tickets[0] : tickets;
+
+          const ticketList = await base44.entities.Ticket.filter({ registration_id: guest.id });
+          const ticket = ticketList?.[0];
           const ticketCode = ticket?.ticket_code || "N/A";
           
           // Generate PDF ticket
@@ -128,27 +127,29 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
           const icalBlob = new Blob([icalContent], { type: "text/calendar" });
           const icalUrl = URL.createObjectURL(icalBlob);
 
-          // Create email body with file links
-          const emailBody = `Hallo ${form.first_name},
+          // Create email body
+          const emailBody = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;">
+          <h1 style="font-size:24px;color:#0f172a;margin-bottom:24px;">Registrierung bestätigt!</h1>
+          <p style="color:#64748b;line-height:1.6;margin-bottom:24px;">Hallo ${form.first_name},</p>
+          <p style="color:#64748b;line-height:1.6;margin-bottom:24px;">vielen Dank für deine Anmeldung! Deine Registrierung für <strong>${eventName}</strong> wurde genehmigt.</p>
+          <div style="background:#f8fafc;border-radius:16px;padding:24px;margin:24px 0;">
+          <h2 style="font-size:16px;color:#0f172a;margin-top:0;">Veranstaltungsdetails</h2>
+          <p style="color:#64748b;margin:8px 0;">📅 <strong>${eventData?.date ? new Date(eventData.date).toLocaleDateString("de-DE") : "N/A"}</strong></p>
+          ${eventData?.time ? `<p style="color:#64748b;margin:8px 0;">🕐 <strong>${eventData.time}</strong></p>` : ""}
+          ${eventData?.location ? `<p style="color:#64748b;margin:8px 0;">📍 <strong>${eventData.location}</strong></p>` : ""}
+          </div>
+          <div style="background:#f0fdf4;border-radius:16px;padding:24px;margin:24px 0;text-align:center;border:2px solid #dcfce7;">
+          <p style="font-size:14px;color:#15803d;margin-bottom:8px;margin-top:0;">Dein Ticket-Code</p>
+          <p style="font-size:32px;font-weight:700;color:#0f172a;letter-spacing:2px;margin:0;">${ticketCode}</p>
+          </div>
+          <p style="color:#64748b;line-height:1.6;margin-top:24px;">Dein Ticket-Code ist dein Eintrittsticket zur Veranstaltung. Bitte bring ihn zur Veranstaltung mit.</p>
+          <p style="color:#94a3b8;font-size:13px;margin-top:32px;">Viele Grüße,<br/>Dein Event-Team</p>
+          </div>`;
 
-          vielen Dank für deine Anmeldung! Deine Registrierung für ${eventName} wurde genehmigt.
-
-          VERANSTALTUNGSDETAILS:
-          - Datum: ${eventData?.date || "N/A"}
-          - Uhrzeit: ${eventData?.time || "N/A"}
-          - Ort: ${eventData?.location || "N/A"}
-
-          DEIN TICKET-CODE: ${ticketCode}
-
-          Dein Ticket und Kalender-Eintrag sind in dieser E-Mail beigefügt.
-
-          Beste Grüße,
-          Dein Event Team`;
-          
-          // Send email
+          // Send confirmation email
           await base44.integrations.Core.SendEmail({
             to: form.email,
-            subject: `Deine Bestätigung für ${eventName} - Ticket anbei`,
+            subject: `Deine Bestätigung für ${eventName}`,
             body: emailBody,
           });
           
