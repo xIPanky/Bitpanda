@@ -132,8 +132,9 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
 
       {/* Company */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-slate-700">Firma / Organisation / Creator</Label>
+        <Label className="text-sm font-medium text-slate-700">Firma / Organisation / Creator *</Label>
         <Input
+          required
           value={form.company}
           onChange={(e) => handleChange("company", e.target.value)}
           placeholder="Firmenname oder Creator-Name"
