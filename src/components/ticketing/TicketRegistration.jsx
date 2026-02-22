@@ -81,7 +81,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         }
       });
 
-      onComplete(registration);
+      onComplete({ ...registration, ticket_code: ticketCode });
     } catch (err) {
       console.error(err);
       setError("Es gab einen Fehler bei der Registrierung. Bitte versuche es später erneut.");
