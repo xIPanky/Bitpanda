@@ -20,7 +20,6 @@ import {
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
-import QRCode from "qrcode";
 
 export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
   const [form, setForm] = useState(guest || {});
@@ -84,8 +83,20 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
           
           // Add QR code
           try {
-            const qrCanvas = await QRCode.toCanvas(ticketCode);
-            const qrImage = qrCanvas.toDataURL("image/png");
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticketCode}`;
+            const img = await new Promise((resolve, reject) => {
+              const image = new Image();
+              image.crossOrigin = "anonymous";
+              image.onload = () => resolve(image);
+              image.onerror = () => reject(new Error("Failed to load QR code"));
+              image.src = qrUrl;
+            });
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            const qrImage = canvas.toDataURL("image/png");
             doc.addImage(qrImage, "PNG", 95, 38, 40, 40);
           } catch (qrErr) {
             console.error("QR Code generation failed:", qrErr);

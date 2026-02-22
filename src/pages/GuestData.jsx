@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import { EditGuestDialog } from "../components/guest/EditGuestDialog";
 import jsPDF from "jspdf";
-import QRCode from "qrcode";
 import { toast } from "sonner";
 
 const categoryColors = {
@@ -120,8 +119,20 @@ export default function GuestData() {
       doc.text(ticket.ticket_code, 14, 78);
 
       try {
-        const qrCanvas = await QRCode.toCanvas(ticket.ticket_code);
-        const qrImage = qrCanvas.toDataURL("image/png");
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticket.ticket_code}`;
+        const img = await new Promise((resolve, reject) => {
+          const image = new Image();
+          image.crossOrigin = "anonymous";
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error("Failed to load QR code"));
+          image.src = qrUrl;
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const qrImage = canvas.toDataURL("image/png");
         doc.addImage(qrImage, "PNG", 95, 38, 40, 40);
       } catch (qrErr) {
         console.error("QR Code generation failed:", qrErr);
