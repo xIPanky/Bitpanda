@@ -31,8 +31,39 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
   const handleSave = async () => {
     setLoading(true);
     try {
+      const wasApproved = guest?.status !== "approved" && form.status === "approved";
+      
       await base44.entities.Registration.update(guest.id, form);
-      toast.success("Gast aktualisiert");
+      
+      // Create ticket and send email if approving
+      if (wasApproved) {
+        const event = await base44.entities.Event.filter({ id: form.event_id });
+        const ticketCode = `${form.first_name[0]?.toUpperCase()}${form.last_name[0]?.toUpperCase()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        
+        await base44.entities.Ticket.create({
+          event_id: form.event_id,
+          registration_id: guest.id,
+          ticket_tier_id: form.ticket_tier_id,
+          ticket_code: ticketCode,
+          guest_name: `${form.first_name} ${form.last_name}`,
+          guest_email: form.email,
+          category: form.category,
+          status: "valid",
+          email_sent: false,
+        });
+        
+        // Send confirmation email
+        await base44.integrations.Core.SendEmail({
+          to: form.email,
+          subject: `Ihre Anmeldung für ${event?.[0]?.name} wurde bestätigt`,
+          body: `Hallo ${form.first_name},\n\nvielen Dank für deine Anmeldung! Deine Registrierung wurde bestätigt. Dein Ticket-Code: ${ticketCode}\n\nBest regards,\nDein Event Team`,
+        });
+        
+        toast.success("Gast genehmigt und Ticket erstellt");
+      } else {
+        toast.success("Gast aktualisiert");
+      }
+      
       onSave();
       onOpenChange(false);
     } catch (err) {
