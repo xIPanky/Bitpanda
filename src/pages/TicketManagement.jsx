@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Save, Loader2, Euro, Tag, Plus, Trash2, ChevronLeft, CheckCircle } from "lucide-react";
+import { Save, Loader2, Euro, Tag, Plus, Trash2, ChevronLeft, CheckCircle, GripVertical } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export default function TicketManagement() {
   const queryClient = useQueryClient();
@@ -162,6 +163,17 @@ export default function TicketManagement() {
     setCheckoutQuestions(checkoutQuestions.map(q => 
       q.id === questionId ? { ...q, options: q.options.filter((_, i) => i !== optionIdx) } : q
     ));
+  };
+
+  const handleDragEnd = (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    if (source.index === destination.index) return;
+
+    const items = Array.from(checkoutQuestions);
+    const [reorderedItem] = items.splice(source.index, 1);
+    items.splice(destination.index, 0, reorderedItem);
+    setCheckoutQuestions(items);
   };
 
   const handleSaveCheckout = async () => {
@@ -363,35 +375,43 @@ export default function TicketManagement() {
               </Button>
             </div>
 
-            <div className="space-y-3 border-t border-slate-200 pt-5">
-              {checkoutQuestions.map((question) => (
-                <div key={question.id} className="border border-slate-200 rounded-lg p-4 space-y-3">
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="checkout-questions">
+                {(provided, snapshot) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3 border-t border-slate-200 pt-5">
+                    {checkoutQuestions.map((question, index) => (
+                      <Draggable key={question.id} draggableId={String(question.id)} index={index}>
+                        {(provided, snapshot) => (
+                          <div ref={provided.innerRef} {...provided.draggableProps} className={`border border-slate-200 rounded-lg p-4 space-y-3 ${snapshot.isDragging ? 'bg-blue-50 border-blue-300' : ''}`}>
                   <div className="flex gap-3 items-start">
-                    <div className="flex-1">
-                      <Label className="text-xs">Frage</Label>
-                      <Input 
-                        value={question.text} 
-                        onChange={(e) => updateCheckoutQuestion(question.id, "text", e.target.value)} 
-                        placeholder="z.B. Diätische Anforderungen?" 
-                        className="mt-1 h-9 text-sm" 
-                      />
-                    </div>
-                    <div className="w-32">
-                      <Label className="text-xs">Typ</Label>
-                      <Select value={question.type || "text"} onValueChange={(val) => updateCheckoutQuestion(question.id, "type", val)}>
-                        <SelectTrigger className="mt-1 h-9 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="text">Textfeld</SelectItem>
-                          <SelectItem value="dropdown">Dropdown</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => removeCheckoutQuestion(question.id)} className="text-red-600 hover:bg-red-50 h-8 mt-6">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                     <div {...provided.dragHandleProps} className="mt-6">
+                       <GripVertical className="w-5 h-5 text-slate-400" />
+                     </div>
+                     <div className="flex-1">
+                       <Label className="text-xs">Frage</Label>
+                       <Input 
+                         value={question.text} 
+                         onChange={(e) => updateCheckoutQuestion(question.id, "text", e.target.value)} 
+                         placeholder="z.B. Diätische Anforderungen?" 
+                         className="mt-1 h-9 text-sm" 
+                       />
+                     </div>
+                     <div className="w-32">
+                       <Label className="text-xs">Typ</Label>
+                       <Select value={question.type || "text"} onValueChange={(val) => updateCheckoutQuestion(question.id, "type", val)}>
+                         <SelectTrigger className="mt-1 h-9 text-sm">
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="text">Textfeld</SelectItem>
+                           <SelectItem value="dropdown">Dropdown</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <Button variant="ghost" size="sm" onClick={() => removeCheckoutQuestion(question.id)} className="text-red-600 hover:bg-red-50 h-8 mt-6">
+                       <Trash2 className="w-4 h-4" />
+                     </Button>
+                   </div>
 
                   {question.type === "dropdown" && (
                     <div className="border-t border-slate-200 pt-3 space-y-2">
@@ -434,9 +454,15 @@ export default function TicketManagement() {
                     />
                     Pflichtfeld
                   </label>
-                </div>
-              ))}
-            </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                  </div>
+                  )}
+                  </Droppable>
+                  </DragDropContext>
 
             {checkoutQuestions.length === 0 && (
               <div className="text-center py-8 text-slate-400">
