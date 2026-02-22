@@ -73,23 +73,14 @@ export default function Landing() {
             Von der Anmeldung bis zum Check-in – alles in einem Tool.
             Erstelle Events, verwalte Gästelisten und versende Tickets in Minuten.
           </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Button
-              size="lg"
-              className="bg-amber-400 text-slate-900 hover:bg-amber-300 font-semibold px-8 h-12"
-              onClick={() => document.getElementById("signup").scrollIntoView({ behavior: "smooth" })}
-            >
-              Jetzt starten <ArrowRight className="w-5 h-5 ml-1" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 bg-transparent h-12 px-8"
-              onClick={() => base44.auth.redirectToLogin()}
-            >
-              Einloggen
-            </Button>
-          </div>
+          <Button
+            size="lg"
+            variant="outline"
+            className="border-white/20 text-white hover:bg-white/10 bg-transparent h-12 px-8"
+            onClick={() => base44.auth.redirectToLogin()}
+          >
+            Einloggen
+          </Button>
         </motion.div>
 
         {/* Features */}
