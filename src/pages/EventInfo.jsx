@@ -101,11 +101,16 @@ export default function EventInfo() {
             <Link to={createPageUrl(`Dashboard?event_id=${eventId}`)} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-3 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Dashboard
             </Link>
-            <div className="flex items-center gap-3 mb-1">
-              <Info className="w-6 h-6 text-slate-400" />
-              <Link to={createPageUrl(`GuestList?event_id=${eventId}`)} className="text-2xl font-bold text-slate-900 hover:text-slate-600 transition-colors">
-                {event?.name || "Veranstaltungsinformationen"}
-              </Link>
+            <div className="flex items-center gap-3 mb-1 justify-between">
+              <div className="flex items-center gap-3">
+                <Info className="w-6 h-6 text-slate-400" />
+                <h1 className="text-2xl font-bold text-slate-900">
+                  {event?.name || "Veranstaltungsinformationen"}
+                </h1>
+              </div>
+              <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors text-sm font-medium">
+                <Link2 className="w-4 h-4" /> Zur Veranstaltung
+              </a>
             </div>
           </div>
 
