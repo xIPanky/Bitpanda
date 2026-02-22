@@ -13,6 +13,7 @@ import {
   Megaphone,
   CalendarDays,
   ChevronRight,
+  Mail,
 } from "lucide-react";
 
 const publicPages = ["Register", "Ticket", "Landing"];
