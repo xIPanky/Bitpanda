@@ -27,9 +27,10 @@ export default function Layout({ children, currentPageName }) {
     { name: "Dashboard", page: `Dashboard?event_id=${eventId}`, icon: LayoutDashboard },
     { name: "Veranstaltungsinfos", page: `EventInfo?event_id=${eventId}`, icon: CalendarDays },
     { name: "Gästeliste", page: `GuestList?event_id=${eventId}`, icon: Users },
-    { name: "Scanner", page: `Scanner?event_id=${eventId}`, icon: ScanLine },
+    { name: "Gästedaten", page: `GuestData?event_id=${eventId}`, icon: ClipboardList },
     { name: "Marketing", page: `Marketing?event_id=${eventId}`, icon: Megaphone },
     { name: "Einstellungen", page: `Settings?event_id=${eventId}`, icon: Settings },
+    { name: "Scanner", page: `Scanner?event_id=${eventId}`, icon: ScanLine },
   ] : [];
 
   const topNavItems = [
