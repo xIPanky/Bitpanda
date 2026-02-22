@@ -257,43 +257,12 @@ export default function Settings() {
               {/* Registration settings */}
               <div>
                 <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-5">Registrierung</h3>
-                <div className="space-y-5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">Registrierung geöffnet</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Ob sich Gäste registrieren können</p>
-                    </div>
-                    <Switch checked={form.registration_open} onCheckedChange={(checked) => handleChange("registration_open", checked)} />
-                  </div>
-
-                  {/* Custom Questions */}
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-900 mb-3">Individuelle Fragen</p>
-                    <div className="space-y-2">
-                      {form.custom_questions.map((q, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <Input value={q} onChange={(e) => handleQuestionChange(idx, e.target.value)} placeholder={`Frage ${idx + 1}`} className="h-10 border-slate-200 text-sm" />
-                          {form.custom_questions.length > 1 && <Button type="button" variant="ghost" size="icon" className="h-10 w-10 text-red-400 hover:text-red-600 shrink-0" onClick={() => removeQuestion(idx)}><X className="w-4 h-4" /></Button>}
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-sm font-medium text-slate-900">Registrierung geöffnet</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Ob sich Gäste registrieren können</p>
                   </div>
-
-                  {/* Invitation Options */}
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 mb-3">Einladende Personen</p>
-                    <div className="space-y-2 mb-3">
-                      {(form.invitation_options || []).map((option, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <Input value={option} onChange={(e) => { const updated = [...form.invitation_options]; updated[idx] = e.target.value; handleChange("invitation_options", updated); }} className="h-10 border-slate-200 text-sm" />
-                          <Button type="button" variant="ghost" size="icon" className="h-10 w-10 text-red-400 hover:text-red-600 shrink-0" onClick={() => handleChange("invitation_options", form.invitation_options.filter((_, i) => i !== idx))}><X className="w-4 h-4" /></Button>
-                        </div>
-                      ))}
-                    </div>
-                    <Button type="button" variant="outline" size="sm" className="h-9 text-sm border-dashed" onClick={() => handleChange("invitation_options", [...(form.invitation_options || []), ""])}>
-                      <Plus className="w-4 h-4 mr-1" />Name hinzufügen
-                    </Button>
-                  </div>
+                  <Switch checked={form.registration_open} onCheckedChange={(checked) => handleChange("registration_open", checked)} />
                 </div>
               </div>
 
@@ -302,57 +271,7 @@ export default function Settings() {
               </Button>
             </div>
 
-            {/* Ticket Tiers */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Tag className="w-5 h-5 text-slate-400" />
-                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Ticketstufen</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <Switch checked={form.is_paid} onCheckedChange={(v) => handleChange("is_paid", v)} />
-                    <span className="text-sm text-slate-600 flex items-center gap-1"><Euro className="w-3.5 h-3.5" /> Kostenpflichtig</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 mb-6">Definiere verschiedene Ticket-Kategorien mit Preisen und Kontingenten.</p>
 
-              <div className="space-y-3 mb-4">
-                {tiers.map((tier, idx) => (
-                  <div key={idx} className="border border-slate-200 rounded-xl p-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Input value={tier.name} onChange={(e) => updateTier(idx, "name", e.target.value)} placeholder="z.B. Early Bird, VIP, Standard" className="h-9 text-sm font-medium border-slate-200 flex-1" />
-                      {form.is_paid && (
-                        <div className="flex items-center gap-1 border border-slate-200 rounded-lg px-2 h-9">
-                          <Euro className="w-3.5 h-3.5 text-slate-400" />
-                          <input type="number" min="0" value={tier.price || 0} onChange={(e) => updateTier(idx, "price", parseFloat(e.target.value) || 0)} className="w-20 text-sm outline-none text-slate-800" />
-                        </div>
-                      )}
-                      <Button type="button" variant="ghost" size="icon" className="h-9 w-9 text-red-400 hover:text-red-600 shrink-0" onClick={() => removeTier(idx)}><X className="w-4 h-4" /></Button>
-                    </div>
-                    <div className="flex gap-2">
-                      <Input value={tier.description || ""} onChange={(e) => updateTier(idx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="h-8 text-xs border-slate-200 flex-1" />
-                      <input type="number" min="0" value={tier.capacity || ""} onChange={(e) => updateTier(idx, "capacity", e.target.value ? parseInt(e.target.value) : "")} className="h-8 text-xs border border-slate-200 rounded-md px-2 w-24 outline-none" placeholder="Max. Plätze" />
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {Object.keys(categoryColors).map((c) => (
-                        <button key={c} onClick={() => updateTier(idx, "color", c)} className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${categoryColors[c]} ${tier.color === c ? "ring-2 ring-offset-1 ring-slate-400" : "opacity-60 hover:opacity-100"}`}>{c}</button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" size="sm" className="border-dashed flex-1" onClick={addTier}>
-                  <Plus className="w-4 h-4 mr-1" />Stufe hinzufügen
-                </Button>
-                <Button onClick={saveTiers} disabled={savingTier} className="bg-slate-900 hover:bg-slate-800 flex-1">
-                  {savingTier ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 mr-1" />Stufen speichern</>}
-                </Button>
-              </div>
-            </div>
           </div>
         </motion.div>
       </div>
