@@ -498,10 +498,54 @@ export default function EventInfo() {
                             className="mt-1 h-9 text-sm" 
                           />
                         </div>
+                        <div className="w-32">
+                          <Label className="text-xs">Typ</Label>
+                          <select 
+                            value={question.type || "text"} 
+                            onChange={(e) => updateCheckoutQuestion(question.id, "type", e.target.value)} 
+                            className="mt-1 w-full h-9 rounded-md border border-slate-200 text-sm px-2"
+                          >
+                            <option value="text">Textfeld</option>
+                            <option value="dropdown">Dropdown</option>
+                          </select>
+                        </div>
                         <Button variant="ghost" size="sm" onClick={() => removeCheckoutQuestion(question.id)} className="text-red-600 hover:bg-red-50 h-8 mt-6">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
+
+                      {question.type === "dropdown" && (
+                        <div className="border-t border-slate-200 pt-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-medium">Optionen</Label>
+                            <Button size="sm" variant="ghost" onClick={() => addCheckoutOption(question.id)} className="h-6 text-xs">
+                              <Plus className="w-3 h-3 mr-1" />
+                              Option hinzufügen
+                            </Button>
+                          </div>
+                          <div className="space-y-2">
+                            {(question.options || []).map((option, optIdx) => (
+                              <div key={optIdx} className="flex gap-2">
+                                <Input 
+                                  value={option} 
+                                  onChange={(e) => updateCheckoutOption(question.id, optIdx, e.target.value)} 
+                                  placeholder="z.B. Vegetarisch" 
+                                  className="h-8 text-xs" 
+                                />
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => removeCheckoutOption(question.id, optIdx)} 
+                                  className="text-red-600 hover:bg-red-50 h-8"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <label className="flex items-center gap-2 text-xs">
                         <input 
                           type="checkbox" 
