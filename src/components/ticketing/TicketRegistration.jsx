@@ -1,20 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBack }) {
+  // Parse custom questions
+  const parsedQuestions = useMemo(() => {
+    return event.custom_questions?.map((q) => {
+      let text = q;
+      let type = "text";
+      let options = [];
+      let required = false;
+
+      if (q.includes("||")) {
+        const parts = q.split("||");
+        text = parts[0];
+        type = parts[1] || "text";
+        options = parts[2] ? parts[2].split("~") : [];
+        required = parts[3] === "true";
+      }
+
+      return { text, type, options, required };
+    }) || [];
+  }, [event.custom_questions]);
+
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
     company: "",
-    custom_answers: event.custom_questions ? event.custom_questions.map(() => "") : [],
+    custom_answers: parsedQuestions.map(() => ""),
     invited_by: "",
   });
   const [loading, setLoading] = useState(false);
@@ -36,12 +57,21 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
     setError("");
 
     try {
-      // Validate required fields
-      if (!form.first_name.trim() || !form.last_name.trim() || !form.email.trim()) {
-        setError("Bitte fülle alle erforderlichen Felder aus.");
-        setLoading(false);
-        return;
-      }
+       // Validate required fields
+       if (!form.first_name.trim() || !form.last_name.trim() || !form.email.trim()) {
+         setError("Bitte fülle alle erforderlichen Felder aus.");
+         setLoading(false);
+         return;
+       }
+
+       // Validate required custom questions
+       for (let i = 0; i < parsedQuestions.length; i++) {
+         if (parsedQuestions[i].required && !form.custom_answers[i]?.trim()) {
+           setError(`Bitte beantworte: ${parsedQuestions[i].text}`);
+           setLoading(false);
+           return;
+         }
+       }
 
       // Create registration
       const registration = await base44.entities.Registration.create({
@@ -212,18 +242,39 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           </div>
         )}
 
-        {event.custom_questions && event.custom_questions.map((question, idx) => (
-          <div key={idx}>
-            <Label htmlFor={`custom_${idx}`} className="text-slate-700 font-medium">{question}</Label>
-            <Textarea
-              id={`custom_${idx}`}
-              value={form.custom_answers[idx] || ""}
-              onChange={(e) => handleCustomAnswerChange(idx, e.target.value)}
-              className="mt-1"
-              rows={3}
-            />
+        {parsedQuestions.length > 0 && (
+          <div className="border-t border-slate-200 pt-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Zusätzliche Informationen</h3>
+            {parsedQuestions.map((question, idx) => (
+              <div key={idx} className="mb-4">
+                <Label htmlFor={`custom_${idx}`} className="text-slate-700 font-medium">
+                  {question.text}
+                  {question.required && <span className="text-red-500"> *</span>}
+                </Label>
+                {question.type === "dropdown" ? (
+                  <Select value={form.custom_answers[idx] || ""} onValueChange={(val) => handleCustomAnswerChange(idx, val)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="-- Bitte wählen --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {question.options.map((opt, optIdx) => (
+                        <SelectItem key={optIdx} value={opt}>{opt}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Textarea
+                    id={`custom_${idx}`}
+                    value={form.custom_answers[idx] || ""}
+                    onChange={(e) => handleCustomAnswerChange(idx, e.target.value)}
+                    className="mt-1"
+                    rows={3}
+                  />
+                )}
+              </div>
+            ))}
           </div>
-        ))}
+        )}
 
         <div className="flex gap-4 pt-6">
           <Button
