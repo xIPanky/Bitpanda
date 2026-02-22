@@ -115,6 +115,7 @@ export default function GuestData() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50/50">
+                    {!eventId && <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Event</TableHead>}
                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</TableHead>
                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                       <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />E-Mail</span>
