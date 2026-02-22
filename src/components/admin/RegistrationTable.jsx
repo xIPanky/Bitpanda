@@ -161,10 +161,15 @@ export default function RegistrationTable({
                         </Select>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`${status.color} border text-xs`}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {status.label}
-                        </Badge>
+                        <div>
+                          <Badge variant="outline" className={`${status.color} border text-xs`}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {status.label}
+                          </Badge>
+                          {reg.status === "approved" && reg.approved_by && (
+                            <p className="text-xs text-slate-400 mt-1">von {reg.approved_by}</p>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-sm text-slate-500">
                         {reg.created_date ? format(new Date(reg.created_date), "dd.MM.yyyy") : "–"}
