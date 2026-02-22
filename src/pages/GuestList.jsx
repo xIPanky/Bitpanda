@@ -110,7 +110,7 @@ export default function GuestList() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Ticket.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
       toast.success("Ticket gelöscht");
       setDeleteTarget(null);
     },
@@ -124,8 +124,8 @@ export default function GuestList() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tickets"] });
-      queryClient.invalidateQueries({ queryKey: ["registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
       toast.success("Ticket storniert");
     },
   });
@@ -133,7 +133,7 @@ export default function GuestList() {
   const categoryMutation = useMutation({
     mutationFn: ({ id, category }) => base44.entities.Ticket.update(id, { category }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
     },
   });
 
