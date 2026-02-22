@@ -148,6 +148,7 @@ export default function Dashboard() {
           onApprove={handleApprove}
           onReject={handleReject}
           onCategoryChange={handleCategoryChange}
+          onEdit={handleEdit}
           processingId={processingId}
           filterStatus={filterStatus}
           filterCategory={filterCategory}
