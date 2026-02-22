@@ -92,21 +92,36 @@ const categoryColors = {
 
 const categories = ["VIP", "Business", "Presse", "Standard", "Speaker", "Sponsor"];
 
+const statusLabels = {
+  pending: { label: "Ausstehend", color: "bg-yellow-50 text-yellow-700 border-yellow-200" },
+  approved: { label: "Genehmigt", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  rejected: { label: "Abgelehnt", color: "bg-red-50 text-red-700 border-red-200" },
+};
+
 export default function GuestList() {
-  const [search, setSearch] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const queryClient = useQueryClient();
+   const [search, setSearch] = useState("");
+   const [deleteTarget, setDeleteTarget] = useState(null);
+   const [activeTab, setActiveTab] = useState("registrations");
+   const queryClient = useQueryClient();
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const eventId = urlParams.get("event_id");
+   const urlParams = new URLSearchParams(window.location.search);
+   const eventId = urlParams.get("event_id");
 
-  const { data: tickets } = useQuery({
-    queryKey: ["tickets", eventId],
-    queryFn: () => eventId
-      ? base44.entities.Ticket.filter({ event_id: eventId }, "-created_date")
-      : base44.entities.Ticket.list("-created_date"),
-    initialData: [],
-  });
+   const { data: registrations } = useQuery({
+     queryKey: ["registrations", eventId],
+     queryFn: () => eventId
+       ? base44.entities.Registration.filter({ event_id: eventId }, "-created_date")
+       : base44.entities.Registration.list("-created_date"),
+     initialData: [],
+   });
+
+   const { data: tickets } = useQuery({
+     queryKey: ["tickets", eventId],
+     queryFn: () => eventId
+       ? base44.entities.Ticket.filter({ event_id: eventId }, "-created_date")
+       : base44.entities.Ticket.list("-created_date"),
+     initialData: [],
+   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Ticket.delete(id),
