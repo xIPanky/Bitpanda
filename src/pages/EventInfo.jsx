@@ -32,6 +32,9 @@ export default function EventInfo() {
 
   const [tiers, setTiers] = useState([]);
   const [savingTiers, setSavingTiers] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
+  const [checkoutQuestions, setCheckoutQuestions] = useState([]);
+  const [savingCheckout, setSavingCheckout] = useState(false);
 
   const { data: eventArr, isLoading } = useQuery({
     queryKey: ["event", eventId],
