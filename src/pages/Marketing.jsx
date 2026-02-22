@@ -137,16 +137,43 @@ export default function Marketing() {
 
             {/* Preview */}
             {body && (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Vorschau (Beispiel)</p>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                  {body
-                    .replace(/\{\{vorname\}\}/gi, "Max")
-                    .replace(/\{\{nachname\}\}/gi, "Mustermann")
-                    .replace(/\{\{name\}\}/gi, "Max Mustermann")
-                    .replace(/\{\{email\}\}/gi, "max@beispiel.de")
-                    .replace(/\{\{kategorie\}\}/gi, "VIP")}
-                </p>
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-slate-100 px-5 py-3 flex items-center justify-between border-b border-slate-200">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-Mail Vorschau</p>
+                  <span className="text-xs text-slate-400">Beispielempfänger: Max Mustermann</span>
+                </div>
+                {/* Mail client simulation */}
+                <div className="bg-white p-5 space-y-4">
+                  <div className="space-y-1 border-b border-slate-100 pb-4">
+                    <div className="flex gap-2 text-xs text-slate-500">
+                      <span className="font-semibold w-12">Von:</span>
+                      <span>Ticket Manager</span>
+                    </div>
+                    <div className="flex gap-2 text-xs text-slate-500">
+                      <span className="font-semibold w-12">An:</span>
+                      <span>max@beispiel.de</span>
+                    </div>
+                    <div className="flex gap-2 text-xs text-slate-500">
+                      <span className="font-semibold w-12">Betreff:</span>
+                      <span className="font-medium text-slate-800">{subject || <span className="italic text-slate-300">Kein Betreff</span>}</span>
+                    </div>
+                  </div>
+                  <div
+                    className="max-w-[560px] mx-auto text-sm text-slate-700 leading-relaxed"
+                    style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
+                  >
+                    <p className="whitespace-pre-wrap">
+                      {body
+                        .replace(/\{\{vorname\}\}/gi, "Max")
+                        .replace(/\{\{nachname\}\}/gi, "Mustermann")
+                        .replace(/\{\{name\}\}/gi, "Max Mustermann")
+                        .replace(/\{\{email\}\}/gi, "max@beispiel.de")
+                        .replace(/\{\{kategorie\}\}/gi, "VIP")}
+                    </p>
+                    <hr className="my-5 border-slate-200" />
+                    <p className="text-xs text-slate-400">{eventSettings.event_name || "Veranstaltung"}</p>
+                  </div>
+                </div>
               </div>
             )}
 
