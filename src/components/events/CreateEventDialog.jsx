@@ -3,17 +3,31 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { X, Loader2 } from "lucide-react";
 
 export default function CreateEventDialog({ onClose, onCreated }) {
-  const [form, setForm] = useState({ name: "", date: "", time: "", location: "" });
+  const [form, setForm] = useState({
+    name: "",
+    subtitle: "",
+    description: "",
+    date: "",
+    time: "",
+    location: "",
+    is_paid: false,
+    currency: "EUR",
+  });
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
-    if (!form.name.trim()) return;
+    if (!form.name.trim() || !form.date) return;
     setSaving(true);
-    await base44.entities.Event.create({ ...form, status: "draft", registration_open: true });
-    onCreated();
+    const newEvent = await base44.entities.Event.create({
+      ...form,
+      status: "published",
+      registration_open: true,
+    });
+    onCreated(newEvent);
   };
 
   return (
