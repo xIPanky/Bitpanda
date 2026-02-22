@@ -56,6 +56,11 @@ export default function Home() {
     };
   };
 
+  // Chronological next 5 events
+  const sortedEvents = [...events].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+  const upcomingEvents = sortedEvents.slice(0, 5);
+  const visibleEvents = eventsExpanded ? events : upcomingEvents;
+
   return (
     <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -87,73 +92,107 @@ export default function Home() {
             <p className="text-sm mt-1">Erstelle dein erstes Event</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {events.map((event, i) => {
-              const stats = getEventStats(event.id);
-              const sc = statusConfig[event.status] || statusConfig.draft;
-              return (
-                <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <Link to={createPageUrl(`Dashboard?event_id=${event.id}`)}>
-                    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md transition-all cursor-pointer group">
-                      {event.cover_image_url ? (
-                        <div className="h-36 overflow-hidden">
-                          <img
-                            src={event.cover_image_url}
-                            alt={event.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            style={{ objectPosition: event.cover_image_position || "50% 50%" }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="h-36 bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center">
-                          <Ticket className="w-10 h-10 text-amber-400 opacity-60" />
-                        </div>
-                      )}
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-2 mb-3">
-                          <h3 className="font-semibold text-slate-900 leading-tight">{event.name}</h3>
-                          <Badge variant="outline" className={`${sc.color} text-xs shrink-0`}>{sc.label}</Badge>
-                        </div>
-                        <div className="space-y-1.5 text-sm text-slate-500">
-                          {event.date && (
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                              {format(new Date(event.date), "dd. MMMM yyyy", { locale: de })}
-                              {event.time && ` · ${event.time}`}
-                            </div>
-                          )}
-                          {event.location && (
-                            <div className="flex items-center gap-2">
-                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                              {event.location}
-                            </div>
+          <>
+            <div className="space-y-3">
+              <AnimatePresence initial={false}>
+                {visibleEvents.map((event, i) => {
+                  const stats = getEventStats(event.id);
+                  const sc = statusConfig[event.status] || statusConfig.draft;
+                  const registerUrl = `${window.location.origin}/register?event_id=${event.id}`;
+                  return (
+                    <motion.div
+                      key={event.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ delay: i * 0.04 }}
+                      className="bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-sm transition-all"
+                    >
+                      <div className="flex items-center gap-4 p-4 md:p-5">
+                        {/* Cover thumb */}
+                        <div className="shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center">
+                          {event.cover_image_url ? (
+                            <img src={event.cover_image_url} alt={event.name} className="w-full h-full object-cover" style={{ objectPosition: event.cover_image_position || "50% 50%" }} />
+                          ) : (
+                            <Ticket className="w-6 h-6 text-amber-400 opacity-70" />
                           )}
                         </div>
-                        <div className="mt-4 pt-4 border-t border-slate-100 flex gap-4 text-sm">
-                          <div className="flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="font-semibold text-slate-900">{stats.total}</span>
-                            <span className="text-slate-400">Anmeldungen</span>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <h3 className="font-semibold text-slate-900 truncate">{event.name}</h3>
+                            <Badge variant="outline" className={`${sc.color} text-xs shrink-0`}>{sc.label}</Badge>
                           </div>
-                          {stats.pending > 0 && (
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-amber-400" />
-                              <span className="text-amber-700 font-medium">{stats.pending} offen</span>
-                            </div>
-                          )}
+                          <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+                            {event.date && (
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {format(new Date(event.date), "dd. MMM yyyy", { locale: de })}
+                                {event.time && ` · ${event.time}`}
+                              </span>
+                            )}
+                            {event.location && (
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                {event.location}
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {stats.total} Anmeldungen
+                              {stats.pending > 0 && <span className="text-amber-600 font-medium"> · {stats.pending} offen</span>}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="shrink-0 flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigator.clipboard.writeText(registerUrl);
+                              toast.success("Registrierungslink kopiert!");
+                            }}
+                            title="Registrierungslink kopieren"
+                            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                          <a
+                            href={registerUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Registrierungsseite öffnen"
+                            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                          <Link
+                            to={createPageUrl(`GuestList?event_id=${event.id}`)}
+                            title="Dashboard"
+                            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+                          >
+                            <LayoutDashboard className="w-4 h-4" />
+                          </Link>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+
+            {events.length > 5 && (
+              <button
+                onClick={() => setEventsExpanded(!eventsExpanded)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-sm text-slate-500 hover:text-slate-800 transition-colors"
+              >
+                {eventsExpanded ? <><ChevronUp className="w-4 h-4" /> Weniger anzeigen</> : <><ChevronDown className="w-4 h-4" /> Alle {events.length} Events anzeigen</>}
+              </button>
+            )}
+          </>
         )}
       </div>
 
