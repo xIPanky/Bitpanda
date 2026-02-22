@@ -26,6 +26,7 @@ export default function EventTicketing() {
     queryKey: ["ticketTiers", eventId],
     queryFn: () => base44.entities.TicketTier.filter({ event_id: eventId }),
     enabled: !!eventId,
+    initialData: [],
   });
 
   // Track page visits
@@ -70,8 +71,9 @@ export default function EventTicketing() {
     return <div className="p-6 text-center text-slate-500">Event konnte nicht geladen werden.</div>;
   }
 
-  // Check if event has tickets
-  const hasTickets = ticketTiers && ticketTiers.length > 0;
+  // Check if event has visible tickets
+  const hasTickets = ticketTiers && ticketTiers.filter(t => t.is_visible !== false).length > 0;
+  const visibleTiers = ticketTiers?.filter(t => t.is_visible !== false) || [];
 
   const handleTicketSelect = (tier) => {
     base44.analytics.track({
@@ -157,7 +159,7 @@ export default function EventTicketing() {
         {step === "tickets" && (
           <TicketSelector
             event={event}
-            tiers={ticketTiers}
+            tiers={visibleTiers}
             onSelectTier={handleTicketSelect}
           />
         )}
