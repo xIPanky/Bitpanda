@@ -54,12 +54,13 @@ export default function TicketManagement() {
         let type = "text";
         let options = [];
 
-        // Parse the custom_question format: "text" or "text||dropdown||opt1~opt2~opt3"
+        // Parse the custom_question format: "text||type||options||required"
         if (q.includes("||")) {
           const parts = q.split("||");
           text = parts[0];
           type = parts[1] || "text";
           options = parts[2] ? parts[2].split("~") : [];
+          required = parts[3] === "true";
         }
 
         return {
@@ -167,10 +168,8 @@ export default function TicketManagement() {
     setSavingCheckoutOk(false);
     await base44.entities.Event.update(event.id, {
       custom_questions: checkoutQuestions.map(q => {
-        if (q.type === "dropdown") {
-          return `${q.text}||dropdown||${(q.options || []).join("~")}`;
-        }
-        return q.text;
+        const baseFormat = `${q.text}||${q.type}||${(q.options || []).join("~")}||${q.required}`;
+        return baseFormat;
       })
     });
     queryClient.invalidateQueries({ queryKey: ["event", eventId] });
