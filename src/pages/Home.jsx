@@ -125,6 +125,12 @@ export default function Home() {
                             <Badge variant="outline" className={`${sc.color} text-xs shrink-0`}>{sc.label}</Badge>
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+                            {isAdmin && event.created_by && (
+                              <span className="flex items-center gap-1">
+                                <span className="text-slate-400">Von:</span>
+                                <span className="text-slate-700 font-medium">{event.created_by}</span>
+                              </span>
+                            )}
                             {event.date && (
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
