@@ -56,6 +56,59 @@ export default function Dashboard() {
     initialData: [],
   });
 
+  const { data: emailSequences } = useQuery({
+    queryKey: ["email-sequences", eventId],
+    queryFn: () => base44.entities.EmailSequence.filter({ event_id: eventId }),
+    enabled: !!eventId,
+    initialData: [],
+  });
+
+  // Auto-trigger reminder & post-event emails on dashboard load
+  React.useEffect(() => {
+    if (!event?.date || !emailSequences.length || !registrations.length) return;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const eventDate = new Date(event.date); eventDate.setHours(0,0,0,0);
+
+    for (const seq of emailSequences) {
+      if (!seq.enabled) continue;
+      const seqKey = `seq_sent_${seq.id}_${today.toISOString().slice(0,10)}`;
+      if (localStorage.getItem(seqKey)) continue;
+
+      let shouldSend = false;
+      if (seq.trigger === "reminder_before") {
+        const targetDate = new Date(eventDate);
+        targetDate.setDate(targetDate.getDate() - (seq.days_offset || 3));
+        shouldSend = today.getTime() === targetDate.getTime();
+      } else if (seq.trigger === "post_event") {
+        const targetDate = new Date(eventDate);
+        targetDate.setDate(targetDate.getDate() + (seq.days_offset || 1));
+        shouldSend = today.getTime() === targetDate.getTime();
+      }
+
+      if (shouldSend) {
+        const recipients = registrations.filter((r) =>
+          seq.send_to === "all" ? true : r.status === "approved"
+        );
+        localStorage.setItem(seqKey, "1");
+        (async () => {
+          for (const reg of recipients) {
+            const personalBody = (seq.body || "")
+              .replace(/\{\{vorname\}\}/gi, reg.first_name || "")
+              .replace(/\{\{nachname\}\}/gi, reg.last_name || "")
+              .replace(/\{\{name\}\}/gi, `${reg.first_name || ""} ${reg.last_name || ""}`.trim())
+              .replace(/\{\{email\}\}/gi, reg.email || "")
+              .replace(/\{\{kategorie\}\}/gi, reg.category || "Standard");
+            await base44.integrations.Core.SendEmail({
+              to: reg.email,
+              subject: seq.subject,
+              body: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;">${personalBody.replace(/\n/g,"<br/>")}<hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0;"/><p style="color:#94a3b8;font-size:12px;">${event?.name || ""}</p></div>`,
+            });
+          }
+        })();
+      }
+    }
+  }, [event, emailSequences, registrations]);
+
   const stats = useMemo(() => ({
     total: registrations.length,
     pending: registrations.filter((r) => r.status === "pending").length,
