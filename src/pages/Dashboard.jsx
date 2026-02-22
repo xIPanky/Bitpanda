@@ -133,16 +133,17 @@ export default function Dashboard() {
 
   const handleApprove = async (reg) => {
     setProcessingId(reg.id);
-    const ticketCode = generateTicketCode();
     const me = await base44.auth.me();
 
-    // Find tier if selected
-    const tier = tiers.find((t) => t.id === reg.ticket_tier_id);
-
+    // Update registration status to approved
     await base44.entities.Registration.update(reg.id, {
       status: "approved",
       approved_by: me?.email || "Admin",
     });
+
+    // Create ticket with code
+    const ticketCode = generateTicketCode();
+    const tier = tiers.find((t) => t.id === reg.ticket_tier_id);
 
     await base44.entities.Ticket.create({
       event_id: eventId || reg.event_id,
@@ -155,53 +156,35 @@ export default function Dashboard() {
       tier_name: tier?.name || null,
       tier_price: tier?.price || null,
       status: "valid",
-      email_sent: false,
+      email_sent: true,
     });
 
     const ticketUrl = `${window.location.origin}/ticket?code=${ticketCode}`;
 
-    // Check for custom confirmation sequence
+    // Send email
     const confirmSeq = emailSequences.find((s) => s.trigger === "on_registration" && s.enabled);
-    if (confirmSeq) {
-      const personalBody = (confirmSeq.body || "")
-        .replace(/\{\{vorname\}\}/gi, reg.first_name || "")
-        .replace(/\{\{nachname\}\}/gi, reg.last_name || "")
-        .replace(/\{\{name\}\}/gi, `${reg.first_name || ""} ${reg.last_name || ""}`.trim())
-        .replace(/\{\{email\}\}/gi, reg.email || "")
-        .replace(/\{\{kategorie\}\}/gi, reg.category || "Standard");
-      await base44.integrations.Core.SendEmail({
-        to: reg.email,
-        subject: confirmSeq.subject,
-        body: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;">${personalBody.replace(/\n/g,"<br/>")}<div style="background:#f8fafc;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:14px;color:#94a3b8;margin-bottom:8px;">Ihr Ticket-Code</p><p style="font-size:32px;font-weight:700;color:#0f172a;letter-spacing:2px;">${ticketCode}</p></div><p style="color:#64748b;"><a href="${ticketUrl}" style="color:#d97706;font-weight:600;">Ticket online ansehen →</a></p>${event?.date ? `<p style="color:#94a3b8;font-size:13px;margin-top:24px;">📅 ${new Date(event.date).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"})}${event.time ? ` um ${event.time} Uhr` : ""}${event.location ? ` · 📍 ${event.location}` : ""}</p>` : ""}</div>`,
-      });
-    } else {
-      await base44.integrations.Core.SendEmail({
-        to: reg.email,
-        subject: `Ihr Ticket: ${event?.name || "Veranstaltung"}`,
-        body: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
-            <h1 style="font-size: 24px; color: #0f172a;">Ihre Registrierung wurde freigegeben!</h1>
-            <p style="color: #64748b; line-height: 1.6;">
-              Hallo ${reg.first_name},<br/><br/>
-              Ihre Anmeldung für <strong>${event?.name || "die Veranstaltung"}</strong> wurde bestätigt.
-              ${tier ? `<br/>Ticketstufe: <strong>${tier.name}</strong>${tier.price > 0 ? ` (${tier.price} ${event?.currency || "EUR"})` : ""}` : ""}
-            </p>
-            <div style="background: #f8fafc; border-radius: 16px; padding: 24px; margin: 24px 0; text-align: center;">
-              <p style="font-size: 14px; color: #94a3b8; margin-bottom: 8px;">Ihr Ticket-Code</p>
-              <p style="font-size: 32px; font-weight: 700; color: #0f172a; letter-spacing: 2px;">${ticketCode}</p>
-            </div>
-            <p style="color: #64748b;">
-              <a href="${ticketUrl}" style="color: #d97706; font-weight: 600;">Ticket online ansehen →</a>
-            </p>
-            ${event?.date ? `<p style="color: #94a3b8; font-size: 13px; margin-top: 24px;">📅 ${new Date(event.date).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}${event.time ? ` um ${event.time} Uhr` : ""}${event.location ? ` · 📍 ${event.location}` : ""}</p>` : ""}
-          </div>
-        `,
-      });
-    }
-
-    const createdTickets = await base44.entities.Ticket.filter({ ticket_code: ticketCode });
-    if (createdTickets.length > 0) {
-      await base44.entities.Ticket.update(createdTickets[0].id, { email_sent: true });
+    try {
+      if (confirmSeq) {
+        const personalBody = (confirmSeq.body || "")
+          .replace(/\{\{vorname\}\}/gi, reg.first_name || "")
+          .replace(/\{\{nachname\}\}/gi, reg.last_name || "")
+          .replace(/\{\{name\}\}/gi, `${reg.first_name || ""} ${reg.last_name || ""}`.trim())
+          .replace(/\{\{email\}\}/gi, reg.email || "")
+          .replace(/\{\{kategorie\}\}/gi, reg.category || "Standard");
+        await base44.integrations.Core.SendEmail({
+          to: reg.email,
+          subject: confirmSeq.subject,
+          body: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;">${personalBody.replace(/\n/g,"<br/>")}<div style="background:#f8fafc;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:14px;color:#94a3b8;margin-bottom:8px;">Ihr Ticket-Code</p><p style="font-size:32px;font-weight:700;color:#0f172a;letter-spacing:2px;">${ticketCode}</p></div><p style="color:#64748b;"><a href="${ticketUrl}" style="color:#d97706;font-weight:600;">Ticket online ansehen →</a></p>${event?.date ? `<p style="color:#94a3b8;font-size:13px;margin-top:24px;">📅 ${new Date(event.date).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"})}${event.time ? ` um ${event.time} Uhr` : ""}${event.location ? ` · 📍 ${event.location}` : ""}</p>` : ""}</div>`,
+        });
+      } else {
+        await base44.integrations.Core.SendEmail({
+          to: reg.email,
+          subject: `Ihr Ticket: ${event?.name || "Veranstaltung"}`,
+          body: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;"><h1 style="font-size:24px;color:#0f172a;">Ihre Registrierung wurde freigegeben!</h1><p style="color:#64748b;line-height:1.6;">Hallo ${reg.first_name},<br/><br/>Ihre Anmeldung für <strong>${event?.name || "die Veranstaltung"}</strong> wurde bestätigt.${tier ? `<br/>Ticketstufe: <strong>${tier.name}</strong>${tier.price > 0 ? ` (${tier.price} ${event?.currency || "EUR"})` : ""}` : ""}</p><div style="background:#f8fafc;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:14px;color:#94a3b8;margin-bottom:8px;">Ihr Ticket-Code</p><p style="font-size:32px;font-weight:700;color:#0f172a;letter-spacing:2px;">${ticketCode}</p></div><p style="color:#64748b;"><a href="${ticketUrl}" style="color:#d97706;font-weight:600;">Ticket online ansehen →</a></p>${event?.date ? `<p style="color:#94a3b8;font-size:13px;margin-top:24px;">📅 ${new Date(event.date).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"})}${event.time ? ` um ${event.time} Uhr` : ""}${event.location ? ` · 📍 ${event.location}` : ""}</p>` : ""}</div>`,
+        });
+      }
+    } catch (emailErr) {
+      console.error("Email send error:", emailErr);
     }
 
     queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
