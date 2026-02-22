@@ -134,9 +134,39 @@ END:VCALENDAR`;
           </div>
         </div>
 
-        <p className="text-slate-600 mb-6">
+        <p className="text-slate-600 mb-8">
           Überprüfe dein Postfach (und Spam-Ordner) auf die Bestätigungs-E-Mail.
         </p>
+
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-8">
+          <h3 className="font-semibold text-slate-900 mb-4">Ticket-Optionen</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              className="flex items-center justify-center gap-2"
+              onClick={handleAddToCalendar}
+            >
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm">Zu Kalender</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="flex items-center justify-center gap-2"
+              onClick={handleDownloadPDF}
+            >
+              <Download className="w-4 h-4" />
+              <span className="text-sm">Als PDF</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="flex items-center justify-center gap-2 sm:col-span-2"
+              onClick={handleAddToWallet}
+            >
+              <Smartphone className="w-4 h-4" />
+              <span className="text-sm">Zu Wallet (Apple/Google)</span>
+            </Button>
+          </div>
+        </div>
 
         <Button
           className="bg-slate-900 hover:bg-slate-800 w-full mb-3"
