@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Plus, Calendar, MapPin, Users, BarChart2, Globe, Archive, FileEdit, Loader2, Ticket } from "lucide-react";
 import { motion } from "framer-motion";
-import CreateEventDialog from "@/components/events/CreateEventDialog";
+import CreateEventDialog from "@/components/events/CreateEventDialog.jsx";
 
 const statusConfig = {
   draft:     { label: "Entwurf",      color: "bg-slate-100 text-slate-600 border-slate-200" },
