@@ -155,16 +155,17 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         }
       }
 
-      // Send email with tickets
-      try {
-        await base44.integrations.Core.SendEmail({
-          to: form.email,
-          subject: `Dein Ticket: ${event.name}`,
-          body: `Hallo ${form.first_name},\n\nVielen Dank für deine Registrierung zu ${event.name}!\n\nDein Ticketcode: ${ticketCode}${plusOneTicketCode ? `\n\nBegleitperson Ticketcode: ${plusOneTicketCode}` : ""}\n\nWeitere Informationen zur Veranstaltung findest du auf unserer Website.\n\nBis bald!\n\nBeste Grüße`
-        });
-        toast.success("Bestätigungsmail versendet");
-      } catch (emailErr) {
-        console.error("Email error:", emailErr);
+      // Send email - only if tickets are involved
+      if (ticketCode || tier?.id) {
+        try {
+          await base44.integrations.Core.SendEmail({
+            to: form.email,
+            subject: `Dein Ticket: ${event.name}`,
+            body: `Hallo ${form.first_name},\n\nVielen Dank für deine Registrierung zu ${event.name}!\n\nDein Ticketcode: ${ticketCode}${plusOneTicketCode ? `\n\nBegleitperson Ticketcode: ${plusOneTicketCode}` : ""}\n\nWeitere Informationen zur Veranstaltung findest du auf unserer Website.\n\nBis bald!\n\nBeste Grüße`
+          });
+        } catch (emailErr) {
+          console.error("Email error:", emailErr);
+        }
       }
 
       base44.analytics.track({
