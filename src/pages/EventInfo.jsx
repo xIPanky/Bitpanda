@@ -149,9 +149,10 @@ export default function EventInfo() {
             </Link>
             <div className="flex items-center gap-3 mb-1">
               <Info className="w-6 h-6 text-slate-400" />
-              <h1 className="text-2xl font-bold text-slate-900">Veranstaltungsinformationen</h1>
+              <Link to={createPageUrl(`GuestList?event_id=${eventId}`)} className="text-2xl font-bold text-slate-900 hover:text-slate-600 transition-colors">
+                {event?.name || "Veranstaltungsinformationen"}
+              </Link>
             </div>
-            <p className="text-sm text-slate-500 ml-9">{event?.name}</p>
           </div>
 
           <div className="space-y-6">
