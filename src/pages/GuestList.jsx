@@ -102,10 +102,18 @@ export default function GuestList() {
    const [search, setSearch] = useState("");
    const [deleteTarget, setDeleteTarget] = useState(null);
    const [activeTab, setActiveTab] = useState("registrations");
+   const [filterDropdownQuestion, setFilterDropdownQuestion] = useState("");
+   const [filterDropdownAnswer, setFilterDropdownAnswer] = useState("");
    const queryClient = useQueryClient();
 
    const urlParams = new URLSearchParams(window.location.search);
    const eventId = urlParams.get("event_id");
+
+   const { data: event } = useQuery({
+     queryKey: ["event", eventId],
+     queryFn: () => base44.entities.Event.filter({ id: eventId }).then(res => res[0]),
+     enabled: !!eventId,
+   });
 
    const { data: registrations } = useQuery({
      queryKey: ["registrations", eventId],
