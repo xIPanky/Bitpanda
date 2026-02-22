@@ -89,12 +89,27 @@ export default function EventInfo() {
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.entities.Event.update(event.id, form);
+    await base44.entities.Event.update(event.id, {
+      ...form,
+      custom_questions: checkoutQuestions.map(q => q.text)
+    });
     queryClient.invalidateQueries({ queryKey: ["event", eventId] });
     queryClient.invalidateQueries({ queryKey: ["events"] });
     setSaving(false);
     setSavedOk(true);
     setTimeout(() => setSavedOk(false), 3000);
+  };
+
+  const addCheckoutQuestion = () => {
+    setCheckoutQuestions([...checkoutQuestions, { id: Date.now(), text: "", required: false }]);
+  };
+
+  const updateCheckoutQuestion = (id, field, value) => {
+    setCheckoutQuestions(checkoutQuestions.map(q => q.id === id ? { ...q, [field]: value } : q));
+  };
+
+  const removeCheckoutQuestion = (id) => {
+    setCheckoutQuestions(checkoutQuestions.filter(q => q.id !== id));
   };
 
   const handleImageUpload = async (e) => {
