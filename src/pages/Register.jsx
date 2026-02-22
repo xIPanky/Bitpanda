@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -42,7 +42,20 @@ export default function Register() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Hero */}
       <div className="relative overflow-hidden bg-slate-900 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent" />
+        {/* Cover image with overlay */}
+        {eventSettings.cover_image_url && (
+          <div className="absolute inset-0">
+            <img
+              src={eventSettings.cover_image_url}
+              alt="Cover"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/55" />
+          </div>
+        )}
+        {!eventSettings.cover_image_url && (
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent" />
+        )}
         <div className="relative max-w-3xl mx-auto px-6 py-16 md:py-24 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

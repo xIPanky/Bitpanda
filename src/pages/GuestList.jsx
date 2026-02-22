@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Table,
@@ -12,8 +12,26 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, XCircle, Ticket, Search, Users } from "lucide-react";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban } from "lucide-react";
+import { toast } from "sonner";
 
 const categoryColors = {
   VIP: "bg-amber-50 text-amber-700 border-amber-200",
@@ -24,13 +42,41 @@ const categoryColors = {
   Sponsor: "bg-pink-50 text-pink-700 border-pink-200",
 };
 
+const categories = ["VIP", "Business", "Presse", "Standard", "Speaker", "Sponsor"];
+
 export default function GuestList() {
   const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const queryClient = useQueryClient();
 
   const { data: tickets } = useQuery({
     queryKey: ["tickets"],
     queryFn: () => base44.entities.Ticket.list("-created_date"),
     initialData: [],
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Ticket.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      toast.success("Ticket gelöscht");
+      setDeleteTarget(null);
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (id) => base44.entities.Ticket.update(id, { status: "cancelled" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      toast.success("Ticket storniert");
+    },
+  });
+
+  const categoryMutation = useMutation({
+    mutationFn: ({ id, category }) => base44.entities.Ticket.update(id, { category }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    },
   });
 
   const filteredTickets = tickets.filter((t) => {
@@ -78,12 +124,13 @@ export default function GuestList() {
                   <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Code</TableHead>
                   <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategorie</TableHead>
                   <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredTickets.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-16 text-slate-400">
+                    <TableCell colSpan={6} className="text-center py-16 text-slate-400">
                       <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
                       <p>Keine Tickets gefunden</p>
                     </TableCell>
@@ -99,9 +146,21 @@ export default function GuestList() {
                         </code>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`${categoryColors[ticket.category] || categoryColors.Standard} border text-xs`}>
-                          {ticket.category}
-                        </Badge>
+                        <Select
+                          value={ticket.category || "Standard"}
+                          onValueChange={(val) => categoryMutation.mutate({ id: ticket.id, category: val })}
+                        >
+                          <SelectTrigger className="h-8 text-xs w-32 border-0 bg-transparent p-0 focus:ring-0">
+                            <Badge variant="outline" className={`${categoryColors[ticket.category] || categoryColors.Standard} border text-xs cursor-pointer`}>
+                              {ticket.category || "Standard"}
+                            </Badge>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((cat) => (
+                              <SelectItem key={cat} value={cat} className="text-sm">{cat}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>
                         {ticket.status === "used" ? (
@@ -121,6 +180,30 @@ export default function GuestList() {
                           </Badge>
                         )}
                       </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {ticket.status !== "cancelled" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                              onClick={() => cancelMutation.mutate(ticket.id)}
+                              title="Stornieren"
+                            >
+                              <Ban className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => setDeleteTarget(ticket)}
+                            title="Löschen"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -129,6 +212,26 @@ export default function GuestList() {
           </div>
         </motion.div>
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ticket löschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Das Ticket von <strong>{deleteTarget?.guest_name}</strong> wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteMutation.mutate(deleteTarget.id)}
+            >
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

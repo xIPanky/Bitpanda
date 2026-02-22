@@ -6,20 +6,21 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, Loader2, Settings as SettingsIcon, Plus, X } from "lucide-react";
+import { Save, Loader2, Settings as SettingsIcon, Plus, X, Upload, ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Settings() {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [form, setForm] = useState({
     event_name: "",
     event_subtitle: "",
     event_date: "",
     event_time: "",
     event_location: "",
-    custom_question_1: "",
-    custom_question_2: "",
+    cover_image_url: "",
+    custom_questions: [""],
     invitation_options: [],
     registration_open: true,
   });
@@ -40,8 +41,8 @@ export default function Settings() {
         event_date: existingSettings.event_date || "",
         event_time: existingSettings.event_time || "",
         event_location: existingSettings.event_location || "",
-        custom_question_1: existingSettings.custom_question_1 || "",
-        custom_question_2: existingSettings.custom_question_2 || "",
+        cover_image_url: existingSettings.cover_image_url || "",
+        custom_questions: existingSettings.custom_questions?.length ? existingSettings.custom_questions : [""],
         invitation_options: existingSettings.invitation_options || [],
         registration_open: existingSettings.registration_open !== false,
       });
@@ -50,10 +51,15 @@ export default function Settings() {
 
   const handleSave = async () => {
     setSaving(true);
+    // Remove empty questions before saving
+    const cleanedForm = {
+      ...form,
+      custom_questions: form.custom_questions.filter((q) => q.trim() !== ""),
+    };
     if (existingSettings) {
-      await base44.entities.EventSettings.update(existingSettings.id, form);
+      await base44.entities.EventSettings.update(existingSettings.id, cleanedForm);
     } else {
-      await base44.entities.EventSettings.create(form);
+      await base44.entities.EventSettings.create(cleanedForm);
     }
     queryClient.invalidateQueries({ queryKey: ["eventSettings"] });
     toast.success("Einstellungen gespeichert");
@@ -62,6 +68,32 @@ export default function Settings() {
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleQuestionChange = (idx, value) => {
+    const updated = [...form.custom_questions];
+    updated[idx] = value;
+    // Auto-add new empty field when last one is filled
+    if (idx === updated.length - 1 && value.trim() !== "") {
+      updated.push("");
+    }
+    setForm((prev) => ({ ...prev, custom_questions: updated }));
+  };
+
+  const removeQuestion = (idx) => {
+    const updated = form.custom_questions.filter((_, i) => i !== idx);
+    if (updated.length === 0) updated.push("");
+    setForm((prev) => ({ ...prev, custom_questions: updated }));
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    handleChange("cover_image_url", file_url);
+    setUploadingImage(false);
+    toast.success("Bild hochgeladen");
   };
 
   if (isLoading) {
@@ -140,6 +172,46 @@ export default function Settings() {
                     className="h-12 border-slate-200"
                   />
                 </div>
+
+                {/* Cover Image */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">Titelbild</Label>
+                  {form.cover_image_url ? (
+                    <div className="relative rounded-xl overflow-hidden border border-slate-200 h-40">
+                      <img
+                        src={form.cover_image_url}
+                        alt="Titelbild"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/30" />
+                      <button
+                        onClick={() => handleChange("cover_image_url", "")}
+                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <p className="absolute bottom-2 left-3 text-white text-xs opacity-70">Vorschau mit Abdunklung</p>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all">
+                      {uploadingImage ? (
+                        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                      ) : (
+                        <>
+                          <ImageIcon className="w-8 h-8 text-slate-300 mb-2" />
+                          <p className="text-sm text-slate-500">Bild hochladen</p>
+                          <p className="text-xs text-slate-400 mt-1">JPG, PNG, WEBP</p>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -147,28 +219,34 @@ export default function Settings() {
 
             {/* Custom Questions */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-5">
+              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-1">
                 Individuelle Fragen
               </h3>
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Frage 1</Label>
-                  <Input
-                    value={form.custom_question_1}
-                    onChange={(e) => handleChange("custom_question_1", e.target.value)}
-                    placeholder="z.B. Wie haben Sie von uns erfahren?"
-                    className="h-12 border-slate-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Frage 2</Label>
-                  <Input
-                    value={form.custom_question_2}
-                    onChange={(e) => handleChange("custom_question_2", e.target.value)}
-                    placeholder="z.B. Welche Themen interessieren Sie?"
-                    className="h-12 border-slate-200"
-                  />
-                </div>
+              <p className="text-xs text-slate-500 mb-5">
+                Neue Frage erscheint automatisch, wenn die letzte ausgefüllt wird.
+              </p>
+              <div className="space-y-2">
+                {form.custom_questions.map((q, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      value={q}
+                      onChange={(e) => handleQuestionChange(idx, e.target.value)}
+                      placeholder={`Frage ${idx + 1}`}
+                      className="h-10 border-slate-200 text-sm"
+                    />
+                    {form.custom_questions.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0"
+                        onClick={() => removeQuestion(idx)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -176,7 +254,7 @@ export default function Settings() {
 
             {/* Invitation Options */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-5">
+              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-1">
                 Einladende Personen (Dropdown)
               </h3>
               <p className="text-xs text-slate-500 mb-4">

@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 
 export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting, isSuccess }) {
+  const questions = eventSettings?.custom_questions?.filter((q) => q?.trim()) || [];
+
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -19,16 +21,26 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
     plus_one_name: "",
     plus_one_phone: "",
     plus_one_company: "",
-    plus_one_custom_answer_1: "",
-    plus_one_custom_answer_2: "",
+    plus_one_custom_answers: [],
     invited_by: "",
-    custom_answer_1: "",
-    custom_answer_2: "",
+    custom_answers: [],
     notes: "",
   });
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAnswerChange = (idx, value) => {
+    const updated = [...(form.custom_answers || [])];
+    updated[idx] = value;
+    handleChange("custom_answers", updated);
+  };
+
+  const handlePlusOneAnswerChange = (idx, value) => {
+    const updated = [...(form.plus_one_custom_answers || [])];
+    updated[idx] = value;
+    handleChange("plus_one_custom_answers", updated);
   };
 
   const handleSubmit = (e) => {
@@ -138,33 +150,18 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
         </div>
       )}
 
-      {/* Custom Questions */}
-      {eventSettings?.custom_question_1 && (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-slate-700">
-            {eventSettings.custom_question_1}
-          </Label>
+      {/* Dynamic Custom Questions */}
+      {questions.map((question, idx) => (
+        <div key={idx} className="space-y-2">
+          <Label className="text-sm font-medium text-slate-700">{question}</Label>
           <Textarea
-            value={form.custom_answer_1}
-            onChange={(e) => handleChange("custom_answer_1", e.target.value)}
+            value={form.custom_answers?.[idx] || ""}
+            onChange={(e) => handleAnswerChange(idx, e.target.value)}
             className="min-h-[80px] border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
             placeholder="Ihre Antwort..."
           />
         </div>
-      )}
-      {eventSettings?.custom_question_2 && (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-slate-700">
-            {eventSettings.custom_question_2}
-          </Label>
-          <Textarea
-            value={form.custom_answer_2}
-            onChange={(e) => handleChange("custom_answer_2", e.target.value)}
-            className="min-h-[80px] border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
-            placeholder="Ihre Antwort..."
-          />
-        </div>
-      )}
+      ))}
 
       {/* Plus One */}
       <div className="space-y-4">
@@ -219,32 +216,17 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
               />
             </div>
 
-            {eventSettings?.custom_question_1 && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">
-                  {eventSettings.custom_question_1}
-                </Label>
+            {questions.map((question, idx) => (
+              <div key={idx} className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">{question}</Label>
                 <Textarea
-                  value={form.plus_one_custom_answer_1}
-                  onChange={(e) => handleChange("plus_one_custom_answer_1", e.target.value)}
+                  value={form.plus_one_custom_answers?.[idx] || ""}
+                  onChange={(e) => handlePlusOneAnswerChange(idx, e.target.value)}
                   className="min-h-[80px] border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
                   placeholder="Antwort der Begleitperson..."
                 />
               </div>
-            )}
-            {eventSettings?.custom_question_2 && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-slate-700">
-                  {eventSettings.custom_question_2}
-                </Label>
-                <Textarea
-                  value={form.plus_one_custom_answer_2}
-                  onChange={(e) => handleChange("plus_one_custom_answer_2", e.target.value)}
-                  className="min-h-[80px] border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
-                  placeholder="Antwort der Begleitperson..."
-                />
-              </div>
-            )}
+            ))}
           </motion.div>
         )}
       </div>
