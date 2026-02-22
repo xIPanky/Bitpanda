@@ -55,6 +55,7 @@ import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import Marketing from './pages/Marketing';
 import Home from './pages/Home';
+import Landing from './pages/Landing';
 import __Layout from './Layout.jsx';
 
 
@@ -67,6 +68,7 @@ export const PAGES = {
     "Ticket": Ticket,
     "Marketing": Marketing,
     "Home": Home,
+    "Landing": Landing,
 }
 
 export const pagesConfig = {
