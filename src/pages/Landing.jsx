@@ -18,24 +18,7 @@ const features = [
 ];
 
 export default function Landing() {
-  const [form, setForm] = useState({ email: "", full_name: "" });
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
 
-  const handleRequest = async (e) => {
-    e.preventDefault();
-    if (!form.email || !form.full_name) return;
-    setSending(true);
-    try {
-      // Invite the organizer with Magic Link
-      await base44.users.inviteUser(form.email, "user");
-      setSent(true);
-      toast.success("Magic Link wurde per Email gesendet!");
-    } catch (error) {
-      toast.error("Fehler beim Versenden des Links");
-    }
-    setSending(false);
-  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
