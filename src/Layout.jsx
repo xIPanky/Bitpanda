@@ -37,6 +37,7 @@ export default function Layout({ children, currentPageName }) {
 
   const topNavItems = [
     { name: "Meine Events", page: "Home", icon: CalendarDays },
+    { name: "Gästedaten", page: "GuestData", icon: ClipboardList },
   ];
 
   if (publicPages.includes(currentPageName)) {
