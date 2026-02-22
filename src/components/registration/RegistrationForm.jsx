@@ -118,6 +118,26 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
         />
       </div>
 
+      {/* Invited By */}
+      {eventSettings?.invitation_options?.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-slate-700">Wer hat Sie eingeladen?</Label>
+          <Select
+            value={form.invited_by}
+            onValueChange={(val) => handleChange("invited_by", val)}
+          >
+            <SelectTrigger className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20">
+              <SelectValue placeholder="Bitte auswählen..." />
+            </SelectTrigger>
+            <SelectContent>
+              {eventSettings.invitation_options.map((option) => (
+                <SelectItem key={option} value={option}>{option}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* Custom Questions */}
       {eventSettings?.custom_question_1 && (
         <div className="space-y-2">
