@@ -56,6 +56,14 @@ export default function RegistrationTable({
   };
 
   return (
+    <>
+    {editTarget && (
+      <EditRegistrationDialog
+        registration={editTarget}
+        onSave={handleSave}
+        onClose={() => setEditTarget(null)}
+      />
+    )}
     <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
       {/* Filters */}
       <div className="p-5 border-b border-slate-100 flex flex-wrap items-center gap-3">
