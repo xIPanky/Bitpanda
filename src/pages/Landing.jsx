@@ -21,7 +21,7 @@ export default function Landing() {
           <Button
             variant="outline"
             className="border-white/20 text-white hover:bg-white/10 bg-transparent"
-            onClick={() => base44.auth.redirectToLogin()}
+            onClick={() => base44.auth.redirectToLogin(createPageUrl("Home"))}
           >
             Anmelden
           </Button>
