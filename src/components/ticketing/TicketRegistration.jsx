@@ -72,6 +72,19 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         tier_price: tier.price || 0,
       });
 
+      // Send email with ticket
+      try {
+        const ticketPdfUrl = `${window.location.origin}/ticket-${ticketCode}.pdf`;
+        await base44.integrations.Core.SendEmail({
+          to: form.email,
+          subject: `Dein Ticket: ${event.name}`,
+          body: `Hallo ${form.first_name},\n\nVielen Dank für deine Registrierung zu ${event.name}!\n\nDein Ticketcode: ${ticketCode}\n\nWeitere Informationen zur Veranstaltung findest du auf unserer Website.\n\nBis bald!\n\nBeste Grüße`
+        });
+        toast.success("Bestätigungsmail versendet");
+      } catch (emailErr) {
+        console.error("Email error:", emailErr);
+      }
+
       base44.analytics.track({
         eventName: "ticket_purchased",
         properties: {
