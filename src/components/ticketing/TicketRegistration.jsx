@@ -36,6 +36,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
     phone: "",
     custom_answers: parsedQuestions.map(() => ""),
     invited_by: "",
+    company: "",
   });
   const [hasPlusOne, setHasPlusOne] = useState(false);
   const [plusOne, setPlusOne] = useState({
@@ -100,6 +101,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           last_name: form.last_name,
           email: form.email,
           phone: form.phone || "",
+          company: form.company || "",
           custom_answers: form.custom_answers,
           invited_by: form.invited_by || "",
           category: tier?.color || "Standard",
@@ -237,17 +239,27 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
 
         <div>
-          <Label htmlFor="phone" className="text-slate-700 font-medium">Telefonnummer</Label>
-          <Input
-            id="phone"
-            type="tel"
-            value={form.phone}
-            onChange={(e) => handleChange("phone", e.target.value)}
-            className="mt-1"
-          />
-        </div>
+           <Label htmlFor="phone" className="text-slate-700 font-medium">Telefonnummer</Label>
+           <Input
+             id="phone"
+             type="tel"
+             value={form.phone}
+             onChange={(e) => handleChange("phone", e.target.value)}
+             className="mt-1"
+           />
+         </div>
 
-        {event.invitation_options && event.invitation_options.length > 0 && (
+         <div>
+           <Label htmlFor="company" className="text-slate-700 font-medium">Unternehmen</Label>
+           <Input
+             id="company"
+             value={form.company}
+             onChange={(e) => handleChange("company", e.target.value)}
+             className="mt-1"
+           />
+         </div>
+
+         {event.invitation_options && event.invitation_options.length > 0 && (
           <div>
             <Label htmlFor="invited_by" className="text-slate-700 font-medium">Wie hast du von dieser Veranstaltung erfahren?</Label>
             <select
