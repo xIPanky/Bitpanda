@@ -7,6 +7,7 @@ import RegistrationTable from "../components/admin/RegistrationTable";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft } from "lucide-react";
+import React from "react";
 
 function generateTicketCode() {
   const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
