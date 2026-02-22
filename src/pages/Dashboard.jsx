@@ -5,13 +5,13 @@ import { toast } from "sonner";
 import StatsOverview from "../components/admin/StatsOverview";
 import RegistrationTable from "../components/admin/RegistrationTable";
 
+// 3 random letters repeated for fast scanning recognition
 function generateTicketCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "TKT-";
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const pick = () => letters.charAt(Math.floor(Math.random() * letters.length));
+  const a = pick(), b = pick(), c = pick();
+  const suffix = Math.floor(100 + Math.random() * 900);
+  return `${a}${b}${c}-${suffix}`;
 }
 
 export default function Dashboard() {
