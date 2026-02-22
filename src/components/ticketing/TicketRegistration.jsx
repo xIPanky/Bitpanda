@@ -123,17 +123,16 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
       }
 
       base44.analytics.track({
-        eventName: "ticket_purchased",
+        eventName: "registration_submitted",
         properties: {
           event_id: event.id,
           tier_id: tier?.id,
           tier_name: tier?.name,
-          price: tier?.price || 0,
           has_plus_one: hasPlusOne,
         }
       });
 
-      onComplete({ ...registration, ticket_code: ticketCode });
+      onComplete(registration);
     } catch (err) {
       console.error(err);
       setError("Es gab einen Fehler bei der Registrierung. Bitte versuche es später erneut.");
