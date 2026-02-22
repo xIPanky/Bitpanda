@@ -149,7 +149,12 @@ export default function GuestData() {
                   ) : (
                     filtered.map((reg) => (
                       <TableRow key={reg.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                        <TableCell className="font-medium text-slate-900 whitespace-nowrap">
+                       {!eventId && (
+                         <TableCell className="text-sm text-slate-500 whitespace-nowrap">
+                           {eventMap[reg.event_id] || <span className="text-slate-300">—</span>}
+                         </TableCell>
+                       )}
+                       <TableCell className="font-medium text-slate-900 whitespace-nowrap">
                           {reg.first_name} {reg.last_name}
                           {reg.plus_one && (
                             <span className="ml-2 text-xs text-slate-400">(+1{reg.plus_one_name ? `: ${reg.plus_one_name}` : ""})</span>
