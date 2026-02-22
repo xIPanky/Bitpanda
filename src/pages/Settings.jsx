@@ -181,20 +181,55 @@ export default function Settings() {
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-slate-700">Titelbild</Label>
                   {form.cover_image_url ? (
-                    <div className="relative rounded-xl overflow-hidden border border-slate-200 h-40">
-                      <img
-                        src={form.cover_image_url}
-                        alt="Titelbild"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/30" />
-                      <button
-                        onClick={() => handleChange("cover_image_url", "")}
-                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+                    <div className="space-y-1">
+                      <div
+                        ref={imageRef}
+                        className="relative rounded-xl overflow-hidden border border-slate-200 h-48 cursor-crosshair select-none"
+                        onMouseDown={(e) => {
+                          setIsDragging(true);
+                          const rect = imageRef.current.getBoundingClientRect();
+                          const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                          const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+                          handleChange("cover_image_position", `${x}% ${y}%`);
+                        }}
+                        onMouseMove={(e) => {
+                          if (!isDragging) return;
+                          const rect = imageRef.current.getBoundingClientRect();
+                          const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                          const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+                          handleChange("cover_image_position", `${x}% ${y}%`);
+                        }}
+                        onMouseUp={() => setIsDragging(false)}
+                        onMouseLeave={() => setIsDragging(false)}
                       >
-                        <X className="w-4 h-4" />
-                      </button>
-                      <p className="absolute bottom-2 left-3 text-white text-xs opacity-70">Vorschau mit Abdunklung</p>
+                        <img
+                          src={form.cover_image_url}
+                          alt="Titelbild"
+                          className="w-full h-full object-cover pointer-events-none"
+                          style={{ objectPosition: form.cover_image_position || "50% 50%" }}
+                          draggable={false}
+                        />
+                        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+                        {/* Focus crosshair */}
+                        {(() => {
+                          const [px, py] = (form.cover_image_position || "50% 50%").split(" ").map(v => parseFloat(v));
+                          return (
+                            <div
+                              className="absolute w-5 h-5 pointer-events-none"
+                              style={{ left: `calc(${px}% - 10px)`, top: `calc(${py}% - 10px)` }}
+                            >
+                              <div className="w-full h-full rounded-full border-2 border-white shadow-lg bg-white/30" />
+                            </div>
+                          );
+                        })()}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleChange("cover_image_url", ""); }}
+                          className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 pointer-events-auto"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-400">Klicken oder ziehen, um den Bildausschnitt zu verschieben</p>
                     </div>
                   ) : (
                     <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all">
