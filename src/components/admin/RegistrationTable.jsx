@@ -232,5 +232,6 @@ export default function RegistrationTable({
         </Table>
       </div>
     </div>
+    </>
   );
 }
