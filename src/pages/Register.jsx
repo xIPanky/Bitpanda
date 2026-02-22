@@ -53,9 +53,14 @@ export default function Register() {
               <CalendarDays className="w-4 h-4" />
               <span>Einladung zur Veranstaltung</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">
               {eventSettings.event_name || "Veranstaltung"}
             </h1>
+            {eventSettings.event_subtitle && (
+              <p className="text-lg text-slate-300 font-light">
+                {eventSettings.event_subtitle}
+              </p>
+            )}
             <div className="flex flex-wrap items-center justify-center gap-6 text-slate-300 text-sm mt-6">
               {eventSettings.event_date && (
                 <div className="flex items-center gap-2">

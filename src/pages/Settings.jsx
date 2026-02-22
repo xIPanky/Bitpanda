@@ -14,6 +14,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     event_name: "",
+    event_subtitle: "",
     event_date: "",
     event_time: "",
     event_location: "",
