@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, Loader2, Settings as SettingsIcon } from "lucide-react";
+import { Save, Loader2, Settings as SettingsIcon, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Settings() {
@@ -20,6 +20,7 @@ export default function Settings() {
     event_location: "",
     custom_question_1: "",
     custom_question_2: "",
+    invitation_options: [],
     registration_open: true,
   });
 
@@ -41,6 +42,7 @@ export default function Settings() {
         event_location: existingSettings.event_location || "",
         custom_question_1: existingSettings.custom_question_1 || "",
         custom_question_2: existingSettings.custom_question_2 || "",
+        invitation_options: existingSettings.invitation_options || [],
         registration_open: existingSettings.registration_open !== false,
       });
     }
