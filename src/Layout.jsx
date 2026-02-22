@@ -11,25 +11,35 @@ import {
   X,
   Ticket,
   Megaphone,
+  CalendarDays,
+  ChevronRight,
 } from "lucide-react";
-
-const navItems = [
-  { name: "Dashboard", page: "Dashboard", icon: LayoutDashboard },
-  { name: "Gästeliste", page: "GuestList", icon: Users },
-  { name: "Scanner", page: "Scanner", icon: ScanLine },
-  { name: "Marketing", page: "Marketing", icon: Megaphone },
-  { name: "Einstellungen", page: "Settings", icon: Settings },
-];
 
 const publicPages = ["Register", "Ticket"];
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Public pages: no nav
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("event_id");
+
+  const eventNavItems = eventId ? [
+    { name: "Dashboard", page: `Dashboard?event_id=${eventId}`, icon: LayoutDashboard },
+    { name: "Gästeliste", page: `GuestList?event_id=${eventId}`, icon: Users },
+    { name: "Scanner", page: `Scanner?event_id=${eventId}`, icon: ScanLine },
+    { name: "Marketing", page: `Marketing?event_id=${eventId}`, icon: Megaphone },
+    { name: "Einstellungen", page: `Settings?event_id=${eventId}`, icon: Settings },
+  ] : [];
+
+  const topNavItems = [
+    { name: "Meine Events", page: "Home", icon: CalendarDays },
+  ];
+
   if (publicPages.includes(currentPageName)) {
     return <>{children}</>;
   }
+
+  const currentBase = currentPageName;
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex">
@@ -42,22 +52,22 @@ export default function Layout({ children, currentPageName }) {
             </div>
             <div>
               <p className="text-sm font-bold text-slate-900 tracking-tight">Ticket Manager</p>
-              <p className="text-xs text-slate-400">Gästeverwaltung</p>
+              <p className="text-xs text-slate-400">Veranstaltungsplattform</p>
             </div>
           </div>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
+
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {/* Top nav */}
+          {topNavItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPageName === item.page;
+            const isActive = currentBase === item.page;
             return (
               <Link
                 key={item.page}
                 to={createPageUrl(item.page)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 ${
-                  isActive
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  isActive ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? "text-amber-400" : ""}`} />
@@ -65,17 +75,49 @@ export default function Layout({ children, currentPageName }) {
               </Link>
             );
           })}
+
+          {/* Event sub-nav */}
+          {eventNavItems.length > 0 && (
+            <>
+              <div className="pt-4 pb-1">
+                <div className="flex items-center gap-1 px-4">
+                  <ChevronRight className="w-3 h-3 text-slate-400" />
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Event</p>
+                </div>
+              </div>
+              {eventNavItems.map((item) => {
+                const Icon = item.icon;
+                const basePage = item.page.split("?")[0];
+                const isActive = currentBase === basePage;
+                return (
+                  <Link
+                    key={item.page}
+                    to={createPageUrl(item.page)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 ${
+                      isActive ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${isActive ? "text-amber-400" : ""}`} />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </>
+          )}
         </nav>
-        <div className="p-4 border-t border-slate-100">
-          <Link
-            to={createPageUrl("Register")}
-            target="_blank"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-50 transition-all"
-          >
-            <ClipboardList className="w-5 h-5" />
-            Registrierungsseite
-          </Link>
-        </div>
+
+        {eventId && (
+          <div className="p-4 border-t border-slate-100">
+            <Link
+              to={createPageUrl(`Register?event_id=${eventId}`)}
+              target="_blank"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-50 transition-all"
+            >
+              <ClipboardList className="w-5 h-5" />
+              Registrierungsseite
+            </Link>
+          </div>
+        )}
       </aside>
 
       {/* Mobile Header */}
@@ -95,20 +137,24 @@ export default function Layout({ children, currentPageName }) {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-30 bg-black/20 backdrop-blur-sm" onClick={() => setMobileOpen(false)}>
           <div className="bg-white w-72 h-full shadow-xl p-4 pt-20 space-y-1" onClick={(e) => e.stopPropagation()}>
-            {navItems.map((item) => {
+            {topNavItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentPageName === item.page;
+              const isActive = currentBase === item.page;
               return (
-                <Link
-                  key={item.page}
-                  to={createPageUrl(item.page)}
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
+                <Link key={item.page} to={createPageUrl(item.page)} onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
+                  <Icon className={`w-5 h-5 ${isActive ? "text-amber-400" : ""}`} />
+                  {item.name}
+                </Link>
+              );
+            })}
+            {eventNavItems.map((item) => {
+              const Icon = item.icon;
+              const basePage = item.page.split("?")[0];
+              const isActive = currentBase === basePage;
+              return (
+                <Link key={item.page} to={createPageUrl(item.page)} onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"}`}>
                   <Icon className={`w-5 h-5 ${isActive ? "text-amber-400" : ""}`} />
                   {item.name}
                 </Link>
