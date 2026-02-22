@@ -146,8 +146,9 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
       {/* Invited By */}
       {eventSettings?.invitation_options?.length > 0 && (
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-slate-700">Wer hat Sie eingeladen?</Label>
+          <Label className="text-sm font-medium text-slate-700">Wer hat Sie eingeladen? *</Label>
           <Select
+            required
             value={form.invited_by}
             onValueChange={(val) => handleChange("invited_by", val)}
           >
