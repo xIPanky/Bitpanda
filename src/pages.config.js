@@ -59,6 +59,7 @@ import Register from './pages/Register';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
+import EventDetails from './pages/EventDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -75,6 +76,7 @@ export const PAGES = {
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
+    "EventDetails": EventDetails,
 }
 
 export const pagesConfig = {
