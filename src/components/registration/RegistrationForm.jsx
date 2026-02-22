@@ -70,11 +70,11 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
           <CheckCircle2 className="w-10 h-10 text-emerald-500" />
         </div>
         <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-          Registrierung erfolgreich!
+          Anmeldung eingegangen!
         </h2>
         <p className="text-slate-500 max-w-md mx-auto leading-relaxed">
-          Vielen Dank für Ihre Anmeldung. Sie erhalten eine E-Mail, sobald Ihre
-          Registrierung freigegeben wurde.
+          Vielen Dank für Ihre Anmeldung. Ihre Registrierung wird nun geprüft.
+          Nach erfolgreicher Prüfung erhalten Sie Ihr Ticket automatisch per E-Mail.
         </p>
       </motion.div>
     );
