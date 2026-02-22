@@ -119,6 +119,12 @@ export default function EventInfo() {
     for (let i = 0; i < tiers.length; i++) {
       const tier = { ...tiers[i], event_id: eventId, sort_order: i };
       delete tier._new;
+      // Ensure capacity is a number or undefined (not empty string)
+      if (tier.capacity === "" || tier.capacity === null) {
+        delete tier.capacity;
+      } else {
+        tier.capacity = Number(tier.capacity);
+      }
       if (tier.id) {
         await base44.entities.TicketTier.update(tier.id, tier);
       } else {
