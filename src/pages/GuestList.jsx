@@ -236,33 +236,122 @@ export default function GuestList() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-2 border-b border-slate-200 bg-white rounded-t-2xl px-6">
+          <button
+            onClick={() => setActiveTab("registrations")}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "registrations"
+                ? "border-slate-900 text-slate-900"
+                : "border-transparent text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Registrierungen ({registrations.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("tickets")}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "tickets"
+                ? "border-slate-900 text-slate-900"
+                : "border-transparent text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Tickets ({tickets.length})
+          </button>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl border border-slate-100 overflow-hidden"
+          className="bg-white border border-slate-100 border-t-0 overflow-hidden rounded-b-2xl"
         >
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gast</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-Mail</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Code</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategorie</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktionen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTickets.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-16 text-slate-400">
-                      <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                      <p>Keine Tickets gefunden</p>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredTickets.map((ticket) => (
+              {activeTab === "registrations" ? (
+                <>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/50">
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-Mail</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategorie</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktionen</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRegistrations.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-16 text-slate-400">
+                          <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                          <p>Keine Registrierungen gefunden</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredRegistrations.map((registration) => (
+                        <TableRow key={registration.id} className="border-b border-slate-50 hover:bg-slate-50/50">
+                          <TableCell className="font-medium text-slate-900">{registration.first_name} {registration.last_name}</TableCell>
+                          <TableCell className="text-sm text-slate-600">{registration.email}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={categoryColors[registration.category] || categoryColors.Standard}>
+                              {registration.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusLabels[registration.status]?.color || "bg-slate-50 text-slate-600"}>
+                              {statusLabels[registration.status]?.label || registration.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              {registration.status === "pending" && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                    onClick={() => approveMutation.mutate(registration.id)}
+                                  >
+                                    <CheckCheck className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                    onClick={() => rejectMutation.mutate(registration.id)}
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </>
+              ) : (
+                <>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/50">
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gast</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-Mail</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Code</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategorie</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktionen</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTickets.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-16 text-slate-400">
+                          <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                          <p>Keine Tickets gefunden</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredTickets.map((ticket) => (
                     <TableRow key={ticket.id} className="border-b border-slate-50 hover:bg-slate-50/50">
                       <TableCell className="font-medium text-slate-900">{ticket.guest_name}</TableCell>
                       <TableCell className="text-sm text-slate-600">{ticket.guest_email}</TableCell>
