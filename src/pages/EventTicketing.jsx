@@ -85,11 +85,12 @@ export default function EventTicketing() {
   };
 
   const handleRegistrationComplete = (data) => {
-    setRegistrationData(data);
     base44.analytics.track({
       eventName: "registration_completed",
-      properties: { event_id: eventId, tier_id: selectedTicketTier.id }
+      properties: { event_id: eventId, tier_id: selectedTicketTier?.id }
     });
+    // Redirect to success page
+    window.location.href = createPageUrl(`RegistrationSuccess?event_id=${eventId}`);
   };
 
   const handleRegistrationAbandoned = (reason) => {

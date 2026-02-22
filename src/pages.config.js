@@ -63,6 +63,7 @@ import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
+import RegistrationSuccess from './pages/RegistrationSuccess';
 import __Layout from './Layout.jsx';
 
 
@@ -83,6 +84,7 @@ export const PAGES = {
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
+    "RegistrationSuccess": RegistrationSuccess,
 }
 
 export const pagesConfig = {
