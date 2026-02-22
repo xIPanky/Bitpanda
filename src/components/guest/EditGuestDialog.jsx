@@ -37,29 +37,40 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
       
       // Create ticket and send email if approving
       if (wasApproved) {
-        const event = await base44.entities.Event.filter({ id: form.event_id });
-        const ticketCode = `${form.first_name[0]?.toUpperCase()}${form.last_name[0]?.toUpperCase()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-        
-        await base44.entities.Ticket.create({
-          event_id: form.event_id,
-          registration_id: guest.id,
-          ticket_tier_id: form.ticket_tier_id,
-          ticket_code: ticketCode,
-          guest_name: `${form.first_name} ${form.last_name}`,
-          guest_email: form.email,
-          category: form.category,
-          status: "valid",
-          email_sent: false,
-        });
-        
-        // Send confirmation email
-        await base44.integrations.Core.SendEmail({
-          to: form.email,
-          subject: `Ihre Anmeldung für ${event?.[0]?.name} wurde bestätigt`,
-          body: `Hallo ${form.first_name},\n\nvielen Dank für deine Anmeldung! Deine Registrierung wurde bestätigt. Dein Ticket-Code: ${ticketCode}\n\nBest regards,\nDein Event Team`,
-        });
-        
-        toast.success("Gast genehmigt und Ticket erstellt");
+        try {
+          // Fetch event data
+          const events = await base44.entities.Event.filter({ id: form.event_id });
+          const event = events?.[0];
+          const eventName = event?.name || "Event";
+          
+          // Generate ticket code
+          const ticketCode = `${form.first_name[0]?.toUpperCase()}${form.last_name[0]?.toUpperCase()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+          
+          // Create ticket
+          await base44.entities.Ticket.create({
+            event_id: form.event_id,
+            registration_id: guest.id,
+            ticket_tier_id: form.ticket_tier_id || "",
+            ticket_code: ticketCode,
+            guest_name: `${form.first_name} ${form.last_name}`,
+            guest_email: form.email,
+            category: form.category,
+            status: "valid",
+            email_sent: false,
+          });
+          
+          // Send confirmation email
+          await base44.integrations.Core.SendEmail({
+            to: form.email,
+            subject: `Deine Anmeldung für ${eventName} wurde bestätigt`,
+            body: `Hallo ${form.first_name},\n\nvielen Dank für deine Anmeldung! Deine Registrierung für ${eventName} wurde genehmigt.\n\nDein Ticket-Code: ${ticketCode}\n\nBeste Grüße,\nDein Event Team`,
+          });
+          
+          toast.success("Gast genehmigt und Ticket erstellt");
+        } catch (ticketErr) {
+          console.error("Fehler beim Erstellen des Tickets:", ticketErr);
+          toast.success("Gast genehmigt (Ticket-Erstellung fehlgeschlagen)");
+        }
       } else {
         toast.success("Gast aktualisiert");
       }
