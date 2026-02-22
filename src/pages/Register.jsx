@@ -50,8 +50,8 @@ export default function Register() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900 mb-3">Ungültiger Link</h1>
-          <p className="text-slate-500">Dieser Registrierungslink ist nicht gültig. Bitte verwenden Sie den Link aus Ihrer Einladung.</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-3">Willkommen</h1>
+          <p className="text-slate-500">Bitte nutzen Sie den Registrierungslink aus Ihrer Einladung.</p>
         </div>
       </div>
     );
