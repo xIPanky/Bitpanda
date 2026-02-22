@@ -92,35 +92,63 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           }
         }
 
-      // Create registration (status: pending - no ticket created yet)
+      // Create registration
        const registration = await base44.entities.Registration.create({
-         event_id: event.id,
-         ticket_tier_id: tier?.id || "",
-         first_name: form.first_name,
-         last_name: form.last_name,
-         email: form.email,
-         phone: form.phone || "",
-         custom_answers: form.custom_answers,
-         invited_by: form.invited_by || "",
-         category: tier?.color || "Standard",
-         status: "pending",
-       });
-
-      // Create plus one registration if enabled (no tickets created yet)
-      if (hasPlusOne) {
-        await base44.entities.Registration.create({
           event_id: event.id,
           ticket_tier_id: tier?.id || "",
-          first_name: plusOne.first_name,
-          last_name: plusOne.last_name,
-          email: plusOne.email,
-          company: plusOne.company || "",
+          first_name: form.first_name,
+          last_name: form.last_name,
+          email: form.email,
+          phone: form.phone || "",
           custom_answers: form.custom_answers,
           invited_by: form.invited_by || "",
           category: tier?.color || "Standard",
           status: "pending",
         });
-      }
+
+        // Create ticket immediately
+        const ticketCode = `${form.first_name[0]?.toUpperCase()}${form.last_name[0]?.toUpperCase()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        await base44.entities.Ticket.create({
+          event_id: event.id,
+          registration_id: registration.id,
+          ticket_tier_id: tier?.id || "",
+          ticket_code: ticketCode,
+          guest_name: `${form.first_name} ${form.last_name}`,
+          guest_email: form.email,
+          category: tier?.color || "Standard",
+          status: "valid",
+          email_sent: false,
+        });
+
+       // Create plus one registration if enabled
+       if (hasPlusOne) {
+         const plusOneReg = await base44.entities.Registration.create({
+           event_id: event.id,
+           ticket_tier_id: tier?.id || "",
+           first_name: plusOne.first_name,
+           last_name: plusOne.last_name,
+           email: plusOne.email,
+           company: plusOne.company || "",
+           custom_answers: form.custom_answers,
+           invited_by: form.invited_by || "",
+           category: tier?.color || "Standard",
+           status: "pending",
+         });
+
+         // Create ticket for plus one
+         const plusOneTicketCode = `${plusOne.first_name[0]?.toUpperCase()}${plusOne.last_name[0]?.toUpperCase()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+         await base44.entities.Ticket.create({
+           event_id: event.id,
+           registration_id: plusOneReg.id,
+           ticket_tier_id: tier?.id || "",
+           ticket_code: plusOneTicketCode,
+           guest_name: `${plusOne.first_name} ${plusOne.last_name}`,
+           guest_email: plusOne.email,
+           category: tier?.color || "Standard",
+           status: "valid",
+           email_sent: false,
+         });
+       }
 
       base44.analytics.track({
         eventName: "registration_submitted",
