@@ -89,14 +89,10 @@ export default function EventTicketing() {
       eventName: "registration_completed",
       properties: { event_id: eventId, tier_id: selectedTicketTier?.id }
     });
-    // Redirect to success page with event details for calendar/PDF features
+    // Redirect to success page - only shows pending message, no ticket features yet
     const params = new URLSearchParams({
       event_id: eventId,
-      ticket_code: data.ticket_code || "",
-      email: data.email || "",
-      event_date: event?.date || "",
-      event_time: event?.time || "",
-      event_location: event?.location || "",
+      registration_id: data.id,
     });
     window.location.href = createPageUrl(`RegistrationSuccess?${params.toString()}`);
   };
