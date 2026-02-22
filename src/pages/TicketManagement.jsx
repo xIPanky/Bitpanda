@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, Loader2, Euro, Tag, Plus, Trash2, ChevronLeft } from "lucide-react";
+import { Save, Loader2, Euro, Tag, Plus, Trash2, ChevronLeft, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -15,11 +15,14 @@ export default function TicketManagement() {
   const queryClient = useQueryClient();
   const [savingTiers, setSavingTiers] = useState(false);
   const [savingTiersOk, setSavingTiersOk] = useState(false);
+  const [savingCheckout, setSavingCheckout] = useState(false);
+  const [activeTab, setActiveTab] = useState("tiers");
 
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
 
   const [tiers, setTiers] = useState([]);
+  const [checkoutQuestions, setCheckoutQuestions] = useState([]);
 
   const { data: eventArr, isLoading: eventLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -41,6 +44,16 @@ export default function TicketManagement() {
       setTiers(existingTiers);
     }
   }, [existingTiers]);
+
+  React.useEffect(() => {
+    if (event?.custom_questions) {
+      setCheckoutQuestions(event.custom_questions.map((q, idx) => ({
+        id: idx,
+        text: q,
+        required: false
+      })));
+    }
+  }, [event]);
 
   const handleTierChange = (index, field, value) => {
     const updatedTiers = [...tiers];
@@ -101,6 +114,51 @@ export default function TicketManagement() {
     }
   };
 
+  const addCheckoutQuestion = () => {
+    setCheckoutQuestions([...checkoutQuestions, { id: Date.now(), text: "", required: false, type: "text", options: [] }]);
+  };
+
+  const updateCheckoutQuestion = (id, field, value) => {
+    setCheckoutQuestions(checkoutQuestions.map(q => q.id === id ? { ...q, [field]: value } : q));
+  };
+
+  const removeCheckoutQuestion = (id) => {
+    setCheckoutQuestions(checkoutQuestions.filter(q => q.id !== id));
+  };
+
+  const addCheckoutOption = (questionId) => {
+    setCheckoutQuestions(checkoutQuestions.map(q => 
+      q.id === questionId ? { ...q, options: [...(q.options || []), ""] } : q
+    ));
+  };
+
+  const updateCheckoutOption = (questionId, optionIdx, value) => {
+    setCheckoutQuestions(checkoutQuestions.map(q => 
+      q.id === questionId ? { ...q, options: q.options.map((opt, i) => i === optionIdx ? value : opt) } : q
+    ));
+  };
+
+  const removeCheckoutOption = (questionId, optionIdx) => {
+    setCheckoutQuestions(checkoutQuestions.map(q => 
+      q.id === questionId ? { ...q, options: q.options.filter((_, i) => i !== optionIdx) } : q
+    ));
+  };
+
+  const handleSaveCheckout = async () => {
+    setSavingCheckout(true);
+    await base44.entities.Event.update(event.id, {
+      custom_questions: checkoutQuestions.map(q => {
+        if (q.type === "dropdown") {
+          return `${q.text}||dropdown||${(q.options || []).join("~")}`;
+        }
+        return q.text;
+      })
+    });
+    queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+    setSavingCheckout(false);
+    toast.success("Custom Checkout gespeichert");
+  };
+
   if (!eventId) {
     return <div className="p-6 text-center text-slate-500">Event nicht gefunden.</div>;
   }
@@ -124,9 +182,32 @@ export default function TicketManagement() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="flex gap-2 border-b border-slate-200 bg-white rounded-t-2xl px-6 mb-6">
+          <button
+            onClick={() => setActiveTab("tiers")}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "tiers" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Ticketstufen
+          </button>
+          <button
+            onClick={() => setActiveTab("checkout")}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "checkout" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Custom Checkout
+          </button>
+        </div>
+      </div>
+
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          {activeTab === "tiers" && (
           <div className="bg-white rounded-lg border border-slate-200 p-8">
             <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
               <Tag className="w-5 h-5 text-amber-500" />
@@ -246,6 +327,106 @@ export default function TicketManagement() {
               )}
             </div>
           </div>
+          )}
+
+          {activeTab === "checkout" && (
+          <div className="bg-white rounded-lg border border-slate-200 p-8 space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 mb-1">Custom Checkout Fragen</h2>
+                <p className="text-xs text-slate-500">Individuelle Fragen die Gäste beim Checkout beantworten müssen.</p>
+              </div>
+              <Button size="sm" onClick={addCheckoutQuestion} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Frage hinzufügen
+              </Button>
+            </div>
+
+            <div className="space-y-3 border-t border-slate-200 pt-5">
+              {checkoutQuestions.map((question) => (
+                <div key={question.id} className="border border-slate-200 rounded-lg p-4 space-y-3">
+                  <div className="flex gap-3 items-start">
+                    <div className="flex-1">
+                      <Label className="text-xs">Frage</Label>
+                      <Input 
+                        value={question.text} 
+                        onChange={(e) => updateCheckoutQuestion(question.id, "text", e.target.value)} 
+                        placeholder="z.B. Diätische Anforderungen?" 
+                        className="mt-1 h-9 text-sm" 
+                      />
+                    </div>
+                    <div className="w-32">
+                      <Label className="text-xs">Typ</Label>
+                      <select 
+                        value={question.type || "text"} 
+                        onChange={(e) => updateCheckoutQuestion(question.id, "type", e.target.value)} 
+                        className="mt-1 w-full h-9 rounded-md border border-slate-200 text-sm px-2"
+                      >
+                        <option value="text">Textfeld</option>
+                        <option value="dropdown">Dropdown</option>
+                      </select>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => removeCheckoutQuestion(question.id)} className="text-red-600 hover:bg-red-50 h-8 mt-6">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {question.type === "dropdown" && (
+                    <div className="border-t border-slate-200 pt-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium">Optionen</Label>
+                        <Button size="sm" variant="ghost" onClick={() => addCheckoutOption(question.id)} className="h-6 text-xs">
+                          <Plus className="w-3 h-3 mr-1" />
+                          Option
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {(question.options || []).map((option, optIdx) => (
+                          <div key={optIdx} className="flex gap-2">
+                            <Input 
+                              value={option} 
+                              onChange={(e) => updateCheckoutOption(question.id, optIdx, e.target.value)} 
+                              placeholder="z.B. Vegetarisch" 
+                              className="h-8 text-xs" 
+                            />
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeCheckoutOption(question.id, optIdx)} 
+                              className="text-red-600 hover:bg-red-50 h-8"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <label className="flex items-center gap-2 text-xs">
+                    <input 
+                      type="checkbox" 
+                      checked={question.required || false} 
+                      onChange={(e) => updateCheckoutQuestion(question.id, "required", e.target.checked)} 
+                      className="rounded" 
+                    />
+                    Pflichtfeld
+                  </label>
+                </div>
+              ))}
+            </div>
+
+            {checkoutQuestions.length === 0 && (
+              <div className="text-center py-8 text-slate-400">
+                <p className="text-sm">Keine Fragen hinzugefügt</p>
+              </div>
+            )}
+
+            <Button onClick={handleSaveCheckout} disabled={savingCheckout} className="w-full h-10 bg-slate-900 hover:bg-slate-800 rounded-xl text-sm font-medium">
+              {savingCheckout ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <>Custom Checkout speichern</>}
+            </Button>
+          </div>
+          )}
         </motion.div>
       </div>
     </div>
