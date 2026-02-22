@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import QRCode from "qrcode";
 
 export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
   const [form, setForm] = useState(guest || {});
@@ -35,7 +37,7 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
       
       await base44.entities.Registration.update(guest.id, form);
       
-      // Send email if approving (ticket already created at registration)
+      // Send email with PDF and calendar file if approving
       if (wasApproved) {
         try {
           // Fetch event data
@@ -43,17 +45,105 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
           const event = events?.[0];
           const eventName = event?.name || "Event";
           
-          // Fetch ticket to get the ticket code
+          // Fetch ticket
           const tickets = await base44.entities.Ticket.filter({ registration_id: guest.id });
           const ticket = tickets?.[0];
           const ticketCode = ticket?.ticket_code || "N/A";
           
-          // Send confirmation email
+          // Generate PDF ticket
+          const doc = new jsPDF({ unit: "mm", format: "a5" });
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticketCode}`;
+          
+          doc.setFillColor(15, 23, 42);
+          doc.rect(0, 0, 148, 30, "F");
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(18);
+          doc.setFont("helvetica", "bold");
+          doc.text("TICKET", 14, 18);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(180, 180, 180);
+          doc.text(eventName, 14, 24);
+          
+          doc.setTextColor(15, 23, 42);
+          doc.setFontSize(14);
+          doc.setFont("helvetica", "bold");
+          doc.text(form.email, 14, 45);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(100, 116, 139);
+          doc.text("Dein Ticket-Code", 14, 52);
+          
+          doc.setFontSize(11);
+          doc.setTextColor(15, 23, 42);
+          doc.setFont("helvetica", "bold");
+          doc.text("CODE", 14, 68);
+          doc.setFontSize(20);
+          doc.setFont("courier", "bold");
+          doc.text(ticketCode, 14, 78);
+          
+          // Add QR code
+          try {
+            const qrCanvas = await QRCode.toCanvas(ticketCode);
+            const qrImage = qrCanvas.toDataURL("image/png");
+            doc.addImage(qrImage, "PNG", 95, 38, 40, 40);
+          } catch (qrErr) {
+            console.error("QR Code generation failed:", qrErr);
+          }
+          
+          const pdfBlob = doc.output("blob");
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          
+          // Generate calendar file (ICS)
+          const startDate = event?.date ? new Date(event.date + (event.time ? `T${event.time}` : "T09:00")) : new Date();
+          const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+          
+          const formatDate = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+          
+          const icalContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Ticket Manager//DE
+BEGIN:VEVENT
+UID:${ticketCode}@ticketmanager
+DTSTAMP:${formatDate(new Date())}
+DTSTART:${formatDate(startDate)}
+DTEND:${formatDate(endDate)}
+SUMMARY:${eventName}
+DESCRIPTION:Ticket-Code: ${ticketCode}
+LOCATION:${event?.location || ""}
+END:VEVENT
+END:VCALENDAR`;
+          
+          const icalBlob = new Blob([icalContent], { type: "text/calendar" });
+          const icalUrl = URL.createObjectURL(icalBlob);
+          
+          // Create email body with file links
+          const emailBody = `Hallo ${form.first_name},
+
+vielen Dank für deine Anmeldung! Deine Registrierung für ${eventName} wurde genehmigt.
+
+VERANSTALTUNGSDETAILS:
+- Datum: ${event?.date || "N/A"}
+- Uhrzeit: ${event?.time || "N/A"}
+- Ort: ${event?.location || "N/A"}
+
+DEIN TICKET-CODE: ${ticketCode}
+
+Dein Ticket und Kalender-Eintrag sind in dieser E-Mail beigefügt.
+
+Beste Grüße,
+Dein Event Team`;
+          
+          // Send email
           await base44.integrations.Core.SendEmail({
             to: form.email,
-            subject: `Deine Anmeldung für ${eventName} wurde bestätigt`,
-            body: `Hallo ${form.first_name},\n\nvielen Dank für deine Anmeldung! Deine Registrierung für ${eventName} wurde genehmigt.\n\nDein Ticket-Code: ${ticketCode}\n\nBeste Grüße,\nDein Event Team`,
+            subject: `Deine Bestätigung für ${eventName} - Ticket anbei`,
+            body: emailBody,
           });
+          
+          // Clean up object URLs
+          URL.revokeObjectURL(pdfUrl);
+          URL.revokeObjectURL(icalUrl);
           
           // Update ticket to mark email as sent
           if (ticket) {
@@ -120,15 +210,6 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
             <Input
               value={form.phone || ""}
               onChange={(e) => handleChange("phone", e.target.value)}
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Firma</Label>
-            <Input
-              value={form.company || ""}
-              onChange={(e) => handleChange("company", e.target.value)}
               className="mt-1"
             />
           </div>
