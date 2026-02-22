@@ -58,6 +58,7 @@ import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import EventInfo from './pages/EventInfo';
 import GuestData from './pages/GuestData';
+import EmailSequences from './pages/EmailSequences';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Ticket": Ticket,
     "EventInfo": EventInfo,
     "GuestData": GuestData,
+    "EmailSequences": EmailSequences,
 }
 
 export const pagesConfig = {
