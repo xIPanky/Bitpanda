@@ -23,6 +23,7 @@ export default function Scanner() {
 
     const tickets = await base44.entities.Ticket.filter({ ticket_code: trimmed });
 
+
     if (!tickets || tickets.length === 0) {
       setResult({ type: "error", message: "Ticket nicht gefunden", ticket: null });
       setLoading(false);
