@@ -15,7 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const publicPages = ["Register", "Ticket"];
+const publicPages = ["Register", "Ticket", "Landing"];
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
