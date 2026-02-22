@@ -190,24 +190,41 @@ export default function Scanner() {
 
                 {result.ticket && (
                   <div className="mt-6 bg-white/70 rounded-xl p-5 text-left space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-slate-500">Gast</span>
-                      <span className="text-sm font-semibold text-slate-900">
-                        {result.ticket.guest_name}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-slate-500">Kategorie</span>
-                      <span className="text-sm font-semibold text-slate-900">
-                        {result.ticket.category}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-slate-500">Code</span>
-                      <span className="text-sm font-mono text-slate-900">
-                        {result.ticket.ticket_code}
-                      </span>
-                    </div>
+                    {result.type === "success" && result.registration ? (
+                      <>
+                        <div className="text-center pb-2 border-b border-slate-100">
+                          <p className="text-xl font-bold text-slate-900">
+                            {result.registration.first_name} {result.registration.last_name}
+                          </p>
+                          {result.registration.company && (
+                            <p className="text-sm text-slate-500 mt-1">{result.registration.company}</p>
+                          )}
+                        </div>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-sm text-slate-500">Kategorie</span>
+                          <span className="text-sm font-semibold text-slate-900">{result.ticket.category}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-500">Code</span>
+                          <span className="text-sm font-mono text-slate-900">{result.ticket.ticket_code}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-500">Gast</span>
+                          <span className="text-sm font-semibold text-slate-900">{result.ticket.guest_name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-500">Kategorie</span>
+                          <span className="text-sm font-semibold text-slate-900">{result.ticket.category}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-500">Code</span>
+                          <span className="text-sm font-mono text-slate-900">{result.ticket.ticket_code}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
