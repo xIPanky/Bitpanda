@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
@@ -104,21 +105,25 @@ export default function EventDetails() {
         )}
 
         {/* CTA Button */}
-        <div className="flex gap-4">
-          <Button
-            size="lg"
-            className="bg-amber-500 hover:bg-amber-600 text-white"
-            onClick={() => {
-              base44.analytics.track({
-                eventName: "tickets_cta_clicked",
-                properties: { event_id: eventId, event_name: event.name }
-              });
-              window.location.href = createPageUrl(`EventTicketing?event_id=${eventId}`);
-            }}
-          >
-            Jetzt Tickets sichern
-          </Button>
-        </div>
+         <div className="flex gap-4">
+           <Link
+             to={createPageUrl(`EventTicketing?event_id=${eventId}`)}
+             onClick={() => {
+               base44.analytics.track({
+                 eventName: "tickets_cta_clicked",
+                 properties: { event_id: eventId, event_name: event.name }
+               });
+             }}
+             asChild
+           >
+             <Button
+               size="lg"
+               className="bg-amber-500 hover:bg-amber-600 text-white"
+             >
+               Jetzt Tickets sichern
+             </Button>
+           </Link>
+         </div>
       </div>
     </div>
   );
