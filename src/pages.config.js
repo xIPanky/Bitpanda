@@ -48,6 +48,9 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import Dashboard from './pages/Dashboard';
+import EmailSequences from './pages/EmailSequences';
+import EventInfo from './pages/EventInfo';
+import GuestData from './pages/GuestData';
 import GuestList from './pages/GuestList';
 import Home from './pages/Home';
 import Landing from './pages/Landing';
@@ -56,14 +59,14 @@ import Register from './pages/Register';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
-import EventInfo from './pages/EventInfo';
-import GuestData from './pages/GuestData';
-import EmailSequences from './pages/EmailSequences';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Dashboard": Dashboard,
+    "EmailSequences": EmailSequences,
+    "EventInfo": EventInfo,
+    "GuestData": GuestData,
     "GuestList": GuestList,
     "Home": Home,
     "Landing": Landing,
@@ -72,9 +75,6 @@ export const PAGES = {
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
-    "EventInfo": EventInfo,
-    "GuestData": GuestData,
-    "EmailSequences": EmailSequences,
 }
 
 export const pagesConfig = {

@@ -9,18 +9,37 @@ export default function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const { data: settingsArr } = useQuery({
-    queryKey: ["eventSettings"],
-    queryFn: () => base44.entities.EventSettings.list(),
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("event_id");
+
+  const { data: eventArr } = useQuery({
+    queryKey: ["event-register", eventId],
+    queryFn: () => eventId
+      ? base44.entities.Event.filter({ id: eventId })
+      : base44.entities.EventSettings.list(),
     initialData: [],
   });
 
-  const eventSettings = settingsArr?.[0] || {};
+  // Support both old EventSettings and new Event entity
+  const raw = eventArr?.[0] || {};
+  const eventSettings = raw.event_name ? raw : {
+    event_name: raw.name,
+    event_subtitle: raw.subtitle,
+    event_date: raw.date,
+    event_time: raw.time,
+    event_location: raw.location,
+    cover_image_url: raw.cover_image_url,
+    cover_image_position: raw.cover_image_position,
+    custom_questions: raw.custom_questions,
+    invitation_options: raw.invitation_options,
+    registration_open: raw.registration_open,
+  };
 
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
     await base44.entities.Registration.create({
       ...formData,
+      event_id: eventId || raw.id || "",
       status: "pending",
     });
     setIsSuccess(true);
