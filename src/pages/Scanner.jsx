@@ -135,10 +135,18 @@ export default function Scanner() {
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               onKeyDown={handleKeyDown}
-              placeholder="TKT-XXXXXXXX"
+              placeholder="ABC-123"
               className="h-14 text-lg font-mono tracking-wider text-center border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
               autoFocus
             />
+            <Button
+              onClick={() => setShowCamera(true)}
+              variant="outline"
+              className="h-14 px-4 rounded-xl border-slate-200"
+              title="Mit Kamera scannen"
+            >
+              <Camera className="w-5 h-5 text-slate-600" />
+            </Button>
             <Button
               onClick={() => handleScan()}
               disabled={loading || !code.trim()}
