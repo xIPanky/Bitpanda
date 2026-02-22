@@ -105,11 +105,10 @@ export default function Dashboard() {
       `,
     });
 
-    await base44.entities.Ticket.filter({ ticket_code: ticketCode }).then(async (tickets) => {
-      if (tickets.length > 0) {
-        await base44.entities.Ticket.update(tickets[0].id, { email_sent: true });
-      }
-    });
+    const createdTickets = await base44.entities.Ticket.filter({ ticket_code: ticketCode });
+    if (createdTickets.length > 0) {
+      await base44.entities.Ticket.update(createdTickets[0].id, { email_sent: true });
+    }
 
     queryClient.invalidateQueries({ queryKey: ["registrations"] });
     queryClient.invalidateQueries({ queryKey: ["tickets"] });
