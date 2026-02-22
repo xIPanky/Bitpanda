@@ -46,7 +46,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
       // Create registration
       const registration = await base44.entities.Registration.create({
         event_id: event.id,
-        ticket_tier_id: tier.id,
+        ticket_tier_id: tier?.id || "",
         first_name: form.first_name,
         last_name: form.last_name,
         email: form.email,
@@ -54,23 +54,26 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         company: form.company || "",
         custom_answers: form.custom_answers,
         invited_by: form.invited_by || "",
-        category: tier.color || "Standard",
+        category: tier?.color || "Standard",
       });
 
-      // Create ticket
-      const ticketCode = `${event.id.substring(0, 6)}-${tier.id.substring(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
+      // Create ticket only if tier exists
+      let ticketCode = null;
+      if (tier?.id) {
+        ticketCode = `${event.id.substring(0, 6)}-${tier.id.substring(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
 
-      const ticket = await base44.entities.Ticket.create({
-        event_id: event.id,
-        registration_id: registration.id,
-        ticket_tier_id: tier.id,
-        ticket_code: ticketCode,
-        guest_name: `${form.first_name} ${form.last_name}`,
-        guest_email: form.email,
-        category: tier.color || "Standard",
-        tier_name: tier.name,
-        tier_price: tier.price || 0,
-      });
+        await base44.entities.Ticket.create({
+          event_id: event.id,
+          registration_id: registration.id,
+          ticket_tier_id: tier.id,
+          ticket_code: ticketCode,
+          guest_name: `${form.first_name} ${form.last_name}`,
+          guest_email: form.email,
+          category: tier.color || "Standard",
+          tier_name: tier.name,
+          tier_price: tier.price || 0,
+        });
+      }
 
       // Send email with ticket
       try {
@@ -119,11 +122,13 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
 
   return (
     <div>
-      <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-        <p className="text-sm text-amber-900">
-          <span className="font-semibold">{tier.name}</span> - {tier.price === 0 || !tier.price ? "Kostenlos" : `${tier.price} ${event.currency}`}
-        </p>
-      </div>
+      {tier && (
+        <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-900">
+            <span className="font-semibold">{tier.name}</span> - {tier.price === 0 || !tier.price ? "Kostenlos" : `${tier.price} ${event.currency}`}
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <h2 className="text-2xl font-bold text-slate-900">Deine Daten</h2>
