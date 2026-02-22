@@ -34,7 +34,6 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
     last_name: "",
     email: "",
     phone: "",
-    company: "",
     custom_answers: parsedQuestions.map(() => ""),
     invited_by: "",
   });
@@ -74,18 +73,17 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
        }
 
       // Create registration
-      const registration = await base44.entities.Registration.create({
-        event_id: event.id,
-        ticket_tier_id: tier?.id || "",
-        first_name: form.first_name,
-        last_name: form.last_name,
-        email: form.email,
-        phone: form.phone || "",
-        company: form.company || "",
-        custom_answers: form.custom_answers,
-        invited_by: form.invited_by || "",
-        category: tier?.color || "Standard",
-      });
+       const registration = await base44.entities.Registration.create({
+         event_id: event.id,
+         ticket_tier_id: tier?.id || "",
+         first_name: form.first_name,
+         last_name: form.last_name,
+         email: form.email,
+         phone: form.phone || "",
+         custom_answers: form.custom_answers,
+         invited_by: form.invited_by || "",
+         category: tier?.color || "Standard",
+       });
 
       // Create ticket only if tier exists
       let ticketCode = null;
@@ -281,7 +279,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
             className="flex-1 bg-amber-500 hover:bg-amber-600"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {loading ? "Wird verarbeitet..." : "Ticket sichern"}
+            {loading ? "Wird verarbeitet..." : tier ? "Tickets sichern" : "Registrieren"}
           </Button>
         </div>
       </form>
