@@ -91,7 +91,12 @@ export default function EventInfo() {
     setSaving(true);
     await base44.entities.Event.update(event.id, {
       ...form,
-      custom_questions: checkoutQuestions.map(q => q.text)
+      custom_questions: checkoutQuestions.map(q => {
+        if (q.type === "dropdown") {
+          return `${q.text}||dropdown||${(q.options || []).join("~")}`;
+        }
+        return q.text;
+      })
     });
     queryClient.invalidateQueries({ queryKey: ["event", eventId] });
     queryClient.invalidateQueries({ queryKey: ["events"] });
