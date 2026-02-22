@@ -323,7 +323,7 @@ export default function GuestList() {
                     <TableRow className="bg-slate-50/50">
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</TableHead>
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-Mail</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategorie</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unternehmen</TableHead>
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktionen</TableHead>
                     </TableRow>
@@ -341,11 +341,7 @@ export default function GuestList() {
                         <TableRow key={registration.id} className="border-b border-slate-50 hover:bg-slate-50/50">
                           <TableCell className="font-medium text-slate-900">{registration.first_name} {registration.last_name}</TableCell>
                           <TableCell className="text-sm text-slate-600">{registration.email}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={categoryColors[registration.category] || categoryColors.Standard}>
-                              {registration.category}
-                            </Badge>
-                          </TableCell>
+                          <TableCell className="text-sm text-slate-600">{registration.company || "-"}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={statusLabels[registration.status]?.color || "bg-slate-50 text-slate-600"}>
                               {statusLabels[registration.status]?.label || registration.status}
@@ -387,7 +383,7 @@ export default function GuestList() {
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gast</TableHead>
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-Mail</TableHead>
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Code</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategorie</TableHead>
+                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unternehmen</TableHead>
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
                       <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktionen</TableHead>
                     </TableRow>
@@ -401,33 +397,19 @@ export default function GuestList() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredTickets.map((ticket) => (
-                    <TableRow key={ticket.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                      <TableCell className="font-medium text-slate-900">{ticket.guest_name}</TableCell>
-                      <TableCell className="text-sm text-slate-600">{ticket.guest_email}</TableCell>
-                      <TableCell>
-                        <code className="text-xs font-mono bg-slate-100 px-2 py-1 rounded">
-                          {ticket.ticket_code}
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={ticket.category || "Standard"}
-                          onValueChange={(val) => categoryMutation.mutate({ id: ticket.id, category: val })}
-                        >
-                          <SelectTrigger className="h-8 text-xs w-32 border-0 bg-transparent p-0 focus:ring-0">
-                            <Badge variant="outline" className={`${categoryColors[ticket.category] || categoryColors.Standard} border text-xs cursor-pointer`}>
-                              {ticket.category || "Standard"}
-                            </Badge>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat} className="text-sm">{cat}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
+                       filteredTickets.map((ticket) => {
+                         const registration = registrations.find(r => r.id === ticket.registration_id);
+                         return (
+                     <TableRow key={ticket.id} className="border-b border-slate-50 hover:bg-slate-50/50">
+                       <TableCell className="font-medium text-slate-900">{ticket.guest_name}</TableCell>
+                       <TableCell className="text-sm text-slate-600">{ticket.guest_email}</TableCell>
+                       <TableCell>
+                         <code className="text-xs font-mono bg-slate-100 px-2 py-1 rounded">
+                           {ticket.ticket_code}
+                         </code>
+                       </TableCell>
+                       <TableCell className="text-sm text-slate-600">{registration?.company || "-"}</TableCell>
+                       <TableCell>
                         {ticket.status === "used" ? (
                           <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
                             <CheckCircle2 className="w-3 h-3 mr-1" />
@@ -476,12 +458,13 @@ export default function GuestList() {
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    ))
-                    )}
-                    </TableBody>
+                          </div>
+                          </TableCell>
+                          </TableRow>
+                          );
+                          })
+                          )}
+                          </TableBody>
                     </>
                     )}
                     </Table>
