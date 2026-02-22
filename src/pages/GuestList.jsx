@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban, Download, Link2, Copy, CheckCheck, Clock } from "lucide-react";
+import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban, Download, Link2, Copy, CheckCheck, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import { createPageUrl } from "@/utils";
@@ -174,6 +174,22 @@ export default function GuestList() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
       toast.success("Registrierung abgelehnt");
+    },
+  });
+
+  const deleteRegistrationMutation = useMutation({
+    mutationFn: async (registrationId) => {
+      const registrationTickets = tickets.filter(t => t.registration_id === registrationId);
+      for (const ticket of registrationTickets) {
+        await base44.entities.Ticket.delete(ticket.id);
+      }
+      await base44.entities.Registration.delete(registrationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
+      toast.success("Gast und Tickets gelöscht");
+      setDeleteTarget(null);
     },
   });
 
@@ -369,6 +385,15 @@ export default function GuestList() {
                                   </Button>
                                 </>
                               )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => setDeleteTarget(registration)}
+                                title="Löschen"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -473,24 +498,35 @@ export default function GuestList() {
       </div>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Ticket löschen?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Das Ticket von <strong>{deleteTarget?.guest_name}</strong> wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={() => deleteMutation.mutate(deleteTarget.id)}
-            >
-              Löschen
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+         <AlertDialogContent>
+           <AlertDialogHeader>
+             <AlertDialogTitle>{deleteTarget?.ticket_code ? "Ticket" : "Gast"} löschen?</AlertDialogTitle>
+             <AlertDialogDescription>
+               {deleteTarget?.ticket_code 
+                 ? <>Das Ticket von <strong>{deleteTarget?.guest_name}</strong> wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</>
+                 : <>Der Gast <strong>{deleteTarget?.first_name} {deleteTarget?.last_name}</strong> und alle zugehörigen Tickets werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</>
+               }
+             </AlertDialogDescription>
+           </AlertDialogHeader>
+           <AlertDialogFooter>
+             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+             <AlertDialogAction
+               className="bg-red-600 hover:bg-red-700"
+               disabled={deleteRegistrationMutation.isPending || deleteMutation.isPending}
+               onClick={() => {
+                 if (deleteTarget?.ticket_code) {
+                   deleteMutation.mutate(deleteTarget.id);
+                 } else {
+                   deleteRegistrationMutation.mutate(deleteTarget.id);
+                 }
+               }}
+             >
+               {(deleteRegistrationMutation.isPending || deleteMutation.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+               Löschen
+             </AlertDialogAction>
+           </AlertDialogFooter>
+         </AlertDialogContent>
+       </AlertDialog>
     </div>
   );
 }
