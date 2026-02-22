@@ -121,7 +121,7 @@ export default function Home() {
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <Link to={createPageUrl(`GuestList?event_id=${event.id}`)} className="font-semibold text-slate-900 truncate hover:text-slate-600 transition-colors">{event.name}</Link>
+                            <Link to={createPageUrl(`Dashboard?event_id=${event.id}`)} className="font-semibold text-slate-900 truncate hover:text-slate-600 transition-colors">{event.name}</Link>
                             <Badge variant="outline" className={`${sc.color} text-xs shrink-0`}>{sc.label}</Badge>
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
