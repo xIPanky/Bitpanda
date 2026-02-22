@@ -68,6 +68,14 @@ export default function EventInfo() {
         organizer_name: event.organizer_name || "",
         organizer_email: event.organizer_email || "",
       });
+      // Load custom checkout questions from custom_questions field
+      if (event.custom_questions) {
+        setCheckoutQuestions(event.custom_questions.map((q, idx) => ({
+          id: idx,
+          text: q,
+          required: false
+        })));
+      }
     }
   }, [event]);
 
