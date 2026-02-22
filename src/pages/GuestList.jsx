@@ -193,7 +193,7 @@ export default function GuestList() {
                               variant="ghost"
                               size="sm"
                               className="h-8 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                              onClick={() => cancelMutation.mutate(ticket.id)}
+                              onClick={() => cancelMutation.mutate(ticket)}
                               title="Stornieren"
                             >
                               <Ban className="w-4 h-4" />
