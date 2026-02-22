@@ -36,14 +36,12 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
     phone: "",
     custom_answers: parsedQuestions.map(() => ""),
     invited_by: "",
-    company: "",
   });
   const [hasPlusOne, setHasPlusOne] = useState(false);
   const [plusOne, setPlusOne] = useState({
     first_name: "",
     last_name: "",
     email: "",
-    company: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -86,7 +84,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
 
         // Validate plus one if enabled
         if (hasPlusOne) {
-          if (!plusOne.first_name.trim() || !plusOne.last_name.trim() || !plusOne.email.trim() || !plusOne.company.trim()) {
+          if (!plusOne.first_name.trim() || !plusOne.last_name.trim() || !plusOne.email.trim()) {
             setError("Bitte fülle alle Felder der Begleitung aus.");
             setLoading(false);
             return;
@@ -101,7 +99,6 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           last_name: form.last_name,
           email: form.email,
           phone: form.phone || "",
-          company: form.company || "",
           custom_answers: form.custom_answers,
           invited_by: form.invited_by || "",
           category: tier?.color || "Standard",
@@ -130,7 +127,6 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
            first_name: plusOne.first_name,
            last_name: plusOne.last_name,
            email: plusOne.email,
-           company: plusOne.company || "",
            custom_answers: form.custom_answers,
            invited_by: form.invited_by || "",
            category: tier?.color || "Standard",
@@ -239,27 +235,17 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
 
         <div>
-           <Label htmlFor="phone" className="text-slate-700 font-medium">Telefonnummer</Label>
-           <Input
-             id="phone"
-             type="tel"
-             value={form.phone}
-             onChange={(e) => handleChange("phone", e.target.value)}
-             className="mt-1"
-           />
-         </div>
+          <Label htmlFor="phone" className="text-slate-700 font-medium">Telefonnummer</Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={form.phone}
+            onChange={(e) => handleChange("phone", e.target.value)}
+            className="mt-1"
+          />
+        </div>
 
-         <div>
-           <Label htmlFor="company" className="text-slate-700 font-medium">Unternehmen</Label>
-           <Input
-             id="company"
-             value={form.company}
-             onChange={(e) => handleChange("company", e.target.value)}
-             className="mt-1"
-           />
-         </div>
-
-         {event.invitation_options && event.invitation_options.length > 0 && (
+        {event.invitation_options && event.invitation_options.length > 0 && (
           <div>
             <Label htmlFor="invited_by" className="text-slate-700 font-medium">Wie hast du von dieser Veranstaltung erfahren?</Label>
             <select
@@ -350,15 +336,6 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
                     type="email"
                     value={plusOne.email}
                     onChange={(e) => handlePlusOneChange("email", e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="plus_one_company" className="text-slate-700 font-medium">Unternehmen *</Label>
-                  <Input
-                    id="plus_one_company"
-                    value={plusOne.company}
-                    onChange={(e) => handlePlusOneChange("company", e.target.value)}
                     className="mt-1"
                   />
                 </div>
