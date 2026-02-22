@@ -137,62 +137,71 @@ END:VCALENDAR`;
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
       <div className="max-w-lg w-full text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 mb-6">
-          <CheckCircle className="w-10 h-10 text-emerald-600" />
-        </div>
-
-        <h1 className="text-4xl font-bold text-slate-900 mb-2">Registrierung bestätigt!</h1>
-        
-        <p className="text-lg text-slate-600 mb-8">
-          Vielen Dank für deine Registrierung{hasPlusOne ? " und die Registrierung deiner Begleitung" : ""}!
-        </p>
-
-        <div className="bg-white border border-slate-200 rounded-lg p-6 mb-8 text-left">
-          <div className="flex items-start gap-3">
-            <Mail className="w-5 h-5 text-amber-500 mt-1 flex-shrink-0" />
-            <div>
-              <h2 className="font-semibold text-slate-900 mb-1">Tickets folgen in Kürze</h2>
-              <p className="text-slate-600 text-sm">
-                Sobald deine Anmeldung bestätigt wurde, erhältst du deine Tickets per E-Mail zugesandt. 
-                {hasPlusOne && " Dies gilt auch für deine Begleitung."}
-              </p>
+        {!isApproved ? (
+          <>
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-100 mb-6">
+              <Mail className="w-10 h-10 text-amber-600" />
             </div>
-          </div>
-        </div>
-
-        <p className="text-slate-600 mb-8">
-          Überprüfe dein Postfach (und Spam-Ordner) auf die Bestätigungs-E-Mail.
-        </p>
-
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-8">
-          <h3 className="font-semibold text-slate-900 mb-4">Ticket-Optionen</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              className="flex items-center justify-center gap-2"
-              onClick={handleAddToCalendar}
-            >
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm">Zu Kalender</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="flex items-center justify-center gap-2"
-              onClick={handleDownloadPDF}
-            >
-              <Download className="w-4 h-4" />
-              <span className="text-sm">Als PDF</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="flex items-center justify-center gap-2 sm:col-span-2"
-              onClick={handleAddToWallet}
-            >
-              <Smartphone className="w-4 h-4" />
-              <span className="text-sm">Zu Wallet (Apple/Google)</span>
-            </Button>
-          </div>
-        </div>
+            <h1 className="text-4xl font-bold text-slate-900 mb-2">Registrierung eingegangen</h1>
+            <p className="text-lg text-slate-600 mb-8">
+              Vielen Dank für deine Registrierung! Wir überprüfen deine Anmeldung.
+            </p>
+            <div className="bg-white border border-slate-200 rounded-lg p-6 mb-8 text-left">
+              <div className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-amber-500 mt-1 flex-shrink-0" />
+                <div>
+                  <h2 className="font-semibold text-slate-900 mb-1">Bestätigung ausstehend</h2>
+                  <p className="text-slate-600 text-sm">
+                    Sobald deine Anmeldung genehmigt wurde, erhältst du deine Tickets und alle Informationen per E-Mail.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <p className="text-slate-600 mb-8 text-sm">
+              Überprüfe dein Postfach (und Spam-Ordner) auf Updates.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 mb-6">
+              <CheckCircle className="w-10 h-10 text-emerald-600" />
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900 mb-2">Anmeldung genehmigt!</h1>
+            <p className="text-lg text-slate-600 mb-8">
+              Deine Registrierung wurde bestätigt. Hier sind deine Tickets!
+            </p>
+            
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-8">
+              <h3 className="font-semibold text-slate-900 mb-4">Ticket-Optionen</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Button
+                  variant="outline"
+                  className="flex items-center justify-center gap-2"
+                  onClick={handleAddToCalendar}
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm">Zu Kalender</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex items-center justify-center gap-2"
+                  onClick={handleDownloadPDF}
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="text-sm">Als PDF</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex items-center justify-center gap-2 sm:col-span-2"
+                  onClick={handleAddToWallet}
+                >
+                  <Smartphone className="w-4 h-4" />
+                  <span className="text-sm">Zu Wallet (Apple/Google)</span>
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
 
         <Button
           className="bg-slate-900 hover:bg-slate-800 w-full mb-3"
