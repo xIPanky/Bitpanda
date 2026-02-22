@@ -9,8 +9,9 @@ import QRScanner from "../components/scanner/QRScanner";
 
 export default function Scanner() {
   const [code, setCode] = useState("");
-  const [result, setResult] = useState(null); // { type: 'success' | 'error' | 'warning', ticket, message }
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const inputRef = useRef(null);
 
   const handleScan = async (scanCode) => {
