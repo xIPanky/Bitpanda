@@ -37,6 +37,13 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
     custom_answers: parsedQuestions.map(() => ""),
     invited_by: "",
   });
+  const [hasPlusOne, setHasPlusOne] = useState(false);
+  const [plusOne, setPlusOne] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    company: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -48,6 +55,10 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
     const newAnswers = [...form.custom_answers];
     newAnswers[index] = value;
     setForm(prev => ({ ...prev, custom_answers: newAnswers }));
+  };
+
+  const handlePlusOneChange = (field, value) => {
+    setPlusOne(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -64,13 +75,22 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
        }
 
        // Validate required custom questions
-       for (let i = 0; i < parsedQuestions.length; i++) {
-         if (parsedQuestions[i].required && !form.custom_answers[i]?.trim()) {
-           setError(`Bitte beantworte: ${parsedQuestions[i].text}`);
-           setLoading(false);
-           return;
-         }
-       }
+        for (let i = 0; i < parsedQuestions.length; i++) {
+          if (parsedQuestions[i].required && !form.custom_answers[i]?.trim()) {
+            setError(`Bitte beantworte: ${parsedQuestions[i].text}`);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Validate plus one if enabled
+        if (hasPlusOne) {
+          if (!plusOne.first_name.trim() || !plusOne.last_name.trim() || !plusOne.email.trim() || !plusOne.company.trim()) {
+            setError("Bitte fülle alle Felder der Begleitung aus.");
+            setLoading(false);
+            return;
+          }
+        }
 
       // Create registration
        const registration = await base44.entities.Registration.create({
@@ -103,13 +123,44 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         });
       }
 
-      // Send email with ticket
+      // Create plus one registration and ticket if enabled
+      let plusOneTicketCode = null;
+      if (hasPlusOne) {
+        const plusOneRegistration = await base44.entities.Registration.create({
+          event_id: event.id,
+          ticket_tier_id: tier?.id || "",
+          first_name: plusOne.first_name,
+          last_name: plusOne.last_name,
+          email: plusOne.email,
+          company: plusOne.company || "",
+          custom_answers: form.custom_answers,
+          invited_by: form.invited_by || "",
+          category: tier?.color || "Standard",
+        });
+
+        if (tier?.id) {
+          plusOneTicketCode = `${event.id.substring(0, 6)}-${tier.id.substring(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
+
+          await base44.entities.Ticket.create({
+            event_id: event.id,
+            registration_id: plusOneRegistration.id,
+            ticket_tier_id: tier.id,
+            ticket_code: plusOneTicketCode,
+            guest_name: `${plusOne.first_name} ${plusOne.last_name}`,
+            guest_email: plusOne.email,
+            category: tier.color || "Standard",
+            tier_name: tier.name,
+            tier_price: tier.price || 0,
+          });
+        }
+      }
+
+      // Send email with tickets
       try {
-        const ticketPdfUrl = `${window.location.origin}/ticket-${ticketCode}.pdf`;
         await base44.integrations.Core.SendEmail({
           to: form.email,
           subject: `Dein Ticket: ${event.name}`,
-          body: `Hallo ${form.first_name},\n\nVielen Dank für deine Registrierung zu ${event.name}!\n\nDein Ticketcode: ${ticketCode}\n\nWeitere Informationen zur Veranstaltung findest du auf unserer Website.\n\nBis bald!\n\nBeste Grüße`
+          body: `Hallo ${form.first_name},\n\nVielen Dank für deine Registrierung zu ${event.name}!\n\nDein Ticketcode: ${ticketCode}${plusOneTicketCode ? `\n\nBegleitperson Ticketcode: ${plusOneTicketCode}` : ""}\n\nWeitere Informationen zur Veranstaltung findest du auf unserer Website.\n\nBis bald!\n\nBeste Grüße`
         });
         toast.success("Bestätigungsmail versendet");
       } catch (emailErr) {
@@ -120,9 +171,10 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         eventName: "ticket_purchased",
         properties: {
           event_id: event.id,
-          tier_id: tier.id,
-          tier_name: tier.name,
-          price: tier.price || 0,
+          tier_id: tier?.id,
+          tier_name: tier?.name,
+          price: tier?.price || 0,
+          has_plus_one: hasPlusOne,
         }
       });
 
@@ -262,6 +314,64 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
             ))}
           </div>
         )}
+
+        <div className="border-t border-slate-200 pt-6">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={hasPlusOne}
+                onChange={(e) => setHasPlusOne(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-300 cursor-pointer"
+              />
+              <span className="text-slate-700 font-medium">Ich komme mit einer Begleitung</span>
+            </label>
+
+            {hasPlusOne && (
+              <div className="mt-4 space-y-4 pt-4 border-t border-slate-200">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="plus_one_first_name" className="text-slate-700 font-medium">Vorname *</Label>
+                    <Input
+                      id="plus_one_first_name"
+                      value={plusOne.first_name}
+                      onChange={(e) => handlePlusOneChange("first_name", e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="plus_one_last_name" className="text-slate-700 font-medium">Nachname *</Label>
+                    <Input
+                      id="plus_one_last_name"
+                      value={plusOne.last_name}
+                      onChange={(e) => handlePlusOneChange("last_name", e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="plus_one_email" className="text-slate-700 font-medium">E-Mail *</Label>
+                  <Input
+                    id="plus_one_email"
+                    type="email"
+                    value={plusOne.email}
+                    onChange={(e) => handlePlusOneChange("email", e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="plus_one_company" className="text-slate-700 font-medium">Unternehmen *</Label>
+                  <Input
+                    id="plus_one_company"
+                    value={plusOne.company}
+                    onChange={(e) => handlePlusOneChange("company", e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="flex gap-4 pt-6">
           <Button
