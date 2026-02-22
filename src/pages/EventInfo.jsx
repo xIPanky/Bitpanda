@@ -126,8 +126,9 @@ export default function EventInfo() {
       }
     }
     queryClient.invalidateQueries({ queryKey: ["tiers", eventId] });
-    toast.success("Ticketstufen gespeichert");
     setSavingTiers(false);
+    setSavingTiersOk(true);
+    setTimeout(() => setSavingTiersOk(false), 3000);
   };
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>;
