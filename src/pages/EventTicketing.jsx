@@ -130,16 +130,63 @@ export default function EventTicketing() {
           />
         )}
 
-        {step === "registration" && selectedTicketTier && (
-          <TicketRegistration
-            event={event}
-            tier={selectedTicketTier}
-            onComplete={handleRegistrationComplete}
-            onAbandoned={handleRegistrationAbandoned}
-            onBack={handleBackToTickets}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
+        {step === "registration" && selectedTicketTier && !registrationData && (
+            <TicketRegistration
+              event={event}
+              tier={selectedTicketTier}
+              onComplete={handleRegistrationComplete}
+              onAbandoned={handleRegistrationAbandoned}
+              onBack={handleBackToTickets}
+            />
+          )}
+
+         {registrationData && (
+           <div className="text-center py-12">
+             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
+               <CheckCircle className="w-8 h-8 text-emerald-600" />
+             </div>
+             <h2 className="text-3xl font-bold text-slate-900 mb-2">Ticket gesichert!</h2>
+             <p className="text-slate-600 mb-6">Dein Ticket wurde erfolgreich erstellt.</p>
+             <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 text-left">
+               <div className="space-y-3">
+                 <div>
+                   <p className="text-sm text-slate-500">Ticketcode</p>
+                   <div className="flex items-center gap-2 mt-1">
+                     <code className="flex-1 text-lg font-mono font-bold text-slate-900 bg-slate-50 p-3 rounded">{registrationData.ticket_code || "Ticket-Code"}</code>
+                     <Button
+                       size="icon"
+                       variant="outline"
+                       onClick={() => {
+                         navigator.clipboard.writeText(registrationData.ticket_code || "");
+                         toast.success("Ticketcode kopiert!");
+                       }}
+                     >
+                       <Copy className="w-4 h-4" />
+                     </Button>
+                   </div>
+                 </div>
+                 <div>
+                   <p className="text-sm text-slate-500">E-Mail</p>
+                   <p className="font-medium text-slate-900 mt-1">{registrationData.email}</p>
+                 </div>
+                 <div>
+                   <p className="text-sm text-slate-500">Ticket-Typ</p>
+                   <p className="font-medium text-slate-900 mt-1">{selectedTicketTier.name}</p>
+                 </div>
+               </div>
+             </div>
+             <p className="text-sm text-slate-600 mb-6">Ein Bestätigungsmail wurde an deine E-Mail-Adresse gesendet.</p>
+             <Button
+               className="bg-slate-900 hover:bg-slate-800"
+               onClick={() => {
+                 window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`);
+               }}
+             >
+               Zur Veranstaltungsseite
+             </Button>
+           </div>
+         )}
+        </div>
+        </div>
+        );
+        }
