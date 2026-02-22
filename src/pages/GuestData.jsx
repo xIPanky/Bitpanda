@@ -141,7 +141,7 @@ export default function GuestData() {
                        <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" />Firma</span>
                      </TableHead>
                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                       <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" />Kategorie</span>
+                       <span className="flex items-center gap-1"><Ticket className="w-3.5 h-3.5" />Ticket</span>
                      </TableHead>
                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
