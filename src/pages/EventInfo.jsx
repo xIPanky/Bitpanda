@@ -166,14 +166,14 @@ export default function EventInfo() {
                 <p className="text-xs text-slate-500 mb-3">Link zur öffentlichen Veranstaltungsseite mit allen Informationen.</p>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 font-mono truncate">
-                    {`${window.location.origin}/event-details?event_id=${eventId}`}
+                    {`${window.location.origin}${createPageUrl(`EventDetails?event_id=${eventId}`)}`}
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     className="shrink-0"
                     onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/event-details?event_id=${eventId}`);
+                      navigator.clipboard.writeText(`${window.location.origin}${createPageUrl(`EventDetails?event_id=${eventId}`)}`);
                       toast.success("Link kopiert!");
                     }}
                   >
