@@ -241,22 +241,50 @@ export default function GuestList() {
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Gästeliste</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              {activeTab === "registrations" ? `${registrations.length} Registrierungen · ${registrations.filter(r => r.status === "approved").length} genehmigt` : `${tickets.length} Tickets · ${tickets.filter((t) => t.status === "used").length} eingecheckt`}
-            </p>
-          </div>
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Suche nach Name, E-Mail, Code..."
-              className="pl-10 h-10 border-slate-200"
-            />
-          </div>
-        </div>
+           <div>
+             <h1 className="text-2xl font-bold text-slate-900">Gästeliste</h1>
+             <p className="text-sm text-slate-500 mt-1">
+               {activeTab === "registrations" ? `${registrations.length} Registrierungen · ${registrations.filter(r => r.status === "approved").length} genehmigt` : `${tickets.length} Tickets · ${tickets.filter((t) => t.status === "used").length} eingecheckt`}
+             </p>
+           </div>
+           <div className="flex gap-2 flex-wrap">
+             <div className="relative flex-1 min-w-64">
+               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+               <Input
+                 value={search}
+                 onChange={(e) => setSearch(e.target.value)}
+                 placeholder="Suche nach Name, E-Mail, Code..."
+                 className="pl-10 h-10 border-slate-200"
+               />
+             </div>
+             {activeTab === "tickets" && dropdownQuestions.length > 0 && (
+               <>
+                 <select 
+                   value={filterDropdownQuestion} 
+                   onChange={(e) => { setFilterDropdownQuestion(e.target.value); setFilterDropdownAnswer(""); }}
+                   className="h-10 px-3 rounded-md border border-slate-200 text-sm bg-white"
+                 >
+                   <option value="">Alle Fragen</option>
+                   {dropdownQuestions.map((q) => (
+                     <option key={q.index} value={q.index}>{q.text}</option>
+                   ))}
+                 </select>
+                 {filterDropdownQuestion && (
+                   <select 
+                     value={filterDropdownAnswer} 
+                     onChange={(e) => setFilterDropdownAnswer(e.target.value)}
+                     className="h-10 px-3 rounded-md border border-slate-200 text-sm bg-white"
+                   >
+                     <option value="">Alle Antworten</option>
+                     {dropdownQuestions[parseInt(filterDropdownQuestion)]?.options?.map((opt) => (
+                       <option key={opt} value={opt}>{opt}</option>
+                     ))}
+                   </select>
+                 )}
+               </>
+             )}
+           </div>
+         </div>
 
         {/* Tabs */}
         <div className="flex gap-2 border-b border-slate-200 bg-white rounded-t-2xl px-6">
