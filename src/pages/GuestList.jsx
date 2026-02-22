@@ -65,9 +65,15 @@ export default function GuestList() {
   });
 
   const cancelMutation = useMutation({
-    mutationFn: (id) => base44.entities.Ticket.update(id, { status: "cancelled" }),
+    mutationFn: async (ticket) => {
+      await base44.entities.Ticket.update(ticket.id, { status: "cancelled" });
+      if (ticket.registration_id) {
+        await base44.entities.Registration.update(ticket.registration_id, { status: "rejected" });
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      queryClient.invalidateQueries({ queryKey: ["registrations"] });
       toast.success("Ticket storniert");
     },
   });
