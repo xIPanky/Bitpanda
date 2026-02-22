@@ -139,8 +139,8 @@ export default function EventTicketing() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
                 <CheckCircle className="w-8 h-8 text-emerald-600" />
               </div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">Registrierung abgeschlossen!</h2>
-              <p className="text-slate-600 mb-6">Deine Registrierung wurde erfolgreich gespeichert. Ein Bestätigungsmail wurde an deine E-Mail-Adresse gesendet.</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">Registrierung eingegangen!</h2>
+              <p className="text-slate-600 mb-6">Deine Registrierung wird aktuell geprüft. Du erhältst dein Ticket zeitnah per E-Mail.</p>
               <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 text-left">
                 <div className="space-y-3">
                   <div>
