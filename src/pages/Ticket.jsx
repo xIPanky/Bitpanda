@@ -66,23 +66,34 @@ export default function TicketPage() {
       >
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
           {/* Header */}
-          <div className="bg-slate-900 text-white p-8 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent" />
-            <div className="relative">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 mb-4">
+          <div className="relative text-white overflow-hidden" style={{ minHeight: 200 }}>
+            {eventSettings.cover_image_url ? (
+              <img
+                src={eventSettings.cover_image_url}
+                alt="Titelbild"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: eventSettings.cover_image_position || "center center" }}
+              />
+            ) : (
+              <div className="absolute inset-0 bg-slate-900" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
+            <div className="relative p-8 text-center">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 mb-4 backdrop-blur-sm">
                 <TicketIcon className="w-7 h-7 text-amber-400" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">
+              <h1 className="text-2xl font-bold tracking-tight drop-shadow">
                 {eventSettings.event_name || "Veranstaltung"}
               </h1>
-              <div className="flex flex-wrap items-center justify-center gap-4 text-slate-300 text-xs mt-4">
+              {eventSettings.event_subtitle && (
+                <p className="text-sm text-white/70 mt-1">{eventSettings.event_subtitle}</p>
+              )}
+              <div className="flex flex-wrap items-center justify-center gap-4 text-white/80 text-xs mt-4">
                 {eventSettings.event_date && (
                   <div className="flex items-center gap-1.5">
                     <CalendarDays className="w-3.5 h-3.5 text-amber-400" />
                     {new Date(eventSettings.event_date).toLocaleDateString("de-DE", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
+                      day: "numeric", month: "long", year: "numeric",
                     })}
                   </div>
                 )}
