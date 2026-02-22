@@ -101,11 +101,29 @@ export default function EventInfo() {
   };
 
   const addCheckoutQuestion = () => {
-    setCheckoutQuestions([...checkoutQuestions, { id: Date.now(), text: "", required: false }]);
+    setCheckoutQuestions([...checkoutQuestions, { id: Date.now(), text: "", required: false, type: "text", options: [] }]);
   };
 
   const updateCheckoutQuestion = (id, field, value) => {
     setCheckoutQuestions(checkoutQuestions.map(q => q.id === id ? { ...q, [field]: value } : q));
+  };
+
+  const addCheckoutOption = (questionId) => {
+    setCheckoutQuestions(checkoutQuestions.map(q => 
+      q.id === questionId ? { ...q, options: [...(q.options || []), ""] } : q
+    ));
+  };
+
+  const updateCheckoutOption = (questionId, optionIdx, value) => {
+    setCheckoutQuestions(checkoutQuestions.map(q => 
+      q.id === questionId ? { ...q, options: q.options.map((opt, i) => i === optionIdx ? value : opt) } : q
+    ));
+  };
+
+  const removeCheckoutOption = (questionId, optionIdx) => {
+    setCheckoutQuestions(checkoutQuestions.map(q => 
+      q.id === questionId ? { ...q, options: q.options.filter((_, i) => i !== optionIdx) } : q
+    ));
   };
 
   const removeCheckoutQuestion = (id) => {
