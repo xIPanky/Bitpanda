@@ -252,7 +252,14 @@ export default function EventInfo() {
                         const [px, py] = (form.cover_image_position || "50% 50%").split(" ").map(v => parseFloat(v));
                         return <div className="absolute w-5 h-5 pointer-events-none" style={{ left: `calc(${px}% - 10px)`, top: `calc(${py}% - 10px)` }}><div className="w-full h-full rounded-full border-2 border-white shadow-lg bg-white/30" /></div>;
                       })()}
-                      <button onClick={(e) => { e.stopPropagation(); handleChange("cover_image_url", ""); }} className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 pointer-events-auto">
+                      <Link
+                        to={createPageUrl(`GuestList?event_id=${eventId}`)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto bg-black/20"
+                      >
+                        <span className="bg-white/90 text-slate-800 text-sm font-medium px-4 py-2 rounded-full shadow">Zum Event</span>
+                      </Link>
+                      <button onClick={(e) => { e.stopPropagation(); handleChange("cover_image_url", ""); }} className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 pointer-events-auto z-10">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
