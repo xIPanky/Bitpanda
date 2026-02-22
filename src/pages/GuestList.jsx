@@ -188,13 +188,27 @@ export default function GuestList() {
 
   const filteredTickets = tickets.filter((t) => {
     const term = search.toLowerCase();
-    return (
+    const matchesSearch = (
       t.guest_name?.toLowerCase().includes(term) ||
       t.guest_email?.toLowerCase().includes(term) ||
       t.ticket_code?.toLowerCase().includes(term) ||
       t.category?.toLowerCase().includes(term)
     );
+    const matchesFilter = !filterDropdownQuestion || !filterDropdownAnswer || 
+      (t.custom_answers && t.custom_answers[parseInt(filterDropdownQuestion)] === filterDropdownAnswer);
+    return matchesSearch && matchesFilter;
   });
+
+  // Get dropdown questions with options
+  const dropdownQuestions = event?.custom_questions?.map((q, idx) => {
+    const parts = q.split("||");
+    return {
+      index: idx,
+      text: parts[0],
+      type: parts[1] || "text",
+      options: parts[2]?.split("~") || []
+    };
+  }).filter(q => q.type === "dropdown") || [];
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
