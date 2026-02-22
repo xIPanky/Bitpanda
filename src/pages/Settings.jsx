@@ -35,6 +35,7 @@ export default function Settings() {
     if (existingSettings) {
       setForm({
         event_name: existingSettings.event_name || "",
+        event_subtitle: existingSettings.event_subtitle || "",
         event_date: existingSettings.event_date || "",
         event_time: existingSettings.event_time || "",
         event_location: existingSettings.event_location || "",
