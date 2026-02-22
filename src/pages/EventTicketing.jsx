@@ -12,7 +12,7 @@ export default function EventTicketing() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
 
-  const [step, setStep] = useState("tickets"); // "tickets" or "registration"
+  const [step, setStep] = useState("tickets"); // "tickets", "registration", or "success"
   const [selectedTicketTier, setSelectedTicketTier] = useState(null);
   const [registrationData, setRegistrationData] = useState(null);
 
@@ -89,12 +89,8 @@ export default function EventTicketing() {
       eventName: "registration_completed",
       properties: { event_id: eventId, tier_id: selectedTicketTier?.id }
     });
-    // Redirect to success page - only shows pending message, no ticket features yet
-    const params = new URLSearchParams({
-      event_id: eventId,
-      registration_id: data.id,
-    });
-    window.location.href = createPageUrl(`RegistrationSuccess?${params.toString()}`);
+    setRegistrationData(data);
+    setStep("success");
   };
 
   const handleRegistrationAbandoned = (reason) => {
@@ -169,7 +165,7 @@ export default function EventTicketing() {
           />
         )}
 
-        {step === "registration" && selectedTicketTier && !registrationData && (
+        {step === "registration" && selectedTicketTier && (
             <TicketRegistration
               event={event}
               tier={selectedTicketTier}
@@ -179,7 +175,7 @@ export default function EventTicketing() {
             />
           )}
 
-         {registrationData && (
+         {step === "success" && registrationData && (
            <div className="text-center py-12">
              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
                <CheckCircle className="w-8 h-8 text-emerald-600" />
