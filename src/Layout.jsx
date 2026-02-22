@@ -25,6 +25,7 @@ export default function Layout({ children, currentPageName }) {
 
   const eventNavItems = eventId ? [
     { name: "Dashboard", page: `Dashboard?event_id=${eventId}`, icon: LayoutDashboard },
+    { name: "Veranstaltungsinfos", page: `EventInfo?event_id=${eventId}`, icon: CalendarDays },
     { name: "Gästeliste", page: `GuestList?event_id=${eventId}`, icon: Users },
     { name: "Scanner", page: `Scanner?event_id=${eventId}`, icon: ScanLine },
     { name: "Marketing", page: `Marketing?event_id=${eventId}`, icon: Megaphone },
