@@ -68,6 +68,12 @@ export default function Scanner() {
     }
   };
 
+  const handleQRScan = (scannedCode) => {
+    setShowCamera(false);
+    setCode(scannedCode.trim());
+    handleScan(scannedCode.trim());
+  };
+
   const reset = () => {
     setResult(null);
     setCode("");
