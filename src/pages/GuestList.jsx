@@ -429,12 +429,14 @@ export default function GuestList() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </motion.div>
+                    ))
+                    )}
+                    </TableBody>
+                    </>
+                    )}
+                    </Table>
+                    </div>
+                    </motion.div>
       </div>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
