@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Search, Building2, Phone, Mail, Tag, MessageSquare, UserPlus } from "lucide-react";
+import { Users, Search, Building2, Phone, Mail, Tag, MessageSquare, UserPlus, Edit2 } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { EditGuestDialog } from "../components/guest/EditGuestDialog";
 
 const categoryColors = {
   VIP: "bg-amber-50 text-amber-700 border-amber-200",
@@ -30,6 +32,9 @@ export default function GuestData() {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [editGuest, setEditGuest] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
@@ -175,6 +180,18 @@ export default function GuestData() {
                         </TableCell>
                         <TableCell className="text-sm text-slate-600">{reg.invited_by || <span className="text-slate-300">—</span>}</TableCell>
                         <TableCell className="text-sm text-slate-600 max-w-xs truncate">{reg.notes || <span className="text-slate-300">—</span>}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditGuest(reg);
+                              setEditDialogOpen(true);
+                            }}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -184,8 +201,15 @@ export default function GuestData() {
           </div>
 
           <p className="text-xs text-slate-400 text-right mt-2">{filtered.length} von {registrations.length} Einträgen</p>
-        </motion.div>
-      </div>
-    </div>
-  );
-}
+          </motion.div>
+          </div>
+
+          <EditGuestDialog
+          guest={editGuest}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSave={() => queryClient.invalidateQueries({ queryKey: ["registrations", eventId] })}
+          />
+          </div>
+          );
+          }
