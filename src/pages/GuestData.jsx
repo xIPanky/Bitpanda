@@ -120,33 +120,34 @@ export default function GuestData() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50/50">
-                    {!eventId && <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Event</TableHead>}
-                    <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</TableHead>
-                    <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />E-Mail</span>
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />Telefon</span>
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" />Firma</span>
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" />Kategorie</span>
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
-                    <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      <span className="flex items-center gap-1"><UserPlus className="w-3.5 h-3.5" />Eingeladen von</span>
-                    </TableHead>
-                    <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" />Anmerkungen</span>
-                    </TableHead>
-                  </TableRow>
+                     {!eventId && <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Event</TableHead>}
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</TableHead>
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                       <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />E-Mail</span>
+                     </TableHead>
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                       <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />Telefon</span>
+                     </TableHead>
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                       <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" />Firma</span>
+                     </TableHead>
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                       <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" />Kategorie</span>
+                     </TableHead>
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                       <span className="flex items-center gap-1"><UserPlus className="w-3.5 h-3.5" />Eingeladen von</span>
+                     </TableHead>
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                       <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" />Anmerkungen</span>
+                     </TableHead>
+                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Aktionen</TableHead>
+                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-16 text-slate-400">
+                       <TableCell colSpan={9} className="text-center py-16 text-slate-400">
                         <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
                         <p>Keine Gäste gefunden</p>
                       </TableCell>
