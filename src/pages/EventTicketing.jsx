@@ -4,8 +4,8 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
 import { ChevronLeft, Loader2 } from "lucide-react";
-import { TicketSelector } from "@/components/ticketing/TicketSelector";
-import { TicketRegistration } from "@/components/ticketing/TicketRegistration";
+import { TicketSelector } from "@/components/ticketing/TicketSelector.js";
+import { TicketRegistration } from "@/components/ticketing/TicketRegistration.js";
 
 export default function EventTicketing() {
   const urlParams = new URLSearchParams(window.location.search);
