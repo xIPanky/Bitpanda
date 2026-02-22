@@ -57,6 +57,11 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
       alert("Bitte geben Sie eine gültige Telefonnummer ein (mind. 6 Ziffern).");
       return;
     }
+    // Validate "invited_by" if options exist
+    if (eventSettings?.invitation_options?.length > 0 && !form.invited_by) {
+      alert("Bitte wählen Sie aus, wer Sie eingeladen hat.");
+      return;
+    }
     onSubmit(form);
   };
 
