@@ -8,7 +8,6 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Save, Loader2, Euro, Tag, Plus, Trash2, ChevronLeft, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
