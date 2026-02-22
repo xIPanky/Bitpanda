@@ -110,18 +110,18 @@ export default function Home() {
                     >
                       <div className="flex items-center gap-4 p-4 md:p-5">
                         {/* Cover thumb */}
-                        <div className="shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center">
+                        <Link to={createPageUrl(`GuestList?event_id=${event.id}`)} className="shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center hover:opacity-80 transition-opacity">
                           {event.cover_image_url ? (
                             <img src={event.cover_image_url} alt={event.name} className="w-full h-full object-cover" style={{ objectPosition: event.cover_image_position || "50% 50%" }} />
                           ) : (
                             <Ticket className="w-6 h-6 text-amber-400 opacity-70" />
                           )}
-                        </div>
+                        </Link>
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <h3 className="font-semibold text-slate-900 truncate">{event.name}</h3>
+                            <Link to={createPageUrl(`GuestList?event_id=${event.id}`)} className="font-semibold text-slate-900 truncate hover:text-slate-600 transition-colors">{event.name}</Link>
                             <Badge variant="outline" className={`${sc.color} text-xs shrink-0`}>{sc.label}</Badge>
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
