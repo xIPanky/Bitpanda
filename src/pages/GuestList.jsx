@@ -96,9 +96,14 @@ export default function GuestList() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const queryClient = useQueryClient();
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("event_id");
+
   const { data: tickets } = useQuery({
-    queryKey: ["tickets"],
-    queryFn: () => base44.entities.Ticket.list("-created_date"),
+    queryKey: ["tickets", eventId],
+    queryFn: () => eventId
+      ? base44.entities.Ticket.filter({ event_id: eventId }, "-created_date")
+      : base44.entities.Ticket.list("-created_date"),
     initialData: [],
   });
 
