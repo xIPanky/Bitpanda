@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Plus, Calendar, MapPin, Users, BarChart2, Globe, Archive, FileEdit, Loader2, Ticket } from "lucide-react";
-import { motion } from "framer-motion";
+import { Plus, Calendar, MapPin, Users, Loader2, Ticket, LayoutDashboard, ChevronDown, ChevronUp, ExternalLink, Copy } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import CreateEventDialog from "@/components/events/CreateEventDialog.jsx";
+import { toast } from "sonner";
 
 const statusConfig = {
   draft:     { label: "Entwurf",      color: "bg-slate-100 text-slate-600 border-slate-200" },
