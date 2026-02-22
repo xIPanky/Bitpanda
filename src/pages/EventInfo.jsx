@@ -307,8 +307,8 @@ export default function EventInfo() {
                 <Button type="button" variant="outline" size="sm" className="border-dashed flex-1" onClick={addTier}>
                   <Plus className="w-4 h-4 mr-1" />Stufe hinzufügen
                 </Button>
-                <Button onClick={saveTiers} disabled={savingTiers} className="bg-slate-900 hover:bg-slate-800 flex-1">
-                  {savingTiers ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 mr-1" />Stufen speichern</>}
+                <Button onClick={saveTiers} disabled={savingTiers} className={`flex-1 transition-all ${savingTiersOk ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-900 hover:bg-slate-800"}`}>
+                  {savingTiers ? <Loader2 className="w-4 h-4 animate-spin" /> : savingTiersOk ? <><CheckCircle className="w-4 h-4 mr-1" />Gespeichert!</> : <><Save className="w-4 h-4 mr-1" />Stufen speichern</>}
                 </Button>
               </div>
             </div>
