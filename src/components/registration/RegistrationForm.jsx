@@ -215,6 +215,30 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
                 />
               </div>
               <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">E-Mail *</Label>
+                <Input
+                  required
+                  type="email"
+                  value={form.plus_one_email}
+                  onChange={(e) => handleChange("plus_one_email", e.target.value)}
+                  placeholder="begleitperson@beispiel.de"
+                  className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">Firma / Organisation / Creator *</Label>
+                <Input
+                  required
+                  value={form.plus_one_company}
+                  onChange={(e) => handleChange("plus_one_company", e.target.value)}
+                  placeholder="Firmenname oder Creator-Name"
+                  className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
+                />
+              </div>
+              <div className="space-y-2">
                 <Label className="text-sm font-medium text-slate-700">Telefon</Label>
                 <Input
                   value={form.plus_one_phone}
@@ -223,16 +247,6 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
                   className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-slate-700">Firma / Organisation / Creator</Label>
-              <Input
-                value={form.plus_one_company}
-                onChange={(e) => handleChange("plus_one_company", e.target.value)}
-                placeholder="Firmenname oder Creator-Name"
-                className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
-              />
             </div>
 
             {questions.map((question, idx) => (
