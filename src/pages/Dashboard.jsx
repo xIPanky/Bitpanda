@@ -57,11 +57,17 @@ export default function Dashboard() {
     });
   }, [registrations, filterStatus, filterCategory]);
 
+  const handleEdit = async (form) => {
+    await base44.entities.Registration.update(form.id, form);
+    queryClient.invalidateQueries({ queryKey: ["registrations"] });
+  };
+
   const handleApprove = async (reg) => {
     setProcessingId(reg.id);
     const ticketCode = generateTicketCode();
+    const me = await base44.auth.me();
 
-    await base44.entities.Registration.update(reg.id, { status: "approved" });
+    await base44.entities.Registration.update(reg.id, { status: "approved", approved_by: me?.email || "Admin" });
 
     await base44.entities.Ticket.create({
       registration_id: reg.id,
