@@ -14,9 +14,12 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
     email: "",
     phone: "",
     company: "",
-    dietary_requirements: "",
     plus_one: false,
     plus_one_name: "",
+    plus_one_phone: "",
+    plus_one_company: "",
+    plus_one_custom_answer_1: "",
+    plus_one_custom_answer_2: "",
     custom_answer_1: "",
     custom_answer_2: "",
     notes: "",
@@ -104,55 +107,13 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
 
       {/* Company */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-slate-700">Firma / Organisation</Label>
+        <Label className="text-sm font-medium text-slate-700">Firma / Organisation / Creator</Label>
         <Input
           value={form.company}
           onChange={(e) => handleChange("company", e.target.value)}
-          placeholder="Firmenname"
+          placeholder="Firmenname oder Creator-Name"
           className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
         />
-      </div>
-
-      {/* Dietary */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-slate-700">Besondere Ernährungswünsche</Label>
-        <Input
-          value={form.dietary_requirements}
-          onChange={(e) => handleChange("dietary_requirements", e.target.value)}
-          placeholder="z.B. Vegetarisch, Vegan, Allergien..."
-          className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
-        />
-      </div>
-
-      {/* Plus One */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Checkbox
-            id="plus_one"
-            checked={form.plus_one}
-            onCheckedChange={(checked) => handleChange("plus_one", checked)}
-            className="border-slate-300 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
-          />
-          <Label htmlFor="plus_one" className="text-sm font-medium text-slate-700 cursor-pointer">
-            Ich bringe eine Begleitperson mit
-          </Label>
-        </div>
-        {form.plus_one && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-2 pl-7"
-          >
-            <Label className="text-sm font-medium text-slate-700">Name der Begleitperson</Label>
-            <Input
-              value={form.plus_one_name}
-              onChange={(e) => handleChange("plus_one_name", e.target.value)}
-              placeholder="Vorname Nachname"
-              className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
-            />
-          </motion.div>
-        )}
       </div>
 
       {/* Custom Questions */}
@@ -182,6 +143,89 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
           />
         </div>
       )}
+
+      {/* Plus One */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Checkbox
+            id="plus_one"
+            checked={form.plus_one}
+            onCheckedChange={(checked) => handleChange("plus_one", checked)}
+            className="border-slate-300 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+          />
+          <Label htmlFor="plus_one" className="text-sm font-medium text-slate-700 cursor-pointer">
+            Ich bringe eine Begleitperson mit
+          </Label>
+        </div>
+        {form.plus_one && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="space-y-5 pl-7 border-l-2 border-amber-200 ml-2"
+          >
+            <p className="text-sm font-semibold text-slate-700 pt-1">Angaben zur Begleitperson</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">Vorname *</Label>
+                <Input
+                  required
+                  value={form.plus_one_name}
+                  onChange={(e) => handleChange("plus_one_name", e.target.value)}
+                  placeholder="Vorname"
+                  className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">Telefon</Label>
+                <Input
+                  value={form.plus_one_phone}
+                  onChange={(e) => handleChange("plus_one_phone", e.target.value)}
+                  placeholder="+49 123 456789"
+                  className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-slate-700">Firma / Organisation / Creator</Label>
+              <Input
+                value={form.plus_one_company}
+                onChange={(e) => handleChange("plus_one_company", e.target.value)}
+                placeholder="Firmenname oder Creator-Name"
+                className="h-12 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
+              />
+            </div>
+
+            {eventSettings?.custom_question_1 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">
+                  {eventSettings.custom_question_1}
+                </Label>
+                <Textarea
+                  value={form.plus_one_custom_answer_1}
+                  onChange={(e) => handleChange("plus_one_custom_answer_1", e.target.value)}
+                  className="min-h-[80px] border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
+                  placeholder="Antwort der Begleitperson..."
+                />
+              </div>
+            )}
+            {eventSettings?.custom_question_2 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">
+                  {eventSettings.custom_question_2}
+                </Label>
+                <Textarea
+                  value={form.plus_one_custom_answer_2}
+                  onChange={(e) => handleChange("plus_one_custom_answer_2", e.target.value)}
+                  className="min-h-[80px] border-slate-200 focus:border-amber-500 focus:ring-amber-500/20"
+                  placeholder="Antwort der Begleitperson..."
+                />
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
 
       {/* Notes */}
       <div className="space-y-2">
