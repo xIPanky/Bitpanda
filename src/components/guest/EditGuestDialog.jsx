@@ -40,12 +40,12 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
       if (wasApproved) {
         try {
           // Fetch event and ticket data
-          const eventList = await base44.entities.Event.filter({ id: form.event_id });
-          const eventData = eventList?.[0];
+          const eventList = await base44.entities.Event.list();
+          const eventData = eventList?.find(e => e.id === form.event_id);
           const eventName = eventData?.name || "Event";
 
-          const ticketList = await base44.entities.Ticket.filter({ registration_id: guest.id });
-          const ticket = ticketList?.[0];
+          const tickets = await base44.entities.Ticket.list();
+          const ticket = tickets?.find(t => t.registration_id === guest.id);
           const ticketCode = ticket?.ticket_code || "N/A";
           
           // Generate PDF ticket
