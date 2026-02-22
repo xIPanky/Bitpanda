@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScanLine, Search, CheckCircle2, XCircle, AlertTriangle, Loader2, RotateCcw } from "lucide-react";
+import { ScanLine, Search, CheckCircle2, XCircle, AlertTriangle, Loader2, RotateCcw, Camera } from "lucide-react";
 import { toast } from "sonner";
+import QRScanner from "../components/scanner/QRScanner";
 
 export default function Scanner() {
   const [code, setCode] = useState("");
