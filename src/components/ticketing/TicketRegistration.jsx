@@ -58,8 +58,8 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
 
       // Create ticket
       const ticketCode = `${event.id.substring(0, 6)}-${tier.id.substring(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
-      
-      await base44.entities.Ticket.create({
+
+      const ticket = await base44.entities.Ticket.create({
         event_id: event.id,
         registration_id: registration.id,
         ticket_tier_id: tier.id,
