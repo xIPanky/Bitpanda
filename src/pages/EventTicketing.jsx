@@ -221,8 +221,8 @@ export default function EventTicketing() {
                Zur Veranstaltungsseite
              </Button>
            </div>
-         )}
-        </div>
-        </div>
-        );
-        }
+           )}
+           </div>
+           </div>
+           );
+           }
