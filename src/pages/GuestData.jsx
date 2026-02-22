@@ -222,7 +222,10 @@ export default function GuestData() {
           guest={editGuest}
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
-          onSave={() => queryClient.invalidateQueries({ queryKey: ["registrations", eventId] })}
+          onSave={() => {
+            queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
+            queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
+          }}
           />
           </div>
           );
