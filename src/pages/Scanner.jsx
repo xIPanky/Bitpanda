@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import QRScanner from "../components/scanner/QRScanner";
 
 export default function Scanner() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("event_id");
   const [code, setCode] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
