@@ -378,14 +378,15 @@ export default function TicketManagement() {
                     </div>
                     <div className="w-32">
                       <Label className="text-xs">Typ</Label>
-                      <select 
-                        value={question.type || "text"} 
-                        onChange={(e) => updateCheckoutQuestion(question.id, "type", e.target.value)} 
-                        className="mt-1 w-full h-9 rounded-md border border-slate-200 text-sm px-2"
-                      >
-                        <option value="text">Textfeld</option>
-                        <option value="dropdown">Dropdown</option>
-                      </select>
+                      <Select value={question.type || "text"} onValueChange={(val) => updateCheckoutQuestion(question.id, "type", val)}>
+                        <SelectTrigger className="mt-1 h-9 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="text">Textfeld</SelectItem>
+                          <SelectItem value="dropdown">Dropdown</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => removeCheckoutQuestion(question.id)} className="text-red-600 hover:bg-red-50 h-8 mt-6">
                       <Trash2 className="w-4 h-4" />
