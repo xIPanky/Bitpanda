@@ -5,33 +5,7 @@ import { Ticket, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
 
-const features = [
-  { icon: Users, title: "Gästeverwaltung", desc: "Registrierungen annehmen, Kategorien verwalten und Tickets versenden" },
-  { icon: BarChart2, title: "Live-Dashboard", desc: "Echtzeit-Statistiken über Anmeldungen, Check-ins und mehr" },
-  { icon: Mail, title: "E-Mail Marketing", desc: "Personalisierte E-Mails direkt an deine Teilnehmer" },
-  { icon: Zap, title: "QR-Scanner", desc: "Schneller Check-in mit integriertem QR-Code-Scanner" },
-  { icon: Shield, title: "Mehrere Ticketstufen", desc: "VIP, Early Bird, Standard – inklusive Preise und Kontingente" },
-  { icon: Globe, title: "Öffentliche Registrierungsseite", desc: "Deine eigene Anmeldeseite, bereit zum Teilen" },
-];
-
 export default function Landing() {
-  const [form, setForm] = useState({ email: "", full_name: "" });
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const handleRequest = async (e) => {
-    e.preventDefault();
-    if (!form.email || !form.full_name) return;
-    setSending(true);
-    try {
-      await base44.users.inviteUser(form.email, "user");
-      setSent(true);
-      toast.success("Magic Link wurde per Email gesendet!");
-    } catch (error) {
-      toast.error("Fehler beim Versenden des Links");
-    }
-    setSending(false);
-  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
