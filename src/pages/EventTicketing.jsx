@@ -70,6 +70,9 @@ export default function EventTicketing() {
     return <div className="p-6 text-center text-slate-500">Event konnte nicht geladen werden.</div>;
   }
 
+  // Check if event has tickets
+  const hasTickets = ticketTiers && ticketTiers.length > 0;
+
   const handleTicketSelect = (tier) => {
     base44.analytics.track({
       eventName: "ticket_tier_selected",
@@ -102,6 +105,35 @@ export default function EventTicketing() {
     setSelectedTicketTier(null);
     setStep("tickets");
   };
+
+  // If no tickets, show only guest registration
+  if (!hasTickets) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="bg-white border-b border-slate-200">
+          <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">{event.name}</h1>
+              <p className="text-sm text-slate-500 mt-1">Registrierung</p>
+            </div>
+            <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} className="text-slate-500 hover:text-slate-700">
+              <ChevronLeft className="w-6 h-6" />
+            </a>
+          </div>
+        </div>
+
+        <div className="max-w-2xl mx-auto px-6 py-12">
+          <TicketRegistration
+            event={event}
+            tier={null}
+            onComplete={handleRegistrationComplete}
+            onAbandoned={handleRegistrationAbandoned}
+            onBack={() => window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`)}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
