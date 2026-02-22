@@ -156,7 +156,7 @@ export default function GuestData() {
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                       <TableCell colSpan={9} className="text-center py-16 text-slate-400">
+                       <TableCell colSpan={10} className="text-center py-16 text-slate-400">
                         <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
                         <p>Keine Gäste gefunden</p>
                       </TableCell>
