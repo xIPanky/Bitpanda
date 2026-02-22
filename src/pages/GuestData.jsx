@@ -42,6 +42,14 @@ export default function GuestData() {
     initialData: [],
   });
 
+  const { data: events } = useQuery({
+    queryKey: ["events"],
+    queryFn: () => base44.entities.Event.list(),
+    initialData: [],
+  });
+
+  const eventMap = Object.fromEntries(events.map((e) => [e.id, e.name]));
+
   const filtered = registrations.filter((r) => {
     const term = search.toLowerCase();
     const matchSearch =
