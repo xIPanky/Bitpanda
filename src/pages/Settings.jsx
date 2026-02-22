@@ -100,6 +100,15 @@ export default function Settings() {
                     className="h-12 border-slate-200"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">Subheadline / Untertitel</Label>
+                  <Input
+                    value={form.event_subtitle}
+                    onChange={(e) => handleChange("event_subtitle", e.target.value)}
+                    placeholder="z.B. Die exklusive Networking-Gala"
+                    className="h-12 border-slate-200"
+                  />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-slate-700">Datum</Label>
