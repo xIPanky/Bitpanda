@@ -170,44 +170,53 @@ export default function RegistrationTable({
                         {reg.created_date ? format(new Date(reg.created_date), "dd.MM.yyyy") : "–"}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center justify-end gap-2">
-                          {reg.status === "pending" && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={isProcessing}
-                                onClick={() => onApprove(reg)}
-                                className="h-8 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                              >
-                                {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1" />}
-                                Freigeben
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={isProcessing}
-                                onClick={() => onReject(reg.id)}
-                                className="h-8 text-xs border-red-200 text-red-600 hover:bg-red-50"
-                              >
-                                <XCircle className="w-3.5 h-3.5 mr-1" />
-                                Ablehnen
-                              </Button>
-                            </>
-                          )}
-                          {reg.status === "rejected" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={isProcessing}
-                              onClick={() => onApprove(reg)}
-                              className="h-8 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                            >
-                              {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1" />}
-                              Doch freigeben
-                            </Button>
-                          )}
-                        </div>
+                       <div className="flex items-center justify-end gap-2">
+                         <Button
+                           size="sm"
+                           variant="ghost"
+                           onClick={() => setEditTarget(reg)}
+                           className="h-8 px-2 text-slate-500 hover:text-slate-700"
+                           title="Bearbeiten"
+                         >
+                           <Pencil className="w-3.5 h-3.5" />
+                         </Button>
+                         {reg.status === "pending" && (
+                           <>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               disabled={isProcessing}
+                               onClick={() => onApprove(reg)}
+                               className="h-8 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                             >
+                               {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1" />}
+                               Freigeben
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               disabled={isProcessing}
+                               onClick={() => onReject(reg.id)}
+                               className="h-8 text-xs border-red-200 text-red-600 hover:bg-red-50"
+                             >
+                               <XCircle className="w-3.5 h-3.5 mr-1" />
+                               Ablehnen
+                             </Button>
+                           </>
+                         )}
+                         {reg.status === "rejected" && (
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             disabled={isProcessing}
+                             onClick={() => onApprove(reg)}
+                             className="h-8 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                           >
+                             {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1" />}
+                             Doch freigeben
+                           </Button>
+                         )}
+                       </div>
                       </TableCell>
                     </motion.tr>
                   );
