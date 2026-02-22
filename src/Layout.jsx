@@ -10,12 +10,14 @@ import {
   Menu,
   X,
   Ticket,
+  Megaphone,
 } from "lucide-react";
 
 const navItems = [
   { name: "Dashboard", page: "Dashboard", icon: LayoutDashboard },
   { name: "Gästeliste", page: "GuestList", icon: Users },
   { name: "Scanner", page: "Scanner", icon: ScanLine },
+  { name: "Marketing", page: "Marketing", icon: Megaphone },
   { name: "Einstellungen", page: "Settings", icon: Settings },
 ];
 
