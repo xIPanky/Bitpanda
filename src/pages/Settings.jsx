@@ -45,6 +45,7 @@ export default function Settings() {
         event_time: existingSettings.event_time || "",
         event_location: existingSettings.event_location || "",
         cover_image_url: existingSettings.cover_image_url || "",
+        cover_image_position: existingSettings.cover_image_position || "50% 50%",
         custom_questions: existingSettings.custom_questions?.length ? existingSettings.custom_questions : [""],
         invitation_options: existingSettings.invitation_options || [],
         registration_open: existingSettings.registration_open !== false,
