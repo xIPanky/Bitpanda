@@ -117,7 +117,7 @@ export default function EventTicketing() {
           <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-slate-900">{event.name}</h1>
-              <p className="text-sm text-slate-500 mt-1">Registrierung</p>
+              <p className="text-sm text-slate-500 mt-1">{step === "success" ? "Registrierung abgeschlossen" : "Registrierung"}</p>
             </div>
             <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} className="text-slate-500 hover:text-slate-700">
               <ChevronLeft className="w-6 h-6" />
@@ -126,13 +126,43 @@ export default function EventTicketing() {
         </div>
 
         <div className="max-w-2xl mx-auto px-6 py-12">
-          <TicketRegistration
-            event={event}
-            tier={null}
-            onComplete={handleRegistrationComplete}
-            onAbandoned={handleRegistrationAbandoned}
-            onBack={() => window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`)}
-          />
+          {step !== "success" ? (
+            <TicketRegistration
+              event={event}
+              tier={null}
+              onComplete={handleRegistrationComplete}
+              onAbandoned={handleRegistrationAbandoned}
+              onBack={() => window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`)}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
+                <CheckCircle className="w-8 h-8 text-emerald-600" />
+              </div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">Registrierung abgeschlossen!</h2>
+              <p className="text-slate-600 mb-6">Deine Registrierung wurde erfolgreich gespeichert. Ein Bestätigungsmail wurde an deine E-Mail-Adresse gesendet.</p>
+              <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 text-left">
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-slate-500">Name</p>
+                    <p className="font-medium text-slate-900 mt-1">{registrationData?.first_name} {registrationData?.last_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">E-Mail</p>
+                    <p className="font-medium text-slate-900 mt-1">{registrationData?.email}</p>
+                  </div>
+                </div>
+              </div>
+              <Button
+                className="bg-slate-900 hover:bg-slate-800"
+                onClick={() => {
+                  window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`);
+                }}
+              >
+                Zur Veranstaltungsseite
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     );
