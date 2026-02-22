@@ -181,7 +181,37 @@ export default function EventInfo() {
             </div>
           </div>
 
+          {/* Tabs */}
+          <div className="flex gap-2 border-b border-slate-200 bg-white rounded-t-2xl px-6 mb-6">
+            <button
+              onClick={() => setActiveTab("basic")}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "basic" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Grundinfos
+            </button>
+            <button
+              onClick={() => setActiveTab("ticketing")}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "ticketing" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Ticketing
+            </button>
+            <button
+              onClick={() => setActiveTab("checkout")}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "checkout" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Custom Checkout
+            </button>
+          </div>
+
           <div className="space-y-6">
+            {activeTab === "basic" && (
+              <>
             {/* Veranstaltungsseite Link */}
             {eventId && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
