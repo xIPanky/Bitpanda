@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
 import { CheckCircle, Mail, Calendar, Download, Smartphone } from "lucide-react";
@@ -204,24 +206,10 @@ END:VCALENDAR`;
         )}
 
         <Button
-          className="bg-slate-900 hover:bg-slate-800 w-full mb-3"
-          onClick={() => {
-            if (eventId) {
-              navigate(createPageUrl(`EventDetails?event_id=${eventId}`));
-            } else {
-              navigate(createPageUrl("Home"));
-            }
-          }}
+          className="bg-slate-900 hover:bg-slate-800 w-full"
+          onClick={() => navigate(createPageUrl(`EventDetails?event_id=${eventIdParam || eventId}`))}
         >
           Zur Veranstaltungsseite
-        </Button>
-
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => navigate(createPageUrl("Home"))}
-        >
-          Zu meinen Events
         </Button>
       </div>
     </div>
