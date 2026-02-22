@@ -148,6 +148,29 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
          });
        }
 
+      // Send confirmation email
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: form.email,
+          subject: `Registrierung für ${event.name} eingegangen`,
+          body: `<div style="font-family: Arial, sans-serif; color: #333;">
+            <h2>Hallo ${form.first_name},</h2>
+            <p>danke für deine Registrierung für <strong>${event.name}</strong>!</p>
+            <p>Deine Registrierung wurde erfolgreich eingegangen und wird in Kürze von unserem Team geprüft.</p>
+            <p>Du erhältst dein Ticket und weitere Informationen zeitnah per E-Mail.</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 12px; color: #999;">
+              <strong>${event.name}</strong><br>
+              ${event.date ? new Date(event.date).toLocaleDateString('de-DE') : 'Termin'} ${event.time ? `um ${event.time}` : ''}<br>
+              ${event.location || 'Veranstaltungsort'}
+            </p>
+          </div>`,
+        });
+      } catch (emailErr) {
+        console.error("Email sending failed:", emailErr);
+        // Continue even if email fails
+      }
+
       base44.analytics.track({
         eventName: "registration_submitted",
         properties: {
@@ -158,6 +181,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         }
       });
 
+      toast.success("Registrierung erfolgreich! Bestätigung per E-Mail gesendet.");
       onComplete(registration);
     } catch (err) {
       console.error(err);
