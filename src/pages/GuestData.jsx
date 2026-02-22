@@ -6,11 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Search, Building2, Phone, Mail, Tag, MessageSquare, UserPlus, Edit2, Ticket } from "lucide-react";
+import { Users, Search, Building2, Phone, Mail, Tag, MessageSquare, UserPlus, Edit2, Download } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { EditGuestDialog } from "../components/guest/EditGuestDialog";
+import jsPDF from "jspdf";
+import QRCode from "qrcode";
+import { toast } from "sonner";
 
 const categoryColors = {
   VIP: "bg-amber-50 text-amber-700 border-amber-200",
@@ -70,12 +73,67 @@ export default function GuestData() {
       r.first_name?.toLowerCase().includes(term) ||
       r.last_name?.toLowerCase().includes(term) ||
       r.email?.toLowerCase().includes(term) ||
-      r.company?.toLowerCase().includes(term) ||
       r.phone?.toLowerCase().includes(term);
     const matchCat = filterCategory === "all" || r.category === filterCategory;
     const matchStatus = filterStatus === "all" || r.status === filterStatus;
     return matchSearch && matchCat && matchStatus;
   });
+
+  const handleDownloadTicket = async (registration) => {
+    try {
+      const ticket = ticketMap[registration.id];
+      if (!ticket) {
+        toast.error("Ticket nicht gefunden");
+        return;
+      }
+
+      const doc = new jsPDF({ unit: "mm", format: "a5" });
+      const event = events.find(e => e.id === registration.event_id);
+      const eventName = event?.name || "Event";
+
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 148, 30, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text("TICKET", 14, 18);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(180, 180, 180);
+      doc.text(eventName, 14, 24);
+
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(registration.email, 14, 45);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 116, 139);
+      doc.text("Dein Ticket-Code", 14, 52);
+
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.setFont("helvetica", "bold");
+      doc.text("CODE", 14, 68);
+      doc.setFontSize(20);
+      doc.setFont("courier", "bold");
+      doc.text(ticket.ticket_code, 14, 78);
+
+      try {
+        const qrCanvas = await QRCode.toCanvas(ticket.ticket_code);
+        const qrImage = qrCanvas.toDataURL("image/png");
+        doc.addImage(qrImage, "PNG", 95, 38, 40, 40);
+      } catch (qrErr) {
+        console.error("QR Code generation failed:", qrErr);
+      }
+
+      doc.save(`ticket-${ticket.ticket_code}.pdf`);
+      toast.success("Ticket heruntergeladen");
+    } catch (err) {
+      console.error("Error downloading ticket:", err);
+      toast.error("Fehler beim Download");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
@@ -141,7 +199,7 @@ export default function GuestData() {
                        <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" />Firma</span>
                      </TableHead>
                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                       <span className="flex items-center gap-1"><Ticket className="w-3.5 h-3.5" />Ticket</span>
+                       <span className="flex items-center gap-1"><Download className="w-3.5 h-3.5" />Ticket</span>
                      </TableHead>
                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
@@ -179,10 +237,16 @@ export default function GuestData() {
                         <TableCell className="text-sm text-slate-600">{reg.phone || <span className="text-slate-300">—</span>}</TableCell>
                         <TableCell className="text-sm text-slate-600">{reg.company || <span className="text-slate-300">—</span>}</TableCell>
                         <TableCell className="text-sm">
-                          {ticketMap[reg.id] ? (
-                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
-                              {ticketMap[reg.id].ticket_code}
-                            </Badge>
+                          {ticketMap[reg.id] && reg.status === "approved" ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-8"
+                              onClick={() => handleDownloadTicket(reg)}
+                            >
+                              <Download className="w-3 h-3 mr-1" />
+                              PDF
+                            </Button>
                           ) : (
                             <span className="text-slate-300 text-xs">—</span>
                           )}
