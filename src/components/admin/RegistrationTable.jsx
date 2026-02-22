@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle, Clock, Mail, User2, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Mail, User2, Loader2, Pencil } from "lucide-react";
+import EditRegistrationDialog from "./EditRegistrationDialog";
 import { format } from "date-fns";
 
 const statusConfig = {
