@@ -49,26 +49,26 @@
  */
 import Dashboard from './pages/Dashboard';
 import GuestList from './pages/GuestList';
+import Home from './pages/Home';
+import Landing from './pages/Landing';
+import Marketing from './pages/Marketing';
 import Register from './pages/Register';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
-import Marketing from './pages/Marketing';
-import Home from './pages/Home';
-import Landing from './pages/Landing';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Dashboard": Dashboard,
     "GuestList": GuestList,
+    "Home": Home,
+    "Landing": Landing,
+    "Marketing": Marketing,
     "Register": Register,
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
-    "Marketing": Marketing,
-    "Home": Home,
-    "Landing": Landing,
 }
 
 export const pagesConfig = {

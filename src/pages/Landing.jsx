@@ -25,17 +25,11 @@ export default function Landing() {
     e.preventDefault();
     if (!form.email || !form.full_name) return;
     setSending(true);
-    // Send notification email to admin
-    await base44.integrations.Core.SendEmail({
-      to: "admin@ticketmanager.de",
-      subject: `Neue Veranstalter-Anfrage: ${form.full_name}`,
-      body: `
-        <div style="font-family: sans-serif; padding: 24px;">
-          <h2>Neue Veranstalter-Anfrage</h2>
-          <p><strong>Name:</strong> ${form.full_name}</p>
-          <p><strong>E-Mail:</strong> ${form.email}</p>
-        </div>
-      `,
+    // Store the request as an OrganizerRequest entity
+    await base44.entities.OrganizerRequest.create({
+      full_name: form.full_name,
+      email: form.email,
+      status: "pending",
     });
     setSent(true);
     setSending(false);
