@@ -106,23 +106,19 @@ export default function EventDetails() {
 
         {/* CTA Button */}
          <div className="flex gap-4">
-           <Link
-             to={createPageUrl(`EventTicketing?event_id=${eventId}`)}
+           <Button
+             size="lg"
+             className="bg-amber-500 hover:bg-amber-600 text-white"
              onClick={() => {
                base44.analytics.track({
                  eventName: "tickets_cta_clicked",
                  properties: { event_id: eventId, event_name: event.name }
                });
+               window.location.href = createPageUrl(`EventTicketing?event_id=${eventId}`);
              }}
-             asChild
            >
-             <Button
-               size="lg"
-               className="bg-amber-500 hover:bg-amber-600 text-white"
-             >
-               Jetzt Tickets sichern
-             </Button>
-           </Link>
+             Jetzt Tickets sichern
+           </Button>
          </div>
       </div>
     </div>

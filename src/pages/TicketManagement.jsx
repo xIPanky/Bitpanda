@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Save, Loader2, Euro, Tag, Plus, Trash2, ChevronLeft, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -23,6 +24,7 @@ export default function TicketManagement() {
 
   const [tiers, setTiers] = useState([]);
   const [checkoutQuestions, setCheckoutQuestions] = useState([]);
+  const [savingCheckoutOk, setSavingCheckoutOk] = useState(false);
 
   const { data: eventArr, isLoading: eventLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -47,11 +49,28 @@ export default function TicketManagement() {
 
   React.useEffect(() => {
     if (event?.custom_questions) {
-      setCheckoutQuestions(event.custom_questions.map((q, idx) => ({
-        id: idx,
-        text: q,
-        required: false
-      })));
+      setCheckoutQuestions(event.custom_questions.map((q, idx) => {
+        let required = false;
+        let text = q;
+        let type = "text";
+        let options = [];
+
+        // Parse the custom_question format: "text" or "text||dropdown||opt1~opt2~opt3"
+        if (q.includes("||")) {
+          const parts = q.split("||");
+          text = parts[0];
+          type = parts[1] || "text";
+          options = parts[2] ? parts[2].split("~") : [];
+        }
+
+        return {
+          id: idx,
+          text,
+          required,
+          type,
+          options
+        };
+      }));
     }
   }, [event]);
 
@@ -146,6 +165,7 @@ export default function TicketManagement() {
 
   const handleSaveCheckout = async () => {
     setSavingCheckout(true);
+    setSavingCheckoutOk(false);
     await base44.entities.Event.update(event.id, {
       custom_questions: checkoutQuestions.map(q => {
         if (q.type === "dropdown") {
@@ -156,6 +176,8 @@ export default function TicketManagement() {
     });
     queryClient.invalidateQueries({ queryKey: ["event", eventId] });
     setSavingCheckout(false);
+    setSavingCheckoutOk(true);
+    setTimeout(() => setSavingCheckoutOk(false), 2000);
     toast.success("Custom Checkout gespeichert");
   };
 
@@ -422,9 +444,16 @@ export default function TicketManagement() {
               </div>
             )}
 
-            <Button onClick={handleSaveCheckout} disabled={savingCheckout} className="w-full h-10 bg-slate-900 hover:bg-slate-800 rounded-xl text-sm font-medium">
-              {savingCheckout ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <>Custom Checkout speichern</>}
-            </Button>
+            <div className="flex gap-4">
+              <Button onClick={handleSaveCheckout} disabled={savingCheckout} className="flex-1 h-10 bg-slate-900 hover:bg-slate-800 rounded-xl text-sm font-medium">
+                {savingCheckout ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <>Custom Checkout speichern</>}
+              </Button>
+              {savingCheckoutOk && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-green-600 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" /> Gespeichert
+                </motion.div>
+              )}
+            </div>
           </div>
           )}
         </motion.div>
