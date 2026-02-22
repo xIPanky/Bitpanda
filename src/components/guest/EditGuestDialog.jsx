@@ -33,20 +33,20 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
     setLoading(true);
     try {
       const wasApproved = guest?.status !== "approved" && form.status === "approved";
-      
+
       await base44.entities.Registration.update(guest.id, form);
-      
-      // Send email with PDF and calendar file if approving
+
+      // Send email with ticket if approving
       if (wasApproved) {
         try {
-          // Fetch event and ticket data
-          const eventList = await base44.entities.Event.list();
-          const eventData = eventList?.find(e => e.id === form.event_id);
+          const events = await base44.entities.Event.list();
+          const eventData = events?.find(e => e.id === form.event_id);
           const eventName = eventData?.name || "Event";
 
-          const tickets = await base44.entities.Ticket.list();
-          const ticket = tickets?.find(t => t.registration_id === guest.id);
+          const allTickets = await base44.entities.Ticket.list();
+          const ticket = allTickets?.find(t => t.registration_id === guest.id);
           const ticketCode = ticket?.ticket_code || "N/A";
+          const guestEmail = form.email || guest.email;
           
           // Generate PDF ticket
           const doc = new jsPDF({ unit: "mm", format: "a5" });
@@ -148,17 +148,17 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
 
           // Send confirmation email
           await base44.integrations.Core.SendEmail({
-            to: form.email,
+            to: guestEmail,
             subject: `Deine Bestätigung für ${eventName}`,
             body: emailBody,
           });
-          
+
           // Update ticket to mark email as sent
           if (ticket) {
             await base44.entities.Ticket.update(ticket.id, { email_sent: true });
           }
-          
-          toast.success("Gast genehmigt und E-Mail versendet");
+
+          toast.success("Gast genehmigt und Ticket versendet");
         } catch (emailErr) {
           console.error("Fehler beim Versenden der E-Mail:", emailErr);
           toast.success("Gast genehmigt (E-Mail-Versand fehlgeschlagen)");
