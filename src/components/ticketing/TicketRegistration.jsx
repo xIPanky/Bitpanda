@@ -92,7 +92,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           }
         }
 
-      // Create registration
+      // Create registration (status: pending - no ticket created yet)
        const registration = await base44.entities.Registration.create({
          event_id: event.id,
          ticket_tier_id: tier?.id || "",
@@ -103,30 +103,12 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
          custom_answers: form.custom_answers,
          invited_by: form.invited_by || "",
          category: tier?.color || "Standard",
+         status: "pending",
        });
 
-      // Create ticket only if tier exists
-      let ticketCode = null;
-      if (tier?.id) {
-        ticketCode = `${event.id.substring(0, 6)}-${tier.id.substring(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
-
-        await base44.entities.Ticket.create({
-          event_id: event.id,
-          registration_id: registration.id,
-          ticket_tier_id: tier.id,
-          ticket_code: ticketCode,
-          guest_name: `${form.first_name} ${form.last_name}`,
-          guest_email: form.email,
-          category: tier.color || "Standard",
-          tier_name: tier.name,
-          tier_price: tier.price || 0,
-        });
-      }
-
-      // Create plus one registration and ticket if enabled
-      let plusOneTicketCode = null;
+      // Create plus one registration if enabled (no tickets created yet)
       if (hasPlusOne) {
-        const plusOneRegistration = await base44.entities.Registration.create({
+        await base44.entities.Registration.create({
           event_id: event.id,
           ticket_tier_id: tier?.id || "",
           first_name: plusOne.first_name,
@@ -136,36 +118,8 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           custom_answers: form.custom_answers,
           invited_by: form.invited_by || "",
           category: tier?.color || "Standard",
+          status: "pending",
         });
-
-        if (tier?.id) {
-          plusOneTicketCode = `${event.id.substring(0, 6)}-${tier.id.substring(0, 6)}-${Date.now().toString(36).toUpperCase()}`;
-
-          await base44.entities.Ticket.create({
-            event_id: event.id,
-            registration_id: plusOneRegistration.id,
-            ticket_tier_id: tier.id,
-            ticket_code: plusOneTicketCode,
-            guest_name: `${plusOne.first_name} ${plusOne.last_name}`,
-            guest_email: plusOne.email,
-            category: tier.color || "Standard",
-            tier_name: tier.name,
-            tier_price: tier.price || 0,
-          });
-        }
-      }
-
-      // Send email - only if tickets are involved
-      if (ticketCode || tier?.id) {
-        try {
-          await base44.integrations.Core.SendEmail({
-            to: form.email,
-            subject: `Dein Ticket: ${event.name}`,
-            body: `Hallo ${form.first_name},\n\nVielen Dank für deine Registrierung zu ${event.name}!\n\nDein Ticketcode: ${ticketCode}${plusOneTicketCode ? `\n\nBegleitperson Ticketcode: ${plusOneTicketCode}` : ""}\n\nWeitere Informationen zur Veranstaltung findest du auf unserer Website.\n\nBis bald!\n\nBeste Grüße`
-          });
-        } catch (emailErr) {
-          console.error("Email error:", emailErr);
-        }
       }
 
       base44.analytics.track({
