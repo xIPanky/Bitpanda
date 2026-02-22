@@ -215,14 +215,6 @@ export default function EventInfo() {
               Grundinfos
             </button>
             <button
-              onClick={() => setActiveTab("ticketing")}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === "ticketing" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Ticketing
-            </button>
-            <button
               onClick={() => setActiveTab("checkout")}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === "checkout" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
@@ -234,62 +226,7 @@ export default function EventInfo() {
 
           <div className="space-y-6">
             {activeTab === "basic" && (
-              <div>
-            {/* Veranstaltungsseite Link */}
-            {eventId && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Link2 className="w-5 h-5 text-slate-400" />
-                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Veranstaltungsseite</h3>
-                </div>
-                <p className="text-xs text-slate-500 mb-3">Link zur öffentlichen Veranstaltungsseite mit allen Informationen.</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 font-mono truncate">
-                    {`${window.location.origin}${createPageUrl(`EventDetails?event_id=${eventId}`)}`}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}${createPageUrl(`EventDetails?event_id=${eventId}`)}`);
-                      toast.success("Link kopiert!");
-                    }}
-                  >
-                    <Copy className="w-4 h-4 mr-1.5" />
-                    Kopieren
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Registrierungslink */}
-            {eventId && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Link2 className="w-5 h-5 text-slate-400" />
-                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Registrierungslink</h3>
-                </div>
-                <p className="text-xs text-slate-500 mb-3">Diesen Link an Ihre Gäste weitergeben, damit diese sich registrieren können.</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 font-mono truncate">
-                    {`${window.location.origin}/register?event_id=${eventId}`}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/register?event_id=${eventId}`);
-                      toast.success("Link kopiert!");
-                    }}
-                  >
-                    <Copy className="w-4 h-4 mr-1.5" />
-                    Kopieren
-                  </Button>
-                </div>
-              </div>
-            )}
+               <div>
 
             {/* Basis-Infos */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-5">
@@ -411,69 +348,6 @@ export default function EventInfo() {
                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : savedOk ? <><CheckCircle className="w-5 h-5 mr-2" />Gespeichert!</> : <><Save className="w-5 h-5 mr-2" />Speichern</>}
               </Button>
               </div>
-              </div>
-              )}
-
-              {activeTab === "ticketing" && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-5">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Ticketstufen</h3>
-                  <Button size="sm" onClick={addTier} className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Ticketstufe hinzufügen
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  {tiers.map((tier, idx) => (
-                    <div key={tier.id || tier._new} className="border border-slate-200 rounded-lg p-4 space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label className="text-xs">Name</Label>
-                          <Input value={tier.name} onChange={(e) => updateTier(idx, "name", e.target.value)} placeholder="z.B. Early Bird" className="mt-1 h-9 text-sm" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Preis ({form.currency})</Label>
-                          <Input type="number" value={tier.price || 0} onChange={(e) => updateTier(idx, "price", Number(e.target.value))} className="mt-1 h-9 text-sm" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label className="text-xs">Kapazität (leer = unbegrenzt)</Label>
-                          <Input type="number" value={tier.capacity || ""} onChange={(e) => updateTier(idx, "capacity", e.target.value)} placeholder="z.B. 100" className="mt-1 h-9 text-sm" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Kategorie</Label>
-                          <select value={tier.color || "Standard"} onChange={(e) => updateTier(idx, "color", e.target.value)} className="mt-1 w-full h-9 rounded-md border border-slate-200 text-sm px-2">
-                            <option value="Standard">Standard</option>
-                            <option value="VIP">VIP</option>
-                            <option value="Business">Business</option>
-                            <option value="Presse">Presse</option>
-                            <option value="Speaker">Speaker</option>
-                            <option value="Sponsor">Sponsor</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs">Beschreibung</Label>
-                        <Input value={tier.description || ""} onChange={(e) => updateTier(idx, "description", e.target.value)} placeholder="z.B. 20% Rabatt" className="mt-1 h-9 text-sm" />
-                      </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-                        <label className="flex items-center gap-2 text-xs">
-                          <input type="checkbox" checked={tier.is_visible !== false} onChange={(e) => updateTier(idx, "is_visible", e.target.checked)} className="rounded" />
-                          Sichtbar
-                        </label>
-                        <Button variant="ghost" size="sm" onClick={() => removeTier(idx)} className="text-red-600 hover:bg-red-50 h-8">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <Button onClick={saveTiers} disabled={savingTiers} className={`w-full h-10 rounded-xl text-sm font-medium transition-all ${savingTiersOk ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-900 hover:bg-slate-800"}`}>
-                  {savingTiers ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : savingTiersOk ? <>Gespeichert!</> : <>Ticketstufen speichern</>}
-                </Button>
               </div>
               )}
 
