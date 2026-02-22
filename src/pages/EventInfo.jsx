@@ -228,7 +228,7 @@ export default function EventInfo() {
                   <div className="space-y-1">
                     <div
                       ref={imageRef}
-                      className="relative rounded-xl overflow-hidden border border-slate-200 h-48 cursor-crosshair select-none"
+                      className="relative rounded-xl overflow-hidden border border-slate-200 h-48 cursor-crosshair select-none group"
                       onMouseDown={(e) => {
                         setIsDragging(true);
                         const rect = imageRef.current.getBoundingClientRect();
