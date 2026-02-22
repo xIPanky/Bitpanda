@@ -235,6 +235,15 @@ export default function GuestList() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                            onClick={() => downloadTicketPDF(ticket)}
+                            title="PDF herunterladen"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
                           {ticket.status !== "cancelled" && (
                             <Button
                               variant="ghost"
