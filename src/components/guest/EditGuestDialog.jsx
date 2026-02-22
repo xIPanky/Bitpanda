@@ -153,10 +153,6 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
             body: emailBody,
           });
           
-          // Clean up object URLs
-          URL.revokeObjectURL(pdfUrl);
-          URL.revokeObjectURL(icalUrl);
-          
           // Update ticket to mark email as sent
           if (ticket) {
             await base44.entities.Ticket.update(ticket.id, { email_sent: true });
