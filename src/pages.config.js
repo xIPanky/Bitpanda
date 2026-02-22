@@ -53,6 +53,7 @@ import Register from './pages/Register';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
+import Marketing from './pages/Marketing';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +64,7 @@ export const PAGES = {
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
+    "Marketing": Marketing,
 }
 
 export const pagesConfig = {
