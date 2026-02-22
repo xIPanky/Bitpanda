@@ -17,7 +17,7 @@ import {
   Mail,
 } from "lucide-react";
 
-const publicPages = ["Register", "Ticket", "Landing", "EventDetails", "EventTicketing"];
+const publicPages = ["Register", "Ticket", "Landing", "EventDetails", "EventTicketing", "RegistrationSuccess"];
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
