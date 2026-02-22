@@ -30,9 +30,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban, Download } from "lucide-react";
+import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban, Download, Link2, Copy, CheckCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { createPageUrl } from "@/utils";
 
 function downloadTicketPDF(ticket) {
   const doc = new jsPDF({ unit: "mm", format: "a5" });
