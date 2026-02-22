@@ -16,9 +16,14 @@ export default function Marketing() {
   const [sending, setSending] = useState(false);
   const [sentCount, setSentCount] = useState(null);
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("event_id");
+
   const { data: registrations } = useQuery({
-    queryKey: ["registrations"],
-    queryFn: () => base44.entities.Registration.list("-created_date"),
+    queryKey: ["registrations", eventId],
+    queryFn: () => eventId
+      ? base44.entities.Registration.filter({ event_id: eventId }, "-created_date")
+      : base44.entities.Registration.list("-created_date"),
     initialData: [],
   });
 
