@@ -258,8 +258,8 @@ export default function EventInfo() {
                 </div>
               </div>
 
-              <Button onClick={handleSave} disabled={saving} className="w-full h-12 bg-slate-900 hover:bg-slate-800 rounded-xl text-base font-medium">
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5 mr-2" />Speichern</>}
+              <Button onClick={handleSave} disabled={saving} className={`w-full h-12 rounded-xl text-base font-medium transition-all ${savedOk ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-900 hover:bg-slate-800"}`}>
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : savedOk ? <><CheckCircle className="w-5 h-5 mr-2" />Gespeichert!</> : <><Save className="w-5 h-5 mr-2" />Speichern</>}
               </Button>
             </div>
 
