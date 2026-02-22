@@ -58,11 +58,11 @@ import Home from './pages/Home';
 import Landing from './pages/Landing';
 import Marketing from './pages/Marketing';
 import Register from './pages/Register';
+import RoleManagement from './pages/RoleManagement';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
-import RoleManagement from './pages/RoleManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -78,11 +78,11 @@ export const PAGES = {
     "Landing": Landing,
     "Marketing": Marketing,
     "Register": Register,
+    "RoleManagement": RoleManagement,
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
-    "RoleManagement": RoleManagement,
 }
 
 export const pagesConfig = {

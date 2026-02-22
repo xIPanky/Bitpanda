@@ -30,11 +30,7 @@ export default function EventInfo() {
     organizer_name: "", organizer_email: "",
   });
 
-  const [tiers, setTiers] = useState([]);
-  const [savingTiers, setSavingTiers] = useState(false);
-  const [activeTab, setActiveTab] = useState("basic");
-  const [checkoutQuestions, setCheckoutQuestions] = useState([]);
-  const [savingCheckout, setSavingCheckout] = useState(false);
+
 
   const { data: eventArr, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -68,71 +64,19 @@ export default function EventInfo() {
         organizer_name: event.organizer_name || "",
         organizer_email: event.organizer_email || "",
       });
-      // Load custom checkout questions from custom_questions field
-      if (event.custom_questions) {
-        setCheckoutQuestions(event.custom_questions.map((q, idx) => ({
-          id: idx,
-          text: q,
-          required: false
-        })));
-      }
     }
   }, [event]);
-
-  useEffect(() => {
-    if (existingTiers?.length) {
-      setTiers([...existingTiers].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)));
-    }
-  }, [existingTiers]);
 
   const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.entities.Event.update(event.id, {
-      ...form,
-      custom_questions: checkoutQuestions.map(q => {
-        if (q.type === "dropdown") {
-          return `${q.text}||dropdown||${(q.options || []).join("~")}`;
-        }
-        return q.text;
-      })
-    });
+    await base44.entities.Event.update(event.id, form);
     queryClient.invalidateQueries({ queryKey: ["event", eventId] });
     queryClient.invalidateQueries({ queryKey: ["events"] });
     setSaving(false);
     setSavedOk(true);
     setTimeout(() => setSavedOk(false), 3000);
-  };
-
-  const addCheckoutQuestion = () => {
-    setCheckoutQuestions([...checkoutQuestions, { id: Date.now(), text: "", required: false, type: "text", options: [] }]);
-  };
-
-  const updateCheckoutQuestion = (id, field, value) => {
-    setCheckoutQuestions(checkoutQuestions.map(q => q.id === id ? { ...q, [field]: value } : q));
-  };
-
-  const addCheckoutOption = (questionId) => {
-    setCheckoutQuestions(checkoutQuestions.map(q => 
-      q.id === questionId ? { ...q, options: [...(q.options || []), ""] } : q
-    ));
-  };
-
-  const updateCheckoutOption = (questionId, optionIdx, value) => {
-    setCheckoutQuestions(checkoutQuestions.map(q => 
-      q.id === questionId ? { ...q, options: q.options.map((opt, i) => i === optionIdx ? value : opt) } : q
-    ));
-  };
-
-  const removeCheckoutOption = (questionId, optionIdx) => {
-    setCheckoutQuestions(checkoutQuestions.map(q => 
-      q.id === questionId ? { ...q, options: q.options.filter((_, i) => i !== optionIdx) } : q
-    ));
-  };
-
-  const removeCheckoutQuestion = (id) => {
-    setCheckoutQuestions(checkoutQuestions.filter(q => q.id !== id));
   };
 
   const handleImageUpload = async (e) => {
@@ -145,46 +89,7 @@ export default function EventInfo() {
     toast.success("Bild hochgeladen");
   };
 
-  // Tier management
-  const categoryColors = { VIP: "bg-amber-50 text-amber-700", Business: "bg-blue-50 text-blue-700", Presse: "bg-purple-50 text-purple-700", Standard: "bg-slate-50 text-slate-600", Speaker: "bg-emerald-50 text-emerald-700", Sponsor: "bg-pink-50 text-pink-700" };
 
-  const addTier = () => setTiers([...tiers, { _new: true, name: "", description: "", price: 0, color: "Standard", is_visible: true, capacity: "", sort_order: tiers.length }]);
-
-  const updateTier = (idx, field, value) => {
-    const updated = [...tiers];
-    updated[idx] = { ...updated[idx], [field]: value };
-    setTiers(updated);
-  };
-
-  const removeTier = async (idx) => {
-    const tier = tiers[idx];
-    if (tier.id) await base44.entities.TicketTier.delete(tier.id);
-    setTiers(tiers.filter((_, i) => i !== idx));
-    queryClient.invalidateQueries({ queryKey: ["tiers", eventId] });
-  };
-
-  const saveTiers = async () => {
-    setSavingTiers(true);
-    for (let i = 0; i < tiers.length; i++) {
-      const tier = { ...tiers[i], event_id: eventId, sort_order: i };
-      delete tier._new;
-      // Ensure capacity is a number or undefined (not empty string)
-      if (tier.capacity === "" || tier.capacity === null) {
-        delete tier.capacity;
-      } else {
-        tier.capacity = Number(tier.capacity);
-      }
-      if (tier.id) {
-        await base44.entities.TicketTier.update(tier.id, tier);
-      } else {
-        await base44.entities.TicketTier.create(tier);
-      }
-    }
-    queryClient.invalidateQueries({ queryKey: ["tiers", eventId] });
-    setSavingTiers(false);
-    setSavingTiersOk(true);
-    setTimeout(() => setSavingTiersOk(false), 3000);
-  };
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>;
 
@@ -204,30 +109,9 @@ export default function EventInfo() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 border-b border-slate-200 bg-white rounded-t-2xl px-6 mb-6">
-            <button
-              onClick={() => setActiveTab("basic")}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === "basic" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Grundinfos
-            </button>
-            <button
-              onClick={() => setActiveTab("checkout")}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === "checkout" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Custom Checkout
-            </button>
-          </div>
+
 
           <div className="space-y-6">
-            {activeTab === "basic" && (
-               <div>
-
             {/* Basis-Infos */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-5">
               <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Veranstaltung</h3>
@@ -348,9 +232,6 @@ export default function EventInfo() {
                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : savedOk ? <><CheckCircle className="w-5 h-5 mr-2" />Gespeichert!</> : <><Save className="w-5 h-5 mr-2" />Speichern</>}
               </Button>
               </div>
-              </div>
-              )}
-
               </div>
             </motion.div>
             </div>
