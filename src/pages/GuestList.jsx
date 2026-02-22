@@ -30,8 +30,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban } from "lucide-react";
+import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban, Download } from "lucide-react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+
+function downloadTicketPDF(ticket) {
+  const doc = new jsPDF({ unit: "mm", format: "a5" });
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticket.ticket_code}`;
+
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 0, 148, 30, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("TICKET", 14, 18);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(180, 180, 180);
+  doc.text(ticket.category || "Standard", 14, 24);
+
+  doc.setTextColor(15, 23, 42);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(ticket.guest_name || "", 14, 45);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 116, 139);
+  doc.text(ticket.guest_email || "", 14, 52);
+
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.setFont("helvetica", "bold");
+  doc.text("Ticket-Code", 14, 68);
+  doc.setFontSize(20);
+  doc.setFont("courier", "bold");
+  doc.setTextColor(15, 23, 42);
+  doc.text(ticket.ticket_code || "", 14, 78);
+
+  // QR code as image
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    doc.addImage(img, "PNG", 95, 38, 40, 40);
+    doc.save(`ticket-${ticket.ticket_code}.pdf`);
+  };
+  img.onerror = () => {
+    doc.save(`ticket-${ticket.ticket_code}.pdf`);
+  };
+  img.src = qrUrl;
+}
 
 const categoryColors = {
   VIP: "bg-amber-50 text-amber-700 border-amber-200",
