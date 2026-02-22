@@ -49,7 +49,9 @@
  */
 import Dashboard from './pages/Dashboard';
 import EmailSequences from './pages/EmailSequences';
+import EventDetails from './pages/EventDetails';
 import EventInfo from './pages/EventInfo';
+import EventTicketing from './pages/EventTicketing';
 import GuestData from './pages/GuestData';
 import GuestList from './pages/GuestList';
 import Home from './pages/Home';
@@ -59,8 +61,6 @@ import Register from './pages/Register';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
-import EventDetails from './pages/EventDetails';
-import EventTicketing from './pages/EventTicketing';
 import TicketManagement from './pages/TicketManagement';
 import __Layout from './Layout.jsx';
 
@@ -68,7 +68,9 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "Dashboard": Dashboard,
     "EmailSequences": EmailSequences,
+    "EventDetails": EventDetails,
     "EventInfo": EventInfo,
+    "EventTicketing": EventTicketing,
     "GuestData": GuestData,
     "GuestList": GuestList,
     "Home": Home,
@@ -78,8 +80,6 @@ export const PAGES = {
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
-    "EventDetails": EventDetails,
-    "EventTicketing": EventTicketing,
     "TicketManagement": TicketManagement,
 }
 
