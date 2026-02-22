@@ -19,6 +19,7 @@ export default function RegistrationForm({ eventSettings, onSubmit, isSubmitting
     company: "",
     plus_one: false,
     plus_one_name: "",
+    plus_one_email: "",
     plus_one_phone: "",
     plus_one_company: "",
     plus_one_custom_answers: [],
