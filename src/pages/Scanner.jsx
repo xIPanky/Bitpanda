@@ -106,6 +106,7 @@ export default function Scanner() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex items-center justify-center p-4">
+      {showCamera && <QRScanner onScan={handleQRScan} onClose={() => setShowCamera(false)} />}
       <div className="w-full max-w-lg">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
