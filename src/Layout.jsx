@@ -30,6 +30,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Gästedaten", page: `GuestData?event_id=${eventId}`, icon: ClipboardList },
     { name: "Marketing", page: `Marketing?event_id=${eventId}`, icon: Megaphone },
     { name: "Einstellungen", page: `Settings?event_id=${eventId}`, icon: Settings },
+    { name: "E-Mail-Sequenzen", page: `EmailSequences?event_id=${eventId}`, icon: Mail },
     { name: "Scanner", page: `Scanner?event_id=${eventId}`, icon: ScanLine },
   ] : [];
 
