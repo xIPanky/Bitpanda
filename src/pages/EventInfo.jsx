@@ -81,8 +81,9 @@ export default function EventInfo() {
     await base44.entities.Event.update(event.id, form);
     queryClient.invalidateQueries({ queryKey: ["event", eventId] });
     queryClient.invalidateQueries({ queryKey: ["events"] });
-    toast.success("Veranstaltungsinformationen gespeichert");
     setSaving(false);
+    setSavedOk(true);
+    setTimeout(() => setSavedOk(false), 3000);
   };
 
   const handleImageUpload = async (e) => {
