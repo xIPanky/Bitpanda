@@ -10,9 +10,35 @@ export default function RegistrationSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state || {};
-  const { eventId, eventName, hasPlusOne } = state;
-  const [ticketCode] = useState(new URLSearchParams(window.location.search).get("ticket_code") || "");
-  const [email] = useState(new URLSearchParams(window.location.search).get("email") || "");
+  const { eventId } = state;
+  const urlParams = new URLSearchParams(window.location.search);
+  const registrationId = urlParams.get("registration_id");
+  const eventIdParam = urlParams.get("event_id");
+  
+  const { data: registration } = useQuery({
+    queryKey: ["registration", registrationId],
+    queryFn: () => registrationId ? base44.entities.Registration.filter({ id: registrationId }) : Promise.resolve([]),
+    select: (data) => data?.[0],
+    enabled: !!registrationId,
+  });
+
+  const { data: event } = useQuery({
+    queryKey: ["event", eventIdParam],
+    queryFn: () => eventIdParam ? base44.entities.Event.filter({ id: eventIdParam }) : Promise.resolve([]),
+    select: (data) => data?.[0],
+    enabled: !!eventIdParam,
+  });
+
+  const { data: tickets } = useQuery({
+    queryKey: ["tickets", registrationId],
+    queryFn: () => registrationId ? base44.entities.Ticket.filter({ registration_id: registrationId }) : Promise.resolve([]),
+    enabled: !!registrationId && registration?.status === "approved",
+  });
+
+  const ticket = tickets?.[0];
+  const isApproved = registration?.status === "approved";
+  const [ticketCode] = useState(ticket?.ticket_code || "");
+  const [email] = useState(registration?.email || "");
 
   const handleAddToCalendar = () => {
     const eventDate = new URLSearchParams(window.location.search).get("event_date");
