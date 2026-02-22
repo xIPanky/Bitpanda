@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, MapPin } from "lucide-react";
 
 export default function CreateEventDialog({ onClose, onCreated }) {
   const [form, setForm] = useState({
@@ -18,6 +18,9 @@ export default function CreateEventDialog({ onClose, onCreated }) {
     currency: "EUR",
   });
   const [saving, setSaving] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const autocompleteRef = useRef(null);
 
   const handleCreate = async () => {
     if (!form.name.trim() || !form.date) return;
