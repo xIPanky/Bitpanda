@@ -53,7 +53,16 @@ export default function GuestData() {
     initialData: [],
   });
 
+  const { data: tickets } = useQuery({
+    queryKey: ["tickets", eventId],
+    queryFn: () => eventId
+      ? base44.entities.Ticket.filter({ event_id: eventId })
+      : base44.entities.Ticket.list(),
+    initialData: [],
+  });
+
   const eventMap = Object.fromEntries(events.map((e) => [e.id, e.name]));
+  const ticketMap = Object.fromEntries(tickets.map((t) => [t.registration_id, t]));
 
   const filtered = registrations.filter((r) => {
     const term = search.toLowerCase();
