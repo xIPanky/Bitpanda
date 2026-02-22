@@ -83,23 +83,6 @@ export default function Landing() {
           </Button>
         </motion.div>
 
-        {/* Features */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-24"
-        >
-          {features.map((f, i) => (
-            <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/8 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-amber-400/10 flex items-center justify-center mb-4">
-                <f.icon className="w-5 h-5 text-amber-400" />
-              </div>
-              <h3 className="font-semibold text-white mb-2">{f.title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
-        </motion.div>
       </div>
 
 
