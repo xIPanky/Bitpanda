@@ -99,7 +99,13 @@ export default function EventDetails() {
       {/* ─── HERO ─── */}
       <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
         {/* Background */}
-        {event.cover_image_url ? (
+        {event.cover_video_url ? (
+          <video
+            src={event.cover_video_url}
+            autoPlay muted loop playsInline
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
+          />
+        ) : event.cover_image_url ? (
           <img
             src={event.cover_image_url}
             alt={event.name}
