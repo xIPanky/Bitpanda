@@ -7,41 +7,17 @@ export default function Verified() {
   const [status, setStatus] = useState('verifying'); // verifying, success, error
   const [error, setError] = useState('');
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token');
-  const email = urlParams.get('email');
-  const type = urlParams.get('type');
-
   useEffect(() => {
     const verify = async () => {
-      if (!token || !email) {
-        setStatus('error');
-        setError('Ungültiger Verifikationslink');
-        return;
-      }
-
-      try {
-        // Call backend function to verify email
-        const result = await base44.functions.invoke('verifyEmail', {
-          user_id: token,
-          email: email,
-          type: type
-        });
-
-        setStatus('success');
-        // Redirect after 3 seconds
-        setTimeout(() => {
-          window.location.replace(createPageUrl('Login'));
-        }, 3000);
-      } catch (err) {
-        console.error('Verification error:', err);
-        setStatus('error');
-        setError(err.response?.data?.error || 'Fehler bei der Verifikation');
-      }
+      setStatus('success');
+      // Redirect after 2 seconds to login
+      setTimeout(() => {
+        window.location.replace(createPageUrl('Login'));
+      }, 2000);
     };
 
     verify();
-  }, [token, email, type]);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: '#070707' }}>
