@@ -91,155 +91,102 @@ export default function EventInfo() {
 
 
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>;
+  const DI = ({ label, children }) => (
+    <div>
+      <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#444", marginBottom: "8px" }}>{label}</label>
+      {children}
+    </div>
+  );
+  const darkInput = { background: "#111", border: "1px solid #1e1e1e", borderRadius: "10px", color: "#fff", padding: "10px 14px", fontSize: "14px", width: "100%", outline: "none" };
+
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}><Loader2 className="w-6 h-6 animate-spin" style={{ color: "#333" }} /></div>;
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-screen p-5 md:p-8" style={{ background: "#070707" }}>
       <div className="max-w-2xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-8">
-            <Link to={createPageUrl(`Dashboard?event_id=${eventId}`)} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-3 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Dashboard
+            <Link to={createPageUrl(`Dashboard?event_id=${eventId}`)} className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest mb-4 transition-colors" style={{ color: "#444" }} onMouseEnter={e => e.currentTarget.style.color="#beff00"} onMouseLeave={e => e.currentTarget.style.color="#444"}>
+              <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
             </Link>
-            <div className="flex items-center gap-3 mb-1 justify-between">
-              <div className="flex items-center gap-3">
-                <Info className="w-6 h-6 text-slate-400" />
-                <h1 className="text-2xl font-bold text-slate-900">
-                  {event?.name || "Veranstaltungsinformationen"}
-                </h1>
-              </div>
-              <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors text-sm font-medium">
-                <Link2 className="w-4 h-4" /> Zur Veranstaltung
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-white tracking-tight">{event?.name || "Veranstaltungsinfos"}</h1>
+              <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all" style={{ background: "#0d1a00", color: "#beff00", border: "1px solid #1a2e00" }}>
+                <Link2 className="w-3.5 h-3.5" /> Zur Veranstaltung
               </a>
             </div>
           </div>
 
+          <div className="rounded-2xl p-6 space-y-5" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#333" }}>Veranstaltung</p>
 
+            <DI label="Name"><input style={darkInput} value={form.name} onChange={e => handleChange("name", e.target.value)} placeholder="z.B. Gala Abend 2026" onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} /></DI>
+            <DI label="Untertitel"><input style={darkInput} value={form.subtitle} onChange={e => handleChange("subtitle", e.target.value)} placeholder="z.B. Die exklusive Networking-Gala" onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} /></DI>
+            <DI label="Beschreibung">
+              <textarea style={{ ...darkInput, resize: "vertical" }} rows={4} value={form.description} onChange={e => handleChange("description", e.target.value)} placeholder="Beschreibung der Veranstaltung…" onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} />
+            </DI>
+            <div className="grid grid-cols-2 gap-4">
+              <DI label="Datum"><input type="date" style={{ ...darkInput, colorScheme: "dark" }} value={form.date} onChange={e => handleChange("date", e.target.value)} onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} /></DI>
+              <DI label="Uhrzeit"><input style={darkInput} value={form.time} onChange={e => handleChange("time", e.target.value)} placeholder="19:00" onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} /></DI>
+            </div>
+            <DI label="Veranstaltungsort"><input style={darkInput} value={form.location} onChange={e => handleChange("location", e.target.value)} placeholder="z.B. Hotel Adlon, Berlin" onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} /></DI>
 
-          <div className="space-y-6">
-            {/* Basis-Infos */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-5">
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Veranstaltung</h3>
+            {/* Cover image */}
+            <DI label="Titelbild">
+              {form.cover_image_url ? (
+                <div>
+                  <div ref={imageRef} className="relative rounded-xl overflow-hidden h-48 cursor-crosshair select-none"
+                    style={{ border: "1px solid #1e1e1e" }}
+                    onMouseDown={e => { setIsDragging(true); const r=imageRef.current.getBoundingClientRect(); handleChange("cover_image_position",`${Math.round(((e.clientX-r.left)/r.width)*100)}% ${Math.round(((e.clientY-r.top)/r.height)*100)}%`); }}
+                    onMouseMove={e => { if(!isDragging)return; const r=imageRef.current.getBoundingClientRect(); handleChange("cover_image_position",`${Math.round(((e.clientX-r.left)/r.width)*100)}% ${Math.round(((e.clientY-r.top)/r.height)*100)}%`); }}
+                    onMouseUp={()=>setIsDragging(false)} onMouseLeave={()=>setIsDragging(false)}
+                  >
+                    <img src={form.cover_image_url} alt="Titelbild" className="w-full h-full object-cover pointer-events-none" style={{ objectPosition: form.cover_image_position }} draggable={false} />
+                    {(() => { const [px,py]=(form.cover_image_position||"50% 50%").split(" ").map(v=>parseFloat(v)); return <div className="absolute w-5 h-5 pointer-events-none" style={{ left:`calc(${px}% - 10px)`, top:`calc(${py}% - 10px)` }}><div className="w-full h-full rounded-full border-2 border-white shadow-lg" style={{ background:"rgba(190,255,0,0.4)" }} /></div>; })()}
+                    <button onClick={e=>{e.stopPropagation();handleChange("cover_image_url","");}} className="absolute top-2 right-2 rounded-full p-1" style={{ background:"rgba(0,0,0,0.6)", color:"#fff" }}><X className="w-4 h-4" /></button>
+                  </div>
+                  <p className="text-xs mt-1" style={{ color:"#333" }}>Klicken oder ziehen, um Bildausschnitt zu verschieben</p>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-32 rounded-xl cursor-pointer transition-all" style={{ border:"2px dashed #1e1e1e" }} onMouseEnter={e=>e.currentTarget.style.borderColor="#beff00"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1e1e1e"}>
+                  {uploadingImage ? <Loader2 className="w-6 h-6 animate-spin" style={{color:"#333"}} /> : (<><ImageIcon className="w-8 h-8 mb-2" style={{color:"#2a2a2a"}} /><p className="text-sm" style={{color:"#444"}}>Bild hochladen</p></>)}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                </label>
+              )}
+            </DI>
 
-              <div className="space-y-2">
-                <Label>Name der Veranstaltung</Label>
-                <Input value={form.name} onChange={(e) => handleChange("name", e.target.value)} placeholder="z.B. Gala Abend 2026" className="h-12 border-slate-200" />
+            {/* Status */}
+            <DI label="Event-Status">
+              <div className="flex gap-2">
+                {[["draft","Entwurf"],["published","Veröffentlicht"],["archived","Archiviert"]].map(([s,l]) => (
+                  <button key={s} onClick={() => handleChange("status", s)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+                    style={form.status===s ? {background:"#beff00",color:"#070707"} : {background:"#111",color:"#444",border:"1px solid #1e1e1e"}}
+                  >{l}</button>
+                ))}
               </div>
-              <div className="space-y-2">
-                <Label>Untertitel</Label>
-                <Input value={form.subtitle} onChange={(e) => handleChange("subtitle", e.target.value)} placeholder="z.B. Die exklusive Networking-Gala" className="h-12 border-slate-200" />
-              </div>
-              <div className="space-y-2">
-                <Label>Beschreibung</Label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => handleChange("description", e.target.value)}
-                  placeholder="Beschreibung der Veranstaltung…"
-                  rows={4}
-                  className="w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
-                />
-              </div>
+            </DI>
+
+            {/* Organizer */}
+            <div className="pt-4 space-y-4" style={{ borderTop:"1px solid #141414" }}>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{color:"#333"}}>Veranstalter</p>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Datum</Label>
-                  <Input type="date" value={form.date} onChange={(e) => handleChange("date", e.target.value)} className="h-12 border-slate-200" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Uhrzeit</Label>
-                  <Input value={form.time} onChange={(e) => handleChange("time", e.target.value)} placeholder="19:00" className="h-12 border-slate-200" />
-                </div>
+                <DI label="Name"><input style={darkInput} value={form.organizer_name} onChange={e=>handleChange("organizer_name",e.target.value)} placeholder="Max Mustermann" onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} /></DI>
+                <DI label="Kontakt-E-Mail"><input type="email" style={darkInput} value={form.organizer_email} onChange={e=>handleChange("organizer_email",e.target.value)} placeholder="kontakt@example.com" onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} /></DI>
               </div>
-              <div className="space-y-2">
-                <Label>Veranstaltungsort</Label>
-                <Input value={form.location} onChange={(e) => handleChange("location", e.target.value)} placeholder="z.B. Hotel Adlon, Berlin" className="h-12 border-slate-200" />
-              </div>
-
-              {/* Titelbild */}
-              <div className="space-y-2">
-                <Label>Titelbild</Label>
-                {form.cover_image_url ? (
-                  <div className="space-y-1">
-                    <div
-                      ref={imageRef}
-                      className="relative rounded-xl overflow-hidden border border-slate-200 h-48 cursor-crosshair select-none group"
-                      onMouseDown={(e) => {
-                        setIsDragging(true);
-                        const rect = imageRef.current.getBoundingClientRect();
-                        const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-                        const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-                        handleChange("cover_image_position", `${x}% ${y}%`);
-                      }}
-                      onMouseMove={(e) => {
-                        if (!isDragging) return;
-                        const rect = imageRef.current.getBoundingClientRect();
-                        const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-                        const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-                        handleChange("cover_image_position", `${x}% ${y}%`);
-                      }}
-                      onMouseUp={() => setIsDragging(false)}
-                      onMouseLeave={() => setIsDragging(false)}
-                    >
-                      <img src={form.cover_image_url} alt="Titelbild" className="w-full h-full object-cover pointer-events-none" style={{ objectPosition: form.cover_image_position }} draggable={false} />
-                      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-                      {(() => {
-                        const [px, py] = (form.cover_image_position || "50% 50%").split(" ").map(v => parseFloat(v));
-                        return <div className="absolute w-5 h-5 pointer-events-none" style={{ left: `calc(${px}% - 10px)`, top: `calc(${py}% - 10px)` }}><div className="w-full h-full rounded-full border-2 border-white shadow-lg bg-white/30" /></div>;
-                      })()}
-                      <Link
-                        to={createPageUrl(`GuestList?event_id=${eventId}`)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto bg-black/20"
-                      >
-                        <span className="bg-white/90 text-slate-800 text-sm font-medium px-4 py-2 rounded-full shadow">Zum Event</span>
-                      </Link>
-                      <button onClick={(e) => { e.stopPropagation(); handleChange("cover_image_url", ""); }} className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 pointer-events-auto z-10">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <p className="text-xs text-slate-400">Klicken oder ziehen, um den Bildausschnitt zu verschieben</p>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all">
-                    {uploadingImage ? <Loader2 className="w-6 h-6 animate-spin text-slate-400" /> : (<><ImageIcon className="w-8 h-8 text-slate-300 mb-2" /><p className="text-sm text-slate-500">Bild hochladen</p><p className="text-xs text-slate-400 mt-1">JPG, PNG, WEBP</p></>)}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  </label>
-                )}
-              </div>
-
-              {/* Status */}
-              <div className="space-y-2">
-                <Label>Event-Status</Label>
-                <div className="flex gap-2">
-                  {["draft", "published", "archived"].map((s) => (
-                    <button key={s} onClick={() => handleChange("status", s)} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${form.status === s ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}>
-                      {s === "draft" ? "Entwurf" : s === "published" ? "Veröffentlicht" : "Archiviert"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Organizer */}
-              <div className="border-t border-slate-100 pt-5 space-y-4">
-                <h4 className="text-sm font-semibold text-slate-700">Veranstalter</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Name des Veranstalters</Label>
-                    <Input value={form.organizer_name} onChange={(e) => handleChange("organizer_name", e.target.value)} placeholder="z.B. Max Mustermann" className="h-10 border-slate-200" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Kontakt-E-Mail</Label>
-                    <Input type="email" value={form.organizer_email} onChange={(e) => handleChange("organizer_email", e.target.value)} placeholder="kontakt@example.com" className="h-10 border-slate-200" />
-                  </div>
-                </div>
-              </div>
-
-              <Button onClick={handleSave} disabled={saving} className={`w-full h-12 rounded-xl text-base font-medium transition-all ${savedOk ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-900 hover:bg-slate-800"}`}>
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : savedOk ? <><CheckCircle className="w-5 h-5 mr-2" />Gespeichert!</> : <><Save className="w-5 h-5 mr-2" />Speichern</>}
-              </Button>
-              </div>
-              </div>
-            </motion.div>
             </div>
-            </div>
-            );
+
+            <button onClick={handleSave} disabled={saving}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+              style={savedOk ? {background:"#0d1a00",color:"#beff00",border:"1px solid #1a2e00"} : {background:"#beff00",color:"#070707"}}
+              onMouseEnter={e=>{if(!saving&&!savedOk)e.currentTarget.style.boxShadow="0 0 24px rgba(190,255,0,0.4)"}}
+              onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : savedOk ? <><CheckCircle className="w-4 h-4" />Gespeichert!</> : <><Save className="w-4 h-4" />Speichern</>}
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
             }
