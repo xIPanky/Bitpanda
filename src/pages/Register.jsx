@@ -54,7 +54,7 @@ export default function Register() {
         sessionStorage.setItem('signupEmail', email);
         sessionStorage.setItem('signupType', 'guest');
         setTimeout(() => {
-          navigate(createPageUrl('Verify'));
+          navigate(createPageUrl('Landing'));
         }, 1500);
       } else {
         const errorMsg = response.data?.error || 'Registrierung fehlgeschlagen';
