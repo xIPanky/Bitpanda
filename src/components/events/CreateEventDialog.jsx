@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Plus, Trash2 } from "lucide-react";
 
 export default function CreateEventDialog({ onClose, onCreated }) {
   const [form, setForm] = useState({
@@ -14,20 +14,85 @@ export default function CreateEventDialog({ onClose, onCreated }) {
     date: "",
     time: "",
     location: "",
+    cover_image_url: "",
     is_paid: false,
     currency: "EUR",
+    custom_questions: [],
+    invitation_options: [],
   });
   const [saving, setSaving] = useState(false);
+  const [ticketTiers, setTicketTiers] = useState([
+    { name: "Standard", price: 0, capacity: null, color: "Standard" }
+  ]);
+  const [newQuestion, setNewQuestion] = useState("");
+  const [newInvitationOption, setNewInvitationOption] = useState("");
 
   const handleCreate = async () => {
     if (!form.name.trim() || !form.date) return;
     setSaving(true);
+    
     const newEvent = await base44.entities.Event.create({
       ...form,
       status: "published",
       registration_open: true,
     });
+    
+    // Create ticket tiers
+    for (const tier of ticketTiers) {
+      await base44.entities.TicketTier.create({
+        event_id: newEvent.id,
+        name: tier.name,
+        price: tier.price || 0,
+        capacity: tier.capacity,
+        color: tier.color,
+        sort_order: ticketTiers.indexOf(tier),
+        is_visible: true,
+      });
+    }
+    
     onCreated(newEvent);
+  };
+
+  const handleAddQuestion = () => {
+    if (newQuestion.trim()) {
+      setForm({
+        ...form,
+        custom_questions: [...form.custom_questions, newQuestion],
+      });
+      setNewQuestion("");
+    }
+  };
+
+  const handleRemoveQuestion = (index) => {
+    setForm({
+      ...form,
+      custom_questions: form.custom_questions.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleAddInvitationOption = () => {
+    if (newInvitationOption.trim()) {
+      setForm({
+        ...form,
+        invitation_options: [...form.invitation_options, newInvitationOption],
+      });
+      setNewInvitationOption("");
+    }
+  };
+
+  const handleRemoveInvitationOption = (index) => {
+    setForm({
+      ...form,
+      invitation_options: form.invitation_options.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setForm({ ...form, cover_image_url: file_url });
+    }
   };
 
   return (
