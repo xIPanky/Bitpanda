@@ -92,6 +92,16 @@ export default function EventInfo() {
     toast.success("Bild hochgeladen");
   };
 
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingVideo(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    handleChange("cover_video_url", file_url);
+    setUploadingVideo(false);
+    toast.success("Video hochgeladen");
+  };
+
 
 
   const DI = ({ label, children }) => (
