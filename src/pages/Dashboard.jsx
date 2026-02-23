@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import StatsOverview from "../components/admin/StatsOverview";
 import RegistrationTable from "../components/admin/RegistrationTable";
 import ApprovalSuccessOverlay from "../components/admin/ApprovalSuccessOverlay";
+import AccessGuard from "@/components/AccessGuard.jsx";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
@@ -25,26 +26,43 @@ export default function Dashboard() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
 
+  const { data: user } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: event } = useQuery({
-    queryKey: ["event", eventId],
-    queryFn: () => base44.entities.Event.filter({ id: eventId }),
-    enabled: !!eventId,
-    select: (data) => data?.[0],
+    queryKey: ["event", eventId, user?.id],
+    queryFn: async () => {
+      const events = await base44.entities.Event.filter({ id: eventId });
+      const evt = events?.[0];
+      // Organizer can only access their own events
+      if (user?.role === 'organizer' && evt?.organizer_id !== user?.id) {
+        return null;
+      }
+      return evt;
+    },
+    enabled: !!eventId && !!user,
+    select: (data) => data,
   });
 
   const { data: registrations } = useQuery({
-    queryKey: ["registrations", eventId],
-    queryFn: () => eventId
-      ? base44.entities.Registration.filter({ event_id: eventId }, "-created_date")
-      : base44.entities.Registration.list("-created_date"),
+    queryKey: ["registrations", eventId, user?.id],
+    queryFn: () => {
+      if (!eventId) return [];
+      return base44.entities.Registration.filter({ event_id: eventId, organizer_id: user?.id }, "-created_date");
+    },
+    enabled: !!eventId && !!user,
     initialData: [],
   });
 
   const { data: tickets } = useQuery({
-    queryKey: ["tickets", eventId],
-    queryFn: () => eventId
-      ? base44.entities.Ticket.filter({ event_id: eventId })
-      : base44.entities.Ticket.list(),
+    queryKey: ["tickets", eventId, user?.id],
+    queryFn: () => {
+      if (!eventId) return [];
+      return base44.entities.Ticket.filter({ event_id: eventId, organizer_id: user?.id });
+    },
+    enabled: !!eventId && !!user,
     initialData: [],
   });
 
@@ -185,6 +203,7 @@ export default function Dashboard() {
   };
 
   return (
+    <AccessGuard requiredRole="organizer">
     <div className="min-h-screen p-5 md:p-8 space-y-6" style={{ background: "#070707" }}>
       <ApprovalSuccessOverlay show={!!successMessage} message={successMessage} />
       <div>
@@ -232,5 +251,6 @@ export default function Dashboard() {
         onFilterCategoryChange={setFilterCategory}
       />
     </div>
+    </AccessGuard>
   );
 }
