@@ -61,8 +61,8 @@ Deno.serve(async (req) => {
       throw updateError;
     }
 
-    // Use signup result ID as verification token
-    const verificationLink = `${new URL(req.url).origin}/verified?token=${encodeURIComponent(signupResult.id)}&email=${encodeURIComponent(email)}&type=organizer`;
+    // Use user ID as verification token
+    const verificationLink = `${new URL(req.url).origin}/verified?token=${encodeURIComponent(user.id)}&email=${encodeURIComponent(email)}&type=organizer`;
 
     // Send verification email
     console.log(`ORGANIZER_EMAIL_SENDING email=${email}`);
