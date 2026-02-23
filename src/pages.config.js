@@ -47,44 +47,44 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Dashboard from './pages/Dashboard';
 import EmailSequences from './pages/EmailSequences';
 import EventDetails from './pages/EventDetails';
 import EventInfo from './pages/EventInfo';
 import EventTicketing from './pages/EventTicketing';
 import GuestData from './pages/GuestData';
 import GuestList from './pages/GuestList';
-import Home from './pages/Home';
-import Landing from './pages/Landing';
 import Marketing from './pages/Marketing';
-import Register from './pages/Register';
 import RegistrationSuccess from './pages/RegistrationSuccess';
 import RoleManagement from './pages/RoleManagement';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Landing from './pages/Landing';
+import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Dashboard": Dashboard,
     "EmailSequences": EmailSequences,
     "EventDetails": EventDetails,
     "EventInfo": EventInfo,
     "EventTicketing": EventTicketing,
     "GuestData": GuestData,
     "GuestList": GuestList,
-    "Home": Home,
-    "Landing": Landing,
     "Marketing": Marketing,
-    "Register": Register,
     "RegistrationSuccess": RegistrationSuccess,
     "RoleManagement": RoleManagement,
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
+    "Register": Register,
+    "Dashboard": Dashboard,
+    "Landing": Landing,
+    "Home": Home,
 }
 
 export const pagesConfig = {
