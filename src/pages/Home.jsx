@@ -61,7 +61,6 @@ export default function Home() {
   const visibleEvents = eventsExpanded ? events : upcomingEvents;
 
   return (
-    <AccessGuard requiredRole="organizer">
     <div className="min-h-screen p-5 md:p-8" style={{ background: "#070707" }}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
