@@ -184,9 +184,10 @@ export default function Home() {
                             { icon: Trash2, title: "Event löschen", action: () => setDeleteEvent(event) },
                           ].map(({ icon: Icon, title, action, href, to }, idx) => {
                             const cls = "p-2 rounded-lg transition-all text-sm";
-                            const style = { color: "#333" };
-                            const hoverEnter = (e) => { e.currentTarget.style.color = "#beff00"; e.currentTarget.style.background = "#111"; };
-                            const hoverLeave = (e) => { e.currentTarget.style.color = "#333"; e.currentTarget.style.background = "transparent"; };
+                            const isDelete = Icon === Trash2;
+                            const style = { color: isDelete ? "#d32f2f" : "#333" };
+                            const hoverEnter = (e) => { e.currentTarget.style.color = isDelete ? "#ff6b6b" : "#beff00"; e.currentTarget.style.background = "#111"; };
+                            const hoverLeave = (e) => { e.currentTarget.style.color = isDelete ? "#d32f2f" : "#333"; e.currentTarget.style.background = "transparent"; };
                             if (action) return (
                               <button key={idx} onClick={action} title={title} className={cls} style={style} onMouseEnter={hoverEnter} onMouseLeave={hoverLeave}>
                                 <Icon className="w-4 h-4" />
