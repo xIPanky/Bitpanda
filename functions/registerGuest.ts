@@ -22,41 +22,24 @@ Deno.serve(async (req) => {
     }
 
     const base44 = createClientFromRequest(req);
-
-    // Check if email already exists
     console.log(`SIGNUP_START email=${email}`);
-    const existingUsers = await base44.asServiceRole.entities.User.filter({ email });
-    if (existingUsers && existingUsers.length > 0) {
-      console.log(`SIGNUP_EMAIL_EXISTS email=${email}`);
-      return Response.json({ error: 'E-Mail-Adresse ist bereits registriert' }, { status: 409 });
+
+    // Try to invite user as guest
+    // This will fail if email already exists
+    try {
+      await base44.users.inviteUser(email, 'guest');
+      console.log(`SIGNUP_USER_INVITED email=${email}`);
+    } catch (inviteError) {
+      console.error(`SIGNUP_INVITE_ERROR error=${inviteError.message}`);
+      if (inviteError.message?.includes('already')) {
+        return Response.json({ error: 'E-Mail-Adresse ist bereits registriert' }, { status: 409 });
+      }
+      throw inviteError;
     }
 
-    // Create user via auth system (automatically creates User entity record)
+    // Generate verification token
     const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    
-    // Invite user (this creates them with a temporary token)
-    console.log(`SIGNUP_INVITING email=${email}`);
-    await base44.users.inviteUser(email, 'guest');
-
-    // Get the created user
-    const users = await base44.asServiceRole.entities.User.filter({ email });
-    const user = users?.[0];
-    
-    if (!user?.id) {
-      console.error(`SIGNUP_USER_NOT_FOUND after invite`);
-      return Response.json({ error: 'Benutzer konnte nicht erstellt werden' }, { status: 500 });
-    }
-
-    console.log(`SIGNUP_USER_CREATED userId=${user.id} email=${email}`);
-
-    // Update user: set email_verified=false, role=guest
-    await base44.asServiceRole.entities.User.update(user.id, {
-      email_verified: false,
-      role: 'guest'
-    });
-
-    // Build verification link
-    const verificationLink = `${new URL(req.url).origin}/verified?token=${verificationToken}&userId=${user.id}`;
+    const verificationLink = `${new URL(req.url).origin}/verified?token=${verificationToken}&email=${encodeURIComponent(email)}`;
 
     // Send verification email
     console.log(`SIGNUP_EMAIL_SENDING email=${email}`);
@@ -107,13 +90,12 @@ Deno.serve(async (req) => {
 
     return Response.json({
       success: true,
-      userId: user.id,
       email,
       message: 'Bestätigungs-E-Mail versendet'
     });
 
   } catch (error) {
     console.error(`SIGNUP_ERROR error=${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: error.response?.data?.message || error.message || 'Registrierung fehlgeschlagen' }, { status: 500 });
   }
 });
