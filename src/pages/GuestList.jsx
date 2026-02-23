@@ -2,150 +2,78 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban, Download, Link2, Copy, CheckCheck, Clock, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Ticket, Search, Users, Trash2, Ban, Download, Link2, Copy, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
 import { createPageUrl } from "@/utils";
 
-function downloadTicketPDF(ticket) {
-  const doc = new jsPDF({ unit: "mm", format: "a5" });
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticket.ticket_code}`;
-
-  doc.setFillColor(15, 23, 42);
-  doc.rect(0, 0, 148, 30, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.text("TICKET", 14, 18);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 180, 180);
-  doc.text(ticket.category || "Standard", 14, 24);
-
-  doc.setTextColor(15, 23, 42);
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text(ticket.guest_name || "", 14, 45);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 116, 139);
-  doc.text(ticket.guest_email || "", 14, 52);
-
-  doc.setFontSize(11);
-  doc.setTextColor(15, 23, 42);
-  doc.setFont("helvetica", "bold");
-  doc.text("Ticket-Code", 14, 68);
-  doc.setFontSize(20);
-  doc.setFont("courier", "bold");
-  doc.setTextColor(15, 23, 42);
-  doc.text(ticket.ticket_code || "", 14, 78);
-
-  // QR code as image
-  const img = new Image();
-  img.crossOrigin = "anonymous";
-  img.onload = () => {
-    doc.addImage(img, "PNG", 95, 38, 40, 40);
-    doc.save(`ticket-${ticket.ticket_code}.pdf`);
-  };
-  img.onerror = () => {
-    doc.save(`ticket-${ticket.ticket_code}.pdf`);
-  };
-  img.src = qrUrl;
-}
-
-const categoryColors = {
-  VIP: "bg-amber-50 text-amber-700 border-amber-200",
-  Business: "bg-blue-50 text-blue-700 border-blue-200",
-  Presse: "bg-purple-50 text-purple-700 border-purple-200",
-  Standard: "bg-slate-50 text-slate-600 border-slate-200",
-  Speaker: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  Sponsor: "bg-pink-50 text-pink-700 border-pink-200",
+const statusConfig = {
+  pending:   { label: "Ausstehend",  bg: "#1a1500", text: "#f59e0b", border: "#2a2000" },
+  approved:  { label: "Genehmigt",   bg: "#0d1a00", text: "#beff00", border: "#1a2e00" },
+  rejected:  { label: "Abgelehnt",   bg: "#1a0505", text: "#ef4444", border: "#2a0808" },
+  valid:     { label: "Gültig",      bg: "#0a0f1a", text: "#60a5fa", border: "#0f1a2e" },
+  used:      { label: "Eingecheckt", bg: "#0d1a00", text: "#beff00", border: "#1a2e00" },
+  cancelled: { label: "Storniert",   bg: "#1a0505", text: "#ef4444", border: "#2a0808" },
 };
 
-const categories = ["VIP", "Business", "Presse", "Standard", "Speaker", "Sponsor"];
-
-const statusLabels = {
-  pending: { label: "Ausstehend", color: "bg-yellow-50 text-yellow-700 border-yellow-200" },
-  approved: { label: "Genehmigt", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  rejected: { label: "Abgelehnt", color: "bg-red-50 text-red-700 border-red-200" },
-};
+const Btn = ({ children, onClick, style, disabled, className = "" }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-40 ${className}`}
+    style={style}
+  >
+    {children}
+  </button>
+);
 
 export default function GuestList() {
-   const [search, setSearch] = useState("");
-   const [deleteTarget, setDeleteTarget] = useState(null);
-   const [activeTab, setActiveTab] = useState("registrations");
-   const [filterDropdownQuestion, setFilterDropdownQuestion] = useState("");
-   const [filterDropdownAnswer, setFilterDropdownAnswer] = useState("");
-   const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [activeTab, setActiveTab] = useState("registrations");
+  const [filterDropdownQuestion, setFilterDropdownQuestion] = useState("");
+  const [filterDropdownAnswer, setFilterDropdownAnswer] = useState("");
+  const queryClient = useQueryClient();
 
-   const urlParams = new URLSearchParams(window.location.search);
-   const eventId = urlParams.get("event_id");
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("event_id");
 
-   const { data: event } = useQuery({
-     queryKey: ["event", eventId],
-     queryFn: () => base44.entities.Event.filter({ id: eventId }).then(res => res[0]),
-     enabled: !!eventId,
-   });
+  const { data: event } = useQuery({
+    queryKey: ["event", eventId],
+    queryFn: () => base44.entities.Event.filter({ id: eventId }).then(res => res[0]),
+    enabled: !!eventId,
+  });
 
-   const { data: registrations } = useQuery({
-     queryKey: ["registrations", eventId],
-     queryFn: () => eventId
-       ? base44.entities.Registration.filter({ event_id: eventId }, "-created_date")
-       : base44.entities.Registration.list("-created_date"),
-     initialData: [],
-   });
+  const { data: registrations } = useQuery({
+    queryKey: ["registrations", eventId],
+    queryFn: () => eventId
+      ? base44.entities.Registration.filter({ event_id: eventId }, "-created_date")
+      : base44.entities.Registration.list("-created_date"),
+    initialData: [],
+  });
 
-   const { data: tickets } = useQuery({
-     queryKey: ["tickets", eventId],
-     queryFn: () => eventId
-       ? base44.entities.Ticket.filter({ event_id: eventId }, "-created_date")
-       : base44.entities.Ticket.list("-created_date"),
-     initialData: [],
-   });
+  const { data: tickets } = useQuery({
+    queryKey: ["tickets", eventId],
+    queryFn: () => eventId
+      ? base44.entities.Ticket.filter({ event_id: eventId }, "-created_date")
+      : base44.entities.Ticket.list("-created_date"),
+    initialData: [],
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Ticket.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
-      toast.success("Ticket gelöscht");
-      setDeleteTarget(null);
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tickets", eventId] }); toast.success("Ticket gelöscht"); setDeleteTarget(null); },
   });
 
   const cancelMutation = useMutation({
     mutationFn: async (ticket) => {
       await base44.entities.Ticket.update(ticket.id, { status: "cancelled" });
-      if (ticket.registration_id) {
-        await base44.entities.Registration.update(ticket.registration_id, { status: "rejected" });
-      }
+      if (ticket.registration_id) await base44.entities.Registration.update(ticket.registration_id, { status: "rejected" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
@@ -154,35 +82,20 @@ export default function GuestList() {
     },
   });
 
-  const categoryMutation = useMutation({
-    mutationFn: ({ id, category }) => base44.entities.Ticket.update(id, { category }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
-    },
-  });
-
   const approveMutation = useMutation({
     mutationFn: (id) => base44.entities.Registration.update(id, { status: "approved" }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
-      toast.success("Registrierung genehmigt");
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["registrations", eventId] }); toast.success("Registrierung genehmigt"); },
   });
 
   const rejectMutation = useMutation({
     mutationFn: (id) => base44.entities.Registration.update(id, { status: "rejected" }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
-      toast.success("Registrierung abgelehnt");
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["registrations", eventId] }); toast.success("Registrierung abgelehnt"); },
   });
 
   const deleteRegistrationMutation = useMutation({
     mutationFn: async (registrationId) => {
-      const registrationTickets = tickets.filter(t => t.registration_id === registrationId);
-      for (const ticket of registrationTickets) {
-        await base44.entities.Ticket.delete(ticket.id);
-      }
+      const regTickets = tickets.filter(t => t.registration_id === registrationId);
+      for (const t of regTickets) await base44.entities.Ticket.delete(t.id);
       await base44.entities.Registration.delete(registrationId);
     },
     onSuccess: () => {
@@ -195,338 +108,219 @@ export default function GuestList() {
 
   const filteredRegistrations = registrations.filter((r) => {
     const term = search.toLowerCase();
-    return (
-      r.first_name?.toLowerCase().includes(term) ||
-      r.last_name?.toLowerCase().includes(term) ||
-      r.email?.toLowerCase().includes(term)
-    );
+    return r.first_name?.toLowerCase().includes(term) || r.last_name?.toLowerCase().includes(term) || r.email?.toLowerCase().includes(term);
   });
 
   const filteredTickets = tickets.filter((t) => {
     const term = search.toLowerCase();
-    const matchesSearch = (
-      t.guest_name?.toLowerCase().includes(term) ||
-      t.guest_email?.toLowerCase().includes(term) ||
-      t.ticket_code?.toLowerCase().includes(term) ||
-      t.category?.toLowerCase().includes(term)
-    );
-    const matchesFilter = !filterDropdownQuestion || !filterDropdownAnswer || 
-      (t.custom_answers && t.custom_answers[parseInt(filterDropdownQuestion)] === filterDropdownAnswer);
+    const matchesSearch = t.guest_name?.toLowerCase().includes(term) || t.guest_email?.toLowerCase().includes(term) || t.ticket_code?.toLowerCase().includes(term);
+    const matchesFilter = !filterDropdownQuestion || !filterDropdownAnswer || (t.custom_answers && t.custom_answers[parseInt(filterDropdownQuestion)] === filterDropdownAnswer);
     return matchesSearch && matchesFilter;
   });
 
-  // Get dropdown questions with options
   const dropdownQuestions = event?.custom_questions?.map((q, idx) => {
     const parts = q.split("||");
-    return {
-      index: idx,
-      text: parts[0],
-      type: parts[1] || "text",
-      options: parts[2]?.split("~") || []
-    };
+    return { index: idx, text: parts[0], type: parts[1] || "text", options: parts[2]?.split("~") || [] };
   }).filter(q => q.type === "dropdown") || [];
 
+  const thStyle = { color: "#2a2a2a", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", padding: "12px 20px", borderBottom: "1px solid #141414", textAlign: "left" };
+  const tdStyle = { padding: "14px 20px", borderBottom: "1px solid #101010", fontSize: "13px" };
+
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Registrierungslink */}
-        {eventId && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Link2 className="w-4 h-4 text-slate-400" />
-              <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">Registrierungslink</h3>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 font-mono truncate">
-                {`${window.location.origin}${createPageUrl(`EventTicketing?event_id=${eventId}`)}`}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="shrink-0"
-                onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}${createPageUrl(`EventTicketing?event_id=${eventId}`)}`);
-                  toast.success("Link kopiert!");
-                }}
-              >
-                <Copy className="w-3 h-3 mr-1" />
-                Kopieren
-              </Button>
-            </div>
+    <div className="min-h-screen p-5 md:p-8 space-y-5" style={{ background: "#070707" }}>
+      {/* Registration Link */}
+      {eventId && (
+        <div className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+          <Link2 className="w-4 h-4 flex-shrink-0" style={{ color: "#333" }} />
+          <div className="flex-1 font-mono text-xs truncate" style={{ color: "#555" }}>
+            {`${window.location.origin}${createPageUrl(`EventTicketing?event_id=${eventId}`)}`}
           </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-           <div>
-             <h1 className="text-2xl font-bold text-slate-900">Gästeliste</h1>
-             <p className="text-sm text-slate-500 mt-1">
-               {activeTab === "registrations" ? `${registrations.length} Registrierungen · ${registrations.filter(r => r.status === "approved").length} genehmigt` : `${tickets.length} Tickets · ${tickets.filter((t) => t.status === "used").length} eingecheckt`}
-             </p>
-           </div>
-           <div className="flex gap-2 flex-wrap">
-             <div className="relative flex-1 min-w-64">
-               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-               <Input
-                 value={search}
-                 onChange={(e) => setSearch(e.target.value)}
-                 placeholder="Suche nach Name, E-Mail, Code..."
-                 className="pl-10 h-10 border-slate-200"
-               />
-             </div>
-             {activeTab === "tickets" && dropdownQuestions.length > 0 && (
-               <>
-                 <select 
-                   value={filterDropdownQuestion} 
-                   onChange={(e) => { setFilterDropdownQuestion(e.target.value); setFilterDropdownAnswer(""); }}
-                   className="h-10 px-3 rounded-md border border-slate-200 text-sm bg-white"
-                 >
-                   <option value="">Alle Fragen</option>
-                   {dropdownQuestions.map((q) => (
-                     <option key={q.index} value={q.index}>{q.text}</option>
-                   ))}
-                 </select>
-                 {filterDropdownQuestion && (
-                   <select 
-                     value={filterDropdownAnswer} 
-                     onChange={(e) => setFilterDropdownAnswer(e.target.value)}
-                     className="h-10 px-3 rounded-md border border-slate-200 text-sm bg-white"
-                   >
-                     <option value="">Alle Antworten</option>
-                     {dropdownQuestions[parseInt(filterDropdownQuestion)]?.options?.map((opt) => (
-                       <option key={opt} value={opt}>{opt}</option>
-                     ))}
-                   </select>
-                 )}
-               </>
-             )}
-           </div>
-         </div>
-
-        {/* Tabs */}
-        <div className="flex gap-2 border-b border-slate-200 bg-white rounded-t-2xl px-6">
           <button
-            onClick={() => setActiveTab("registrations")}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "registrations"
-                ? "border-slate-900 text-slate-900"
-                : "border-transparent text-slate-600 hover:text-slate-900"
-            }`}
+            onClick={() => { navigator.clipboard.writeText(`${window.location.origin}${createPageUrl(`EventTicketing?event_id=${eventId}`)}`); toast.success("Link kopiert!"); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex-shrink-0"
+            style={{ background: "#161616", color: "#beff00", border: "1px solid #1e1e1e" }}
           >
-            Registrierungen ({registrations.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("tickets")}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "tickets"
-                ? "border-slate-900 text-slate-900"
-                : "border-transparent text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Tickets ({tickets.length})
+            <Copy className="w-3 h-3" /> Kopieren
           </button>
         </div>
+      )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-slate-100 border-t-0 overflow-hidden rounded-b-2xl"
-        >
-          <div className="overflow-x-auto">
-            <Table>
-              {activeTab === "registrations" ? (
-                <>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50/50">
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-Mail</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unternehmen</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktionen</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredRegistrations.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-16 text-slate-400">
-                          <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                          <p>Keine Registrierungen gefunden</p>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredRegistrations.map((registration) => (
-                        <TableRow key={registration.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                          <TableCell className="font-medium text-slate-900">{registration.first_name} {registration.last_name}</TableCell>
-                          <TableCell className="text-sm text-slate-600">{registration.email}</TableCell>
-                          <TableCell className="text-sm text-slate-600">{registration.company || "-"}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={statusLabels[registration.status]?.color || "bg-slate-50 text-slate-600"}>
-                              {statusLabels[registration.status]?.label || registration.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              {registration.status === "pending" && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                    onClick={() => approveMutation.mutate(registration.id)}
-                                  >
-                                    <CheckCheck className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                    onClick={() => rejectMutation.mutate(registration.id)}
-                                  >
-                                    <XCircle className="w-4 h-4" />
-                                  </Button>
-                                </>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => setDeleteTarget(registration)}
-                                title="Löschen"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </>
-              ) : (
-                <>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50/50">
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gast</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">E-Mail</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Code</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unternehmen</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
-                      <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Aktionen</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTickets.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-16 text-slate-400">
-                          <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                          <p>Keine Tickets gefunden</p>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                       filteredTickets.map((ticket) => {
-                         const registration = registrations.find(r => r.id === ticket.registration_id);
-                         return (
-                     <TableRow key={ticket.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                       <TableCell className="font-medium text-slate-900">{ticket.guest_name}</TableCell>
-                       <TableCell className="text-sm text-slate-600">{ticket.guest_email}</TableCell>
-                       <TableCell>
-                         <code className="text-xs font-mono bg-slate-100 px-2 py-1 rounded">
-                           {ticket.ticket_code}
-                         </code>
-                       </TableCell>
-                       <TableCell className="text-sm text-slate-600">{registration?.company || "-"}</TableCell>
-                       <TableCell>
-                        {ticket.status === "used" ? (
-                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Eingecheckt
-                          </Badge>
-                        ) : ticket.status === "cancelled" ? (
-                          <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 text-xs">
-                            <XCircle className="w-3 h-3 mr-1" />
-                            Storniert
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                            <Ticket className="w-3 h-3 mr-1" />
-                            Gültig
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-                            onClick={() => downloadTicketPDF(ticket)}
-                            title="PDF herunterladen"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          {ticket.status !== "cancelled" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                              onClick={() => cancelMutation.mutate(ticket)}
-                              title="Stornieren"
-                            >
-                              <Ban className="w-4 h-4" />
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => setDeleteTarget(ticket)}
-                            title="Löschen"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                          </div>
-                          </TableCell>
-                          </TableRow>
-                          );
-                          })
-                          )}
-                          </TableBody>
-                    </>
-                    )}
-                    </Table>
-                    </div>
-                    </motion.div>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Gästeliste</h1>
+          <p className="text-xs mt-1 uppercase tracking-widest" style={{ color: "#444" }}>
+            {activeTab === "registrations"
+              ? `${registrations.length} Registrierungen · ${registrations.filter(r => r.status === "approved").length} genehmigt`
+              : `${tickets.length} Tickets · ${tickets.filter(t => t.status === "used").length} eingecheckt`}
+          </p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#333" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Suche..."
+              className="h-9 pl-9 pr-4 rounded-xl text-sm text-white placeholder-[#333] outline-none transition-all"
+              style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", width: "200px" }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "#beff00"; e.currentTarget.style.boxShadow = "0 0 0 2px rgba(190,255,0,0.1)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "#1a1a1a"; e.currentTarget.style.boxShadow = "none"; }}
+            />
+          </div>
+          {activeTab === "tickets" && dropdownQuestions.length > 0 && (
+            <>
+              <select value={filterDropdownQuestion} onChange={(e) => { setFilterDropdownQuestion(e.target.value); setFilterDropdownAnswer(""); }}
+                className="h-9 px-3 rounded-xl text-sm text-white outline-none" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+                <option value="">Alle Fragen</option>
+                {dropdownQuestions.map((q) => <option key={q.index} value={q.index}>{q.text}</option>)}
+              </select>
+              {filterDropdownQuestion && (
+                <select value={filterDropdownAnswer} onChange={(e) => setFilterDropdownAnswer(e.target.value)}
+                  className="h-9 px-3 rounded-xl text-sm text-white outline-none" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+                  <option value="">Alle Antworten</option>
+                  {dropdownQuestions[parseInt(filterDropdownQuestion)]?.options?.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+        {[{ id: "registrations", label: `Registrierungen (${registrations.length})` }, { id: "tickets", label: `Tickets (${tickets.length})` }].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+            style={activeTab === tab.id ? { background: "#beff00", color: "#070707" } : { color: "#444" }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Table */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl overflow-hidden" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr>
+                {activeTab === "registrations"
+                  ? ["Name", "E-Mail", "Status", "Aktionen"].map(h => <th key={h} style={thStyle}>{h}</th>)
+                  : ["Gast", "E-Mail", "Code", "Status", "Aktionen"].map(h => <th key={h} style={thStyle}>{h}</th>)
+                }
+              </tr>
+            </thead>
+            <tbody>
+              {activeTab === "registrations" ? (
+                filteredRegistrations.length === 0 ? (
+                  <tr><td colSpan={4} className="text-center py-16">
+                    <Users className="w-8 h-8 mx-auto mb-3" style={{ color: "#1a1a1a" }} />
+                    <p className="text-xs uppercase tracking-widest" style={{ color: "#2a2a2a" }}>Keine Registrierungen</p>
+                  </td></tr>
+                ) : filteredRegistrations.map((reg) => {
+                  const s = statusConfig[reg.status] || statusConfig.pending;
+                  return (
+                    <tr key={reg.id} className="group transition-colors" onMouseEnter={(e) => e.currentTarget.style.background = "#111"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                      <td style={tdStyle}>
+                        <p className="font-semibold text-white">{reg.first_name} {reg.last_name}</p>
+                      </td>
+                      <td style={tdStyle}><span style={{ color: "#555" }}>{reg.email}</span></td>
+                      <td style={tdStyle}>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold" style={{ background: s.bg, color: s.text, border: `1px solid ${s.border}` }}>
+                          {s.label}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>
+                        <div className="flex items-center gap-1.5">
+                          {reg.status === "pending" && (
+                            <>
+                              <Btn onClick={() => approveMutation.mutate(reg.id)} style={{ background: "#beff00", color: "#070707" }}>
+                                <CheckCircle2 className="w-3 h-3" /> Genehmigen
+                              </Btn>
+                              <Btn onClick={() => rejectMutation.mutate(reg.id)} style={{ background: "#1a0505", color: "#ef4444", border: "1px solid #2a0808" }}>
+                                <XCircle className="w-3 h-3" /> Ablehnen
+                              </Btn>
+                            </>
+                          )}
+                          <Btn onClick={() => setDeleteTarget(reg)} style={{ background: "#111", color: "#333", border: "1px solid #1a1a1a" }}>
+                            <Trash2 className="w-3 h-3" />
+                          </Btn>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                filteredTickets.length === 0 ? (
+                  <tr><td colSpan={5} className="text-center py-16">
+                    <Ticket className="w-8 h-8 mx-auto mb-3" style={{ color: "#1a1a1a" }} />
+                    <p className="text-xs uppercase tracking-widest" style={{ color: "#2a2a2a" }}>Keine Tickets</p>
+                  </td></tr>
+                ) : filteredTickets.map((ticket) => {
+                  const s = statusConfig[ticket.status] || statusConfig.valid;
+                  return (
+                    <tr key={ticket.id} className="group transition-colors" onMouseEnter={(e) => e.currentTarget.style.background = "#111"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                      <td style={tdStyle}><p className="font-semibold text-white">{ticket.guest_name}</p></td>
+                      <td style={tdStyle}><span style={{ color: "#555" }}>{ticket.guest_email}</span></td>
+                      <td style={tdStyle}>
+                        <code className="text-xs font-mono px-2 py-1 rounded-lg" style={{ background: "#111", color: "#beff00", border: "1px solid #1a2e00" }}>
+                          {ticket.ticket_code}
+                        </code>
+                      </td>
+                      <td style={tdStyle}>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold" style={{ background: s.bg, color: s.text, border: `1px solid ${s.border}` }}>
+                          {s.label}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>
+                        <div className="flex items-center gap-1.5">
+                          {ticket.status !== "cancelled" && (
+                            <Btn onClick={() => cancelMutation.mutate(ticket)} style={{ background: "#1a1200", color: "#f59e0b", border: "1px solid #2a1e00" }}>
+                              <Ban className="w-3 h-3" /> Stornieren
+                            </Btn>
+                          )}
+                          <Btn onClick={() => setDeleteTarget(ticket)} style={{ background: "#111", color: "#333", border: "1px solid #1a1a1a" }}>
+                            <Trash2 className="w-3 h-3" />
+                          </Btn>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+
+      {/* Delete Dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-         <AlertDialogContent>
-           <AlertDialogHeader>
-             <AlertDialogTitle>{deleteTarget?.ticket_code ? "Ticket" : "Gast"} löschen?</AlertDialogTitle>
-             <AlertDialogDescription>
-               {deleteTarget?.ticket_code 
-                 ? <>Das Ticket von <strong>{deleteTarget?.guest_name}</strong> wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</>
-                 : <>Der Gast <strong>{deleteTarget?.first_name} {deleteTarget?.last_name}</strong> und alle zugehörigen Tickets werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</>
-               }
-             </AlertDialogDescription>
-           </AlertDialogHeader>
-           <AlertDialogFooter>
-             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-             <AlertDialogAction
-               className="bg-red-600 hover:bg-red-700"
-               disabled={deleteRegistrationMutation.isPending || deleteMutation.isPending}
-               onClick={() => {
-                 if (deleteTarget?.ticket_code) {
-                   deleteMutation.mutate(deleteTarget.id);
-                 } else {
-                   deleteRegistrationMutation.mutate(deleteTarget.id);
-                 }
-               }}
-             >
-               {(deleteRegistrationMutation.isPending || deleteMutation.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-               Löschen
-             </AlertDialogAction>
-           </AlertDialogFooter>
-         </AlertDialogContent>
-       </AlertDialog>
+        <AlertDialogContent style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", color: "#fff" }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">{deleteTarget?.ticket_code ? "Ticket" : "Gast"} löschen?</AlertDialogTitle>
+            <AlertDialogDescription style={{ color: "#555" }}>
+              {deleteTarget?.ticket_code
+                ? <>Das Ticket von <strong className="text-white">{deleteTarget?.guest_name}</strong> wird dauerhaft gelöscht.</>
+                : <>Der Gast <strong className="text-white">{deleteTarget?.first_name} {deleteTarget?.last_name}</strong> und alle Tickets werden dauerhaft gelöscht.</>
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel style={{ background: "#111", color: "#888", border: "1px solid #1a1a1a" }}>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              style={{ background: "#ef4444", color: "#fff" }}
+              disabled={deleteRegistrationMutation.isPending || deleteMutation.isPending}
+              onClick={() => deleteTarget?.ticket_code ? deleteMutation.mutate(deleteTarget.id) : deleteRegistrationMutation.mutate(deleteTarget.id)}
+            >
+              {(deleteRegistrationMutation.isPending || deleteMutation.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
