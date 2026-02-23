@@ -52,6 +52,7 @@ export default function Register() {
         setSuccess(true);
         // Store email in sessionStorage for verify page
         sessionStorage.setItem('signupEmail', email);
+        sessionStorage.setItem('signupType', 'guest');
         setTimeout(() => {
           navigate(createPageUrl('Verify'));
         }, 1500);
