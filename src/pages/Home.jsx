@@ -181,6 +181,7 @@ export default function Home() {
                             { icon: Copy, title: "Link kopieren", action: () => { navigator.clipboard.writeText(registerUrl); toast.success("Link kopiert!"); } },
                             { icon: ExternalLink, title: "Registrierung öffnen", href: registerUrl },
                             { icon: LayoutDashboard, title: "Dashboard", to: createPageUrl(`Dashboard?event_id=${event.id}`) },
+                            { icon: Trash2, title: "Event löschen", action: () => setDeleteEvent(event) },
                           ].map(({ icon: Icon, title, action, href, to }, idx) => {
                             const cls = "p-2 rounded-lg transition-all text-sm";
                             const style = { color: "#333" };
