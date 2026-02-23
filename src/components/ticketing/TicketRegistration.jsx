@@ -253,7 +253,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         )}
 
         {parsedQuestions.length > 0 && (
-          <div className="pt-4 space-y-5" style={{ borderTop: "1px solid #141414" }}>
+          <div className="pt-3 space-y-4" style={{ borderTop: "1px solid #141414" }}>
             {parsedQuestions.map((q, idx) => (
               <div key={idx}>
                 <FieldLabel required={q.required}>{q.text}</FieldLabel>
