@@ -61,6 +61,22 @@ export default function Home() {
   const upcomingEvents = sortedEvents.slice(0, 5);
   const visibleEvents = eventsExpanded ? events : upcomingEvents;
 
+  const handleDeleteEvent = async () => {
+    if (!deleteEvent) return;
+    setIsDeleting(true);
+    try {
+      await base44.entities.Event.delete(deleteEvent.id);
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast.success("Event gelöscht");
+      setDeleteEvent(null);
+    } catch (error) {
+      toast.error("Fehler beim Löschen");
+      console.error(error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen p-5 md:p-8" style={{ background: "#070707" }}>
       <div className="max-w-4xl mx-auto space-y-6">
