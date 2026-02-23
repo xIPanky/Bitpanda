@@ -45,6 +45,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Registrierung für dieses Event geschlossen' }, { status: 403 });
     }
 
+    // Validate phone and company if provided
+    if (!payload.phone?.trim() || !payload.company?.trim()) {
+      return Response.json({ error: 'Telefonnummer und Unternehmen sind erforderlich' }, { status: 400 });
+    }
+
     // Create registration record (public function, no auth needed)
     const registration = await base44.asServiceRole.entities.Registration.create({
       event_id: payload.event_id,
@@ -52,8 +57,8 @@ Deno.serve(async (req) => {
       first_name: payload.first_name.trim(),
       last_name: payload.last_name.trim(),
       email: payload.email.toLowerCase(),
-      phone: payload.phone || '',
-      company: payload.company || '',
+      phone: payload.phone.trim(),
+      company: payload.company.trim(),
       category: payload.category || 'Standard',
       plus_one: payload.plus_one || false,
       plus_one_name: payload.plus_one_name || '',
