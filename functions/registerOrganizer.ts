@@ -19,11 +19,12 @@ Deno.serve(async (req) => {
 
     console.log(`ORGANIZER_SIGNUP_START email=${email}`);
 
-    // Create user account via public signup (generate random password)
-    const randomPassword = Math.random().toString(36).slice(-16) + Math.random().toString(36).slice(-16);
+    const base44 = createClientFromRequest(req);
+
+    // Create user account via public signup
     let signupResult;
     try {
-      signupResult = await base44.auth.signUp(email, randomPassword);
+      signupResult = await base44.auth.signUp(email, password || Math.random().toString(36).slice(-16));
       console.log(`ORGANIZER_USER_CREATED email=${email} user_id=${signupResult.id}`);
     } catch (signupError) {
       console.error(`ORGANIZER_SIGNUP_ERROR error=${signupError.message}`);
@@ -34,7 +35,6 @@ Deno.serve(async (req) => {
     }
 
     // Update user with role and account_type
-    const base44 = createClientFromRequest(req);
     try {
       await base44.asServiceRole.entities.User.update(signupResult.id, {
         role: 'user',
