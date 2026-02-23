@@ -45,9 +45,13 @@ export default function Register() {
       console.log('SIGNUP_FORM_SUBMIT email=', email);
       const response = await base44.functions.invoke('registerGuest', { email, password });
       
+      console.log('SIGNUP_RESPONSE', response.data);
+      
       if (response.data?.success) {
-        console.log('SIGNUP_SUCCESS');
+        console.log('SIGNUP_SUCCESS email=', email);
         setSuccess(true);
+        // Store email in sessionStorage for verify page
+        sessionStorage.setItem('signupEmail', email);
         setTimeout(() => {
           navigate(createPageUrl('Verify'));
         }, 1500);
@@ -57,8 +61,10 @@ export default function Register() {
         setError(errorMsg);
       }
     } catch (err) {
-      console.error('SIGNUP_ERROR', err.message);
-      setError(err.response?.data?.error || err.message || 'Ein Fehler ist aufgetreten');
+      console.error('SIGNUP_ERROR', err);
+      const errorMsg = err.response?.data?.error || err.message || 'Ein Fehler ist aufgetreten';
+      console.error('SIGNUP_ERROR_FINAL=', errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
