@@ -132,7 +132,11 @@ export default function Dashboard() {
     try {
       const result = await base44.functions.invoke("approveGuestAndSendTicket", { guestId: reg.id });
       if (result.data?.success) {
-        toast.success(`${reg.first_name} ${reg.last_name} freigegeben · Ticket gesendet`);
+        if (result.data.emailSuccess) {
+          showSuccess("Ticket erfolgreich versendet");
+        } else {
+          toast.warning(`${reg.first_name} freigegeben – E-Mail fehlgeschlagen. Bitte erneut senden.`);
+        }
       } else {
         toast.error(result.data?.error || "Fehler bei der Freigabe");
       }
@@ -149,7 +153,7 @@ export default function Dashboard() {
     try {
       const result = await base44.functions.invoke("resendTicketEmail", { guestId: reg.id });
       if (result.data?.success) {
-        toast.success(`Ticket erneut gesendet an ${reg.email}`);
+        showSuccess("Ticket erfolgreich versendet");
       } else {
         toast.error(result.data?.error || "Fehler beim Senden");
       }
