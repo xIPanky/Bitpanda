@@ -227,16 +227,22 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           <div className="pt-3 space-y-4" style={{ borderTop: "1px solid #141414" }}>
             {parsedQuestions.map((q, idx) => (
               <div key={idx}>
-                <FieldLabel required={q.required}>{q.text}</FieldLabel>
                 {q.type === "dropdown" ? (
-                  <DarkSelect value={form.custom_answers[idx] || ""} onChange={(e) => handleAnswer(idx, e.target.value)}>
-                    <option value="" style={{ background: "#111" }}>-- Bitte wählen --</option>
-                    {q.options.map((opt, oi) => (
-                      <option key={oi} value={opt} style={{ background: "#111" }}>{opt}</option>
-                    ))}
-                  </DarkSelect>
+                  <ModernDropdown
+                    label={q.text}
+                    value={form.custom_answers[idx] || ""}
+                    onChange={(value) => handleAnswer(idx, value)}
+                    options={[
+                      { value: "", label: "-- Bitte wählen --" },
+                      ...q.options.map((opt) => ({ value: opt, label: opt })),
+                    ]}
+                    placeholder="-- Bitte wählen --"
+                  />
                 ) : (
-                  <DarkTextarea value={form.custom_answers[idx] || ""} onChange={(e) => handleAnswer(idx, e.target.value)} />
+                  <>
+                    <FieldLabel required={q.required}>{q.text}</FieldLabel>
+                    <DarkTextarea value={form.custom_answers[idx] || ""} onChange={(e) => handleAnswer(idx, e.target.value)} />
+                  </>
                 )}
               </div>
             ))}
