@@ -15,70 +15,27 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'guestId is required' }, { status: 400 });
     }
 
-    // ─── STEP 1: Fetch guest ───
-    console.log('APPROVAL STARTED for guestId:', guestId);
+    console.log('RESEND STARTED for guestId:', guestId);
+
+    // Fetch guest
     const registrations = await base44.asServiceRole.entities.Registration.list();
     const guest = registrations.find(r => r.id === guestId);
-
     if (!guest) {
       return Response.json({ error: 'Guest not found' }, { status: 404 });
     }
 
-    // ─── STEP 2: Update status to approved ───
-    await base44.asServiceRole.entities.Registration.update(guestId, {
-      status: 'approved',
-      approved_by: user.email,
-    });
-    console.log('STATUS UPDATED to approved for:', guest.email);
+    if (guest.status !== 'approved') {
+      return Response.json({ error: 'Guest is not approved' }, { status: 400 });
+    }
 
-    // ─── STEP 3: Find or create ticket ───
+    // Find existing ticket
     const allTickets = await base44.asServiceRole.entities.Ticket.list();
-    let ticket = allTickets.find(t => t.registration_id === guestId);
-
+    const ticket = allTickets.find(t => t.registration_id === guestId);
     if (!ticket) {
-      const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-      const pick = () => letters.charAt(Math.floor(Math.random() * letters.length));
-      const ticketCode = `${pick()}${pick()}${pick()}-${Math.floor(100 + Math.random() * 900)}`;
-
-      // Fetch tier info if available
-      let tierName = null;
-      let tierPrice = null;
-      if (guest.ticket_tier_id) {
-        const tiers = await base44.asServiceRole.entities.TicketTier.list();
-        const tier = tiers.find(t => t.id === guest.ticket_tier_id);
-        tierName = tier?.name || null;
-        tierPrice = tier?.price ?? null;
-      }
-
-      ticket = await base44.asServiceRole.entities.Ticket.create({
-        event_id: guest.event_id,
-        registration_id: guestId,
-        ticket_tier_id: guest.ticket_tier_id || null,
-        ticket_code: ticketCode,
-        guest_name: `${guest.first_name} ${guest.last_name}`.trim(),
-        guest_email: guest.email,
-        category: guest.category || 'Standard',
-        tier_name: tierName,
-        tier_price: tierPrice,
-        status: 'valid',
-        email_sent: false,
-      });
-
-      console.log('TICKET GENERATED:', ticket.ticket_code);
-    } else {
-      console.log('TICKET ALREADY EXISTS:', ticket.ticket_code);
+      return Response.json({ error: 'No ticket found for this guest. Please approve again.' }, { status: 404 });
     }
 
-    // ─── STEP 4: Wait — verify ticket exists in DB ───
-    // Re-fetch to confirm persistence before sending email
-    const verifyTickets = await base44.asServiceRole.entities.Ticket.list();
-    const verifiedTicket = verifyTickets.find(t => t.id === ticket.id);
-    if (!verifiedTicket) {
-      throw new Error('Ticket could not be verified after creation');
-    }
-    console.log('TICKET FILE READY:', verifiedTicket.ticket_code);
-
-    // ─── STEP 5: Fetch event details ───
+    // Fetch event
     const events = await base44.asServiceRole.entities.Event.list();
     const eventData = events.find(e => e.id === guest.event_id);
     const eventName = eventData?.name || 'Event';
@@ -88,24 +45,22 @@ Deno.serve(async (req) => {
     const eventTime = eventData?.time || '';
     const eventLocation = eventData?.location || '';
 
-    // ─── STEP 6: Send approval email ───
     const emailBody = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#070707;color:#ffffff;">
 
       <div style="text-align:center;padding:32px 0;border-bottom:1px solid #1a1a1a;margin-bottom:32px;">
-        <p style="color:#beff00;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">INVITE APPROVED</p>
+        <p style="color:#beff00;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">TICKET RESENT</p>
         <h1 style="font-size:28px;font-weight:800;color:#fff;margin:0;letter-spacing:-0.02em;">${eventName}</h1>
       </div>
 
       <p style="color:#888;line-height:1.7;font-size:15px;">Hallo ${guest.first_name},</p>
       <p style="color:#888;line-height:1.7;font-size:15px;">
-        deine Registrierung wurde geprüft und freigegeben.<br/>
-        Hier ist dein persönlicher Ticket-Code für den Einlass:
+        hier ist dein Ticket nochmals – auf Anfrage erneut zugesendet.
       </p>
 
       <div style="background:#0d1a00;border:1px solid #1a2e00;border-radius:16px;padding:32px 24px;margin:28px 0;text-align:center;">
         <p style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:2px;margin:0 0 12px;">Dein Ticket-Code</p>
-        <p style="font-size:36px;font-weight:700;color:#beff00;letter-spacing:4px;font-family:monospace;margin:0 0 20px;">${verifiedTicket.ticket_code}</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${verifiedTicket.ticket_code}&bgcolor=0d1a00&color=beff00"
+        <p style="font-size:36px;font-weight:700;color:#beff00;letter-spacing:4px;font-family:monospace;margin:0 0 20px;">${ticket.ticket_code}</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${ticket.ticket_code}&bgcolor=0d1a00&color=beff00"
              alt="QR Code" style="border-radius:8px;" width="160" height="160" />
       </div>
 
@@ -117,8 +72,7 @@ Deno.serve(async (req) => {
       </div>` : ''}
 
       <p style="color:#555;font-size:13px;line-height:1.6;margin-top:28px;">
-        Zeige diesen Code oder QR-Code beim Einlass vor.<br/>
-        Wir freuen uns auf dich!
+        Zeige diesen Code oder QR-Code beim Einlass vor.
       </p>
 
       <p style="color:#2a2a2a;font-size:11px;margin-top:40px;border-top:1px solid #141414;padding-top:20px;text-align:center;">
@@ -128,24 +82,23 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: guest.email,
-      subject: `Dein Ticket ist bestätigt – ${eventName}`,
+      subject: `Dein Ticket (erneut gesendet) – ${eventName}`,
       body: emailBody,
     });
 
-    console.log('EMAIL SENT to:', guest.email);
+    console.log('RESEND EMAIL SENT to:', guest.email);
 
-    // ─── STEP 7: Mark email as sent ───
-    await base44.asServiceRole.entities.Ticket.update(verifiedTicket.id, { email_sent: true });
+    // Update email_sent flag
+    await base44.asServiceRole.entities.Ticket.update(ticket.id, { email_sent: true });
 
     return Response.json({
       success: true,
-      ticketCode: verifiedTicket.ticket_code,
-      ticketId: verifiedTicket.id,
+      ticketCode: ticket.ticket_code,
       emailSentTo: guest.email,
     });
 
   } catch (error) {
-    console.error('APPROVAL ERROR:', error.message);
+    console.error('RESEND ERROR:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
