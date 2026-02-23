@@ -144,26 +144,65 @@ export default function EventInfo() {
             </div>
             <DI label="Veranstaltungsort"><input style={darkInput} value={form.location} onChange={e => handleChange("location", e.target.value)} placeholder="z.B. Hotel Adlon, Berlin" onFocus={e=>{e.target.style.borderColor="#beff00"}} onBlur={e=>{e.target.style.borderColor="#1e1e1e"}} /></DI>
 
-            {/* Cover image */}
-            <DI label="Titelbild">
-              {form.cover_image_url ? (
-                <div>
-                  <div ref={imageRef} className="relative rounded-xl overflow-hidden h-48 cursor-crosshair select-none"
-                    style={{ border: "1px solid #1e1e1e" }}
-                    onMouseDown={e => { setIsDragging(true); const r=imageRef.current.getBoundingClientRect(); handleChange("cover_image_position",`${Math.round(((e.clientX-r.left)/r.width)*100)}% ${Math.round(((e.clientY-r.top)/r.height)*100)}%`); }}
-                    onMouseMove={e => { if(!isDragging)return; const r=imageRef.current.getBoundingClientRect(); handleChange("cover_image_position",`${Math.round(((e.clientX-r.left)/r.width)*100)}% ${Math.round(((e.clientY-r.top)/r.height)*100)}%`); }}
-                    onMouseUp={()=>setIsDragging(false)} onMouseLeave={()=>setIsDragging(false)}
+            {/* Cover media */}
+            <DI label="Titelbild / Titelvideo">
+              {/* Type switcher */}
+              <div className="flex gap-1 p-1 rounded-xl w-fit mb-3" style={{background:"#111",border:"1px solid #1a1a1a"}}>
+                {[["image","Bild",ImageIcon],["video","Video",Video]].map(([type,label,Icon])=>(
+                  <button key={type} onClick={()=>{ if(type==="video"){handleChange("cover_image_url","");} else {handleChange("cover_video_url","");} }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+                    style={(!form.cover_video_url&&type==="image")||(form.cover_video_url&&type==="video")?{background:"#beff00",color:"#070707"}:{color:"#555"}}
                   >
-                    <img src={form.cover_image_url} alt="Titelbild" className="w-full h-full object-cover pointer-events-none" style={{ objectPosition: form.cover_image_position }} draggable={false} />
-                    {(() => { const [px,py]=(form.cover_image_position||"50% 50%").split(" ").map(v=>parseFloat(v)); return <div className="absolute w-5 h-5 pointer-events-none" style={{ left:`calc(${px}% - 10px)`, top:`calc(${py}% - 10px)` }}><div className="w-full h-full rounded-full border-2 border-white shadow-lg" style={{ background:"rgba(190,255,0,0.4)" }} /></div>; })()}
-                    <button onClick={e=>{e.stopPropagation();handleChange("cover_image_url","");}} className="absolute top-2 right-2 rounded-full p-1" style={{ background:"rgba(0,0,0,0.6)", color:"#fff" }}><X className="w-4 h-4" /></button>
+                    <Icon className="w-3.5 h-3.5" />{label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Image mode */}
+              {!form.cover_video_url && (
+                form.cover_image_url ? (
+                  <div>
+                    <div ref={imageRef} className="relative rounded-xl overflow-hidden h-48 cursor-crosshair select-none"
+                      style={{ border: "1px solid #1e1e1e" }}
+                      onMouseDown={e => { setIsDragging(true); const r=imageRef.current.getBoundingClientRect(); handleChange("cover_image_position",`${Math.round(((e.clientX-r.left)/r.width)*100)}% ${Math.round(((e.clientY-r.top)/r.height)*100)}%`); }}
+                      onMouseMove={e => { if(!isDragging)return; const r=imageRef.current.getBoundingClientRect(); handleChange("cover_image_position",`${Math.round(((e.clientX-r.left)/r.width)*100)}% ${Math.round(((e.clientY-r.top)/r.height)*100)}%`); }}
+                      onMouseUp={()=>setIsDragging(false)} onMouseLeave={()=>setIsDragging(false)}
+                    >
+                      <img src={form.cover_image_url} alt="Titelbild" className="w-full h-full object-cover pointer-events-none" style={{ objectPosition: form.cover_image_position }} draggable={false} />
+                      {(() => { const [px,py]=(form.cover_image_position||"50% 50%").split(" ").map(v=>parseFloat(v)); return <div className="absolute w-5 h-5 pointer-events-none" style={{ left:`calc(${px}% - 10px)`, top:`calc(${py}% - 10px)` }}><div className="w-full h-full rounded-full border-2 border-white shadow-lg" style={{ background:"rgba(190,255,0,0.4)" }} /></div>; })()}
+                      <button onClick={e=>{e.stopPropagation();handleChange("cover_image_url","");}} className="absolute top-2 right-2 rounded-full p-1" style={{ background:"rgba(0,0,0,0.6)", color:"#fff" }}><X className="w-4 h-4" /></button>
+                    </div>
+                    <p className="text-xs mt-1" style={{ color:"#333" }}>Klicken oder ziehen, um Bildausschnitt zu verschieben</p>
                   </div>
-                  <p className="text-xs mt-1" style={{ color:"#333" }}>Klicken oder ziehen, um Bildausschnitt zu verschieben</p>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-32 rounded-xl cursor-pointer transition-all" style={{ border:"2px dashed #1e1e1e" }} onMouseEnter={e=>e.currentTarget.style.borderColor="#beff00"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1e1e1e"}>
+                    {uploadingImage ? <Loader2 className="w-6 h-6 animate-spin" style={{color:"#333"}} /> : (<><ImageIcon className="w-8 h-8 mb-2" style={{color:"#2a2a2a"}} /><p className="text-sm" style={{color:"#444"}}>Bild hochladen</p></>)}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  </label>
+                )
+              )}
+
+              {/* Video mode */}
+              {form.cover_video_url && (
+                <div>
+                  <div className="relative rounded-xl overflow-hidden h-48" style={{border:"1px solid #1e1e1e"}}>
+                    <video src={form.cover_video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
+                    <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.3)",pointerEvents:"none"}} />
+                    <button onClick={()=>handleChange("cover_video_url","")} className="absolute top-2 right-2 rounded-full p-1" style={{background:"rgba(0,0,0,0.6)",color:"#fff"}}><X className="w-4 h-4" /></button>
+                    <div className="absolute bottom-2 left-3 text-xs font-bold uppercase tracking-wider" style={{color:"rgba(255,255,255,0.4)"}}>Video (mit Overlay)</div>
+                  </div>
+                  <p className="text-xs mt-1" style={{color:"#333"}}>Video wird auf der Landingpage mit Abdunklung abgespielt</p>
                 </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center h-32 rounded-xl cursor-pointer transition-all" style={{ border:"2px dashed #1e1e1e" }} onMouseEnter={e=>e.currentTarget.style.borderColor="#beff00"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1e1e1e"}>
-                  {uploadingImage ? <Loader2 className="w-6 h-6 animate-spin" style={{color:"#333"}} /> : (<><ImageIcon className="w-8 h-8 mb-2" style={{color:"#2a2a2a"}} /><p className="text-sm" style={{color:"#444"}}>Bild hochladen</p></>)}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+              )}
+              {!form.cover_video_url && (
+                /* show video upload button only when video tab is "active" — detected by no image URL after switching */
+                null
+              )}
+              {/* Video upload area (shown when no video and switching to video mode — but we detect via the switcher click clearing image) */}
+              {!form.cover_image_url && !form.cover_video_url && (
+                <label className="flex flex-col items-center justify-center h-32 rounded-xl cursor-pointer transition-all mt-3" style={{border:"2px dashed #1e1e1e"}} onMouseEnter={e=>e.currentTarget.style.borderColor="#beff00"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1e1e1e"}>
+                  {uploadingVideo ? <Loader2 className="w-6 h-6 animate-spin" style={{color:"#333"}} /> : (<><Video className="w-8 h-8 mb-2" style={{color:"#2a2a2a"}} /><p className="text-sm" style={{color:"#444"}}>Video hochladen</p><p className="text-xs mt-1" style={{color:"#2a2a2a"}}>MP4, MOV, WebM</p></>)}
+                  <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
                 </label>
               )}
             </DI>
