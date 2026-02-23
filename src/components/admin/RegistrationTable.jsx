@@ -100,6 +100,7 @@ export default function RegistrationTable({
                     const StatusIcon = status.icon;
                     const isProcessing = processingId === reg.id;
                     const catStyle = categoryColors[reg.category || "Standard"] || categoryColors.Standard;
+                    const regTicket = tickets.find(t => t.registration_id === reg.id);
 
                     return (
                       <motion.tr
@@ -146,6 +147,28 @@ export default function RegistrationTable({
                           </span>
                           {reg.status === "approved" && reg.approved_by && (
                             <p className="text-[10px] mt-1" style={{ color: "#333" }}>von {reg.approved_by}</p>
+                          )}
+                        </td>
+
+                        {/* Ticket column */}
+                        <td className="px-6 py-4">
+                          {regTicket?.ticket_generated && regTicket?.pdf_url ? (
+                            <a
+                              href={regTicket.pdf_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                              style={{ background: "#0d1a00", color: "#beff00", border: "1px solid rgba(190,255,0,0.2)" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(190,255,0,0.5)"; e.currentTarget.style.boxShadow = "0 0 10px rgba(190,255,0,0.15)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(190,255,0,0.2)"; e.currentTarget.style.boxShadow = "none"; }}
+                              title="Ticket-PDF herunterladen"
+                            >
+                              <Download className="w-3 h-3" />
+                              PDF
+                            </a>
+                          ) : (
+                            <span style={{ color: "#2a2a2a", fontSize: "12px" }}>–</span>
                           )}
                         </td>
 
