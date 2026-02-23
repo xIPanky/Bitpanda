@@ -207,7 +207,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
       )}
 
-      <div className="mb-8">
+      <div className="mb-5">
         <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#beff00" }}>Guestlist</p>
         <h2 className="text-2xl font-bold text-white">Deine Daten</h2>
       </div>
