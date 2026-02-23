@@ -20,7 +20,7 @@ import {
   BarChart3,
 } from "lucide-react";
 
-const publicPages = ["Register", "OrganizerRegistration", "Ticket", "Landing", "EventDetails", "EventTicketing", "RegistrationSuccess", "Login"];
+const publicPages = ["Register", "OrganizerRegistration", "Ticket", "Landing", "EventDetails", "EventTicketing", "RegistrationSuccess", "Login", "Verify", "Verified"];
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
