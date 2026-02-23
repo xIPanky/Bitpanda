@@ -21,29 +21,25 @@ export default function AccessGuard({ children, requiredRole = 'organizer' }) {
   useEffect(() => {
     if (isLoading) return;
 
-    // Not authenticated
+    // Not authenticated - redirect to landing
     if (!user) {
-      navigate('/');
+      navigate(createPageUrl('Landing'));
       return;
     }
 
     // Guest account - no backend access
     if (user.account_type === 'guest') {
-      navigate('/');
-      return;
-    }
-
-    // Admin accessing organizer-only routes
-    if (requiredRole === 'organizer' && user.role === 'admin') {
-      navigate('/admin');
+      navigate(createPageUrl('Landing'));
       return;
     }
 
     // Organizer accessing admin routes
     if (requiredRole === 'admin' && user.role !== 'admin') {
-      navigate('/');
+      navigate(createPageUrl('Landing'));
       return;
     }
+
+    // Everything else is allowed (organizers and admins can proceed)
   }, [user, isLoading, navigate, requiredRole]);
 
   if (isLoading) {
