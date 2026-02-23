@@ -21,12 +21,13 @@ export default function OrganizerRegistration() {
 
     try {
       // Register organizer via auth system
-      const response = await base44.auth.inviteUser(formData.email, 'organizer');
+      await base44.auth.inviteUser(formData.email, 'user');
       
-      // Update user profile with organizer info
+      // Update user profile with organizer info and account type
       await base44.auth.updateMe({
         full_name: formData.full_name,
         organizer_company: formData.company,
+        account_type: 'organizer',
       });
 
       toast.success('Veranstalter-Account erstellt! Du wirst weitergeleitet...');
