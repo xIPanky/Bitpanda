@@ -92,7 +92,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
     setError("");
 
     try {
-      if (!form.first_name.trim() || !form.last_name.trim() || !form.email.trim() || !form.company.trim()) {
+      if (!form.first_name.trim() || !form.last_name.trim() || !form.email.trim() || !form.phone.trim() || !form.company.trim()) {
         setError("Bitte fülle alle Pflichtfelder aus.");
         setLoading(false);
         return;
