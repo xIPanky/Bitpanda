@@ -77,10 +77,10 @@ export default function Register() {
         {/* Logo */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg" style={{ background: '#beff00' }}>
-            <span style={{ color: '#070707' }} className="font-bold text-lg">S</span>
+            <span style={{ color: '#070707' }} className="font-bold text-lg">⚡</span>
           </div>
-          <h1 style={{ color: '#ffffff' }} className="mt-4 text-3xl font-bold">Konto erstellen</h1>
-          <p style={{ color: '#888' }} className="mt-2 text-sm">Registriere dich als Gast</p>
+          <h1 style={{ color: '#ffffff' }} className="mt-4 text-3xl font-bold">Registrieren</h1>
+          <p style={{ color: '#888' }} className="mt-2 text-sm">Erstelle ein Gast-Konto</p>
         </div>
 
         {/* Form */}
