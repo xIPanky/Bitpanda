@@ -323,19 +323,31 @@ Deno.serve(async (req) => {
     console.log(`APPROVED guestId=${guestId}`);
 
     // ── STEP 3: Ensure single ticket ────────────────────────────────────────
-    const allTickets = await base44.asServiceRole.entities.Ticket.filter({ registration_id: guestId });
-    let ticket = allTickets?.[0] || null;
+    console.log(`TICKET_LOOKUP_START registration_id=${guestId}`);
+    let existingTickets = [];
+    try {
+      existingTickets = await base44.asServiceRole.entities.Ticket.filter({ registration_id: guestId }) || [];
+    } catch (e) {
+      console.error(`TICKET_LOOKUP_FILTER_ERROR: ${e.message} — falling back to list scan`);
+      const all = await base44.asServiceRole.entities.Ticket.list();
+      existingTickets = all.filter(t => t.registration_id === guestId);
+    }
+    let ticket = existingTickets[0] || null;
+    console.log(`TICKET_LOOKUP_DONE existing=${!!ticket} id=${ticket?.id || 'null'}`);
 
     if (!ticket) {
       let tierName = null, tierPrice = null;
       if (guest.ticket_tier_id) {
-        const tiers = await base44.asServiceRole.entities.TicketTier.filter({ id: guest.ticket_tier_id });
-        const tier = tiers?.[0];
-        tierName = tier?.name || null;
-        tierPrice = tier?.price ?? null;
+        try {
+          const tiers = await base44.asServiceRole.entities.TicketTier.filter({ id: guest.ticket_tier_id });
+          const tier = tiers?.[0];
+          tierName = tier?.name || null;
+          tierPrice = tier?.price ?? null;
+        } catch (_e) { /* non-fatal */ }
       }
+
       const code = generateTicketCode();
-      ticket = await base44.asServiceRole.entities.Ticket.create({
+      const ticketPayload = {
         event_id: guest.event_id,
         registration_id: guestId,
         ticket_tier_id: guest.ticket_tier_id || null,
@@ -349,12 +361,38 @@ Deno.serve(async (req) => {
         email_sent: false,
         generation_status: 'creating',
         generated_at: new Date().toISOString(),
-      });
+      };
+
+      console.log(`ABOUT_TO_CREATE_TICKET code=${code} registration_id=${guestId} event_id=${guest.event_id}`);
+      ticket = await base44.asServiceRole.entities.Ticket.create(ticketPayload);
+      console.log(`TICKET_CREATED_SUCCESSFULLY ticketId=${ticket?.id} code=${ticket?.ticket_code}`);
+
+      if (!ticket?.id) {
+        console.error(`TICKET_CREATION_FAILED — create() returned no id`);
+        return Response.json({ error: 'TICKET_CREATION_FAILED' }, { status: 500 });
+      }
+
+      // Verify by reloading
+      let verified = null;
+      try {
+        const verifyList = await base44.asServiceRole.entities.Ticket.filter({ registration_id: guestId });
+        verified = verifyList?.[0] || null;
+      } catch (_e) {
+        const all = await base44.asServiceRole.entities.Ticket.list();
+        verified = all.find(t => t.registration_id === guestId) || null;
+      }
+      if (!verified?.id) {
+        console.error(`TICKET_VERIFICATION_FAILED — not found after create`);
+        return Response.json({ error: 'TICKET_CREATION_FAILED_VERIFY' }, { status: 500 });
+      }
+      ticket = verified;
+      console.log(`TICKET_VERIFIED ticketId=${ticket.id}`);
+
       // Link ticket to registration
       await base44.asServiceRole.entities.Registration.update(guestId, { ticket_id: ticket.id });
-      console.log(`TICKET_UPSERT ticketId=${ticket.id} code=${ticket.ticket_code}`);
+      console.log(`TICKET_ID_SAVED_TO_GUEST ticket_id=${ticket.id} guestId=${guestId}`);
     } else {
-      console.log(`TICKET_UPSERT ticketId=${ticket.id} code=${ticket.ticket_code} (existing)`);
+      console.log(`TICKET_EXISTS ticketId=${ticket.id} code=${ticket.ticket_code} — reusing`);
     }
 
     // ── STEP 4: Reuse PDF if already ready, else (re)generate ───────────────
