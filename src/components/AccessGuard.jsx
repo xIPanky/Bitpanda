@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 
 /**
  * Access Guard Component
- * Protects routes based on user role
+ * Protects routes based on user role and account_type
  * Redirects guests to landing page, admins to /admin
  */
 export default function AccessGuard({ children, requiredRole = 'organizer' }) {
@@ -27,8 +27,8 @@ export default function AccessGuard({ children, requiredRole = 'organizer' }) {
       return;
     }
 
-    // Guest role - no backend access
-    if (user.role === 'guest') {
+    // Guest account - no backend access
+    if (user.account_type === 'guest') {
       navigate('/');
       return;
     }
@@ -54,7 +54,7 @@ export default function AccessGuard({ children, requiredRole = 'organizer' }) {
     );
   }
 
-  if (!user || user.role === 'guest') {
+  if (!user || user.account_type === 'guest') {
     return null;
   }
 
