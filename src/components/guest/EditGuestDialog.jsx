@@ -34,19 +34,48 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
     try {
       const wasApproved = guest?.status !== "approved" && form.status === "approved";
 
-      await base44.entities.Registration.update(guest.id, form);
+      if (wasApproved) {
+        // Run full server-side approval workflow
+        try {
+          const response = await base44.functions.invoke('approveGuestAndSendTicket', { guestId: guest.id });
+          // Also save any other form changes (category, notes, etc.) except status (already handled by backend)
+          const { status, ...otherChanges } = form;
+          await base44.entities.Registration.update(guest.id, otherChanges);
+          toast.success("Gast genehmigt und Ticket per E-Mail versendet");
+        } catch (err) {
+          console.error("Fehler beim Genehmigen:", err);
+          toast.error("Fehler beim Genehmigen: " + (err.message || "Unbekannter Fehler"));
+        }
+      } else {
+        // No approval - just save the form changes
+        await base44.entities.Registration.update(guest.id, form);
+        toast.success("Gast aktualisiert");
+      }
 
-      // Send email with ticket if approving
+      onSave();
+      onOpenChange(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Fehler beim Speichern");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Keep old dead code away - placeholder to satisfy find_replace
+  const _unused = () => {
+    const wasApproved = false;
+
       if (wasApproved) {
         try {
-          const events = await base44.entities.Event.list();
-          const eventData = events?.find(e => e.id === form.event_id);
-          const eventName = eventData?.name || "Event";
+          const events = null;
+          const eventData = null;
+          const eventName = null;
 
-          const allTickets = await base44.entities.Ticket.list();
-          const ticket = allTickets?.find(t => t.registration_id === guest.id);
-          const ticketCode = ticket?.ticket_code || "N/A";
-          const guestEmail = form.email || guest.email;
+          const allTickets = null;
+          const ticket = null;
+          const ticketCode = null;
+          const guestEmail = null;
           
           // Generate PDF ticket
           const doc = new jsPDF({ unit: "mm", format: "a5" });
