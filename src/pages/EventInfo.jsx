@@ -17,6 +17,7 @@ export default function EventInfo() {
   const [savedOk, setSavedOk] = useState(false);
   const [savingTiersOk, setSavingTiersOk] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const imageRef = React.useRef(null);
 
