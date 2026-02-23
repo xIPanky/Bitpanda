@@ -4,6 +4,10 @@ function isValidEmail(email) {
   return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -14,46 +18,40 @@ Deno.serve(async (req) => {
     }
 
     const { guestId } = await req.json();
-    if (!guestId) {
-      return Response.json({ error: 'guestId is required' }, { status: 400 });
-    }
+    if (!guestId) return Response.json({ error: 'guestId is required' }, { status: 400 });
 
-    console.log('RESEND STARTED for guestId:', guestId);
+    console.log(`RESEND_START guestId=${guestId}`);
 
-    // ── Load guest ──
-    const registrations = await base44.asServiceRole.entities.Registration.list();
-    const guest = registrations.find(r => r.id === guestId);
-    if (!guest) {
-      return Response.json({ error: 'Guest not found' }, { status: 404 });
-    }
-    if (guest.status !== 'approved') {
-      return Response.json({ error: 'Guest is not approved yet' }, { status: 400 });
-    }
+    // ── Load guest ──────────────────────────────────────────────────────────
+    const registrations = await base44.asServiceRole.entities.Registration.filter({ id: guestId });
+    const guest = registrations?.[0];
+    if (!guest) return Response.json({ error: 'GUEST_NOT_FOUND' }, { status: 404 });
 
-    // ── Validate guest email — ALWAYS use guest.email, never admin ──
-    console.log('EMAIL TARGET =', guest.email);
     if (!guest.email || !isValidEmail(guest.email)) {
-      return Response.json({ error: 'Guest has no valid email address' }, { status: 400 });
+      return Response.json({ error: 'MISSING_GUEST_EMAIL' }, { status: 400 });
     }
-    console.log('GUEST EMAIL FOUND:', guest.email);
+    console.log(`EMAIL_RECIPIENT=${guest.email}`);
 
-    // ── Load ticket ──
-    const allTickets = await base44.asServiceRole.entities.Ticket.list();
-    const ticket = allTickets.find(t => t.registration_id === guestId);
-    if (!ticket) {
-      return Response.json({ error: 'No ticket found. Please approve again to regenerate.' }, { status: 404 });
+    // ── Load ticket ─────────────────────────────────────────────────────────
+    const allTickets = await base44.asServiceRole.entities.Ticket.filter({ registration_id: guestId });
+    const ticket = allTickets?.[0];
+    if (!ticket) return Response.json({ error: 'NO_TICKET_FOUND' }, { status: 404 });
+
+    // Hard validate PDF is ready
+    if (ticket.generation_status !== 'ready' || !ticket.pdf_url) {
+      return Response.json({ error: 'NO_TICKET_READY', detail: `generation_status=${ticket.generation_status} pdf_url=${ticket.pdf_url || 'null'}` }, { status: 400 });
     }
 
-    // ── Load event ──
-    const events = await base44.asServiceRole.entities.Event.list();
-    const eventData = events.find(e => e.id === guest.event_id);
+    // ── Load event ──────────────────────────────────────────────────────────
+    const events = await base44.asServiceRole.entities.Event.filter({ id: guest.event_id });
+    const eventData = events?.[0] || null;
     const eventName = eventData?.name || 'Event';
     const eventDate = eventData?.date
       ? new Date(eventData.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
       : '';
     const eventTime = eventData?.time || '';
     const eventLocation = eventData?.location || '';
-    const pdfUrl = ticket.pdf_url || null;
+    const pdfUrl = ticket.pdf_url;
 
     const emailBody = `<!DOCTYPE html>
 <html>
@@ -62,14 +60,11 @@ Deno.serve(async (req) => {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#070707;padding:40px 16px;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:16px;overflow:hidden;">
-
         <tr><td style="background:#beff00;height:4px;font-size:0;">&nbsp;</td></tr>
-
         <tr><td style="padding:40px 40px 32px;text-align:center;border-bottom:1px solid #161616;">
           <p style="margin:0 0 8px;color:#beff00;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;">TICKET ERNEUT GESENDET</p>
           <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.02em;">${eventName}</h1>
         </td></tr>
-
         <tr><td style="padding:32px 40px 0;">
           <p style="margin:0 0 12px;color:#cccccc;font-size:15px;line-height:1.6;">Hallo ${guest.first_name},</p>
           <p style="margin:0;color:#888888;font-size:14px;line-height:1.7;">
@@ -77,7 +72,6 @@ Deno.serve(async (req) => {
             Zeige es beim Einlass vor.
           </p>
         </td></tr>
-
         <tr><td style="padding:24px 40px 0;">
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;border:1px solid #1e1e1e;border-radius:12px;">
             <tr><td style="padding:20px 24px;">
@@ -86,7 +80,6 @@ Deno.serve(async (req) => {
             </td></tr>
           </table>
         </td></tr>
-
         ${(eventDate || eventLocation) ? `
         <tr><td style="padding:16px 40px 0;">
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;border:1px solid #1e1e1e;border-radius:12px;">
@@ -97,35 +90,54 @@ Deno.serve(async (req) => {
             </td></tr>
           </table>
         </td></tr>` : ''}
-
-        ${pdfUrl ? `
         <tr><td style="padding:24px 40px 0;text-align:center;">
           <a href="${pdfUrl}" style="display:inline-block;background:#beff00;color:#070707;font-size:14px;font-weight:800;text-decoration:none;padding:14px 36px;border-radius:10px;letter-spacing:0.02em;">
             ↓ Ticket als PDF herunterladen
           </a>
-        </td></tr>` : ''}
-
-        <tr><td style="padding:32px 40px 24px;border-top:1px solid #141414;margin-top:32px;">
+        </td></tr>
+        <tr><td style="padding:24px 40px 24px;border-top:1px solid #141414;margin-top:24px;">
           <p style="margin:0;color:#2a2a2a;font-size:11px;text-align:center;">${eventName} · powered by Synergy</p>
         </td></tr>
-
         <tr><td style="background:#beff00;height:4px;font-size:0;">&nbsp;</td></tr>
-
       </table>
     </td></tr>
   </table>
 </body>
 </html>`;
 
-    console.log('EMAIL ATTEMPT (resend) to:', guest.email);
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: guest.email,
-      subject: `Dein Ticket (erneut gesendet) – ${eventName}`,
-      body: emailBody,
-    });
-    console.log('EMAIL SENT (resend) to:', guest.email);
+    // Send with 2 retries
+    let lastErr = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt > 0) await sleep(1000);
+      try {
+        console.log(`EMAIL_SEND_START recipient=${guest.email} attempt=${attempt + 1}`);
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: guest.email,
+          subject: `Dein Ticket (erneut gesendet) – ${eventName}`,
+          body: emailBody,
+        });
+        console.log(`EMAIL_SEND_DONE recipient=${guest.email}`);
+        lastErr = null;
+        break;
+      } catch (err) {
+        lastErr = err;
+        console.error(`EMAIL_FAILED attempt=${attempt + 1} error=${err.message}`);
+      }
+    }
+
+    if (lastErr) {
+      await base44.asServiceRole.entities.Registration.update(guestId, {
+        email_sent: false,
+        last_email_error: lastErr.message,
+      });
+      return Response.json({ error: `EMAIL_SEND_FAILED: ${lastErr.message}` }, { status: 500 });
+    }
 
     await base44.asServiceRole.entities.Ticket.update(ticket.id, { email_sent: true });
+    await base44.asServiceRole.entities.Registration.update(guestId, {
+      email_sent: true,
+      last_email_error: null,
+    });
 
     return Response.json({
       success: true,
@@ -134,7 +146,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('RESEND ERROR:', error.message);
+    console.error(`ERROR step=unhandled error=${error.message}`);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
