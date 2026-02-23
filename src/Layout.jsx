@@ -85,6 +85,11 @@ export default function Layout({ children, currentPageName }) {
   const isOrganizerUser = user?.role === 'user' && user?.account_type === 'organizer';
   const currentBase = currentPageName;
 
+  // Debug info (temporary)
+  if (user && process.env.NODE_ENV === 'development') {
+    console.log(`[Auth Debug] email=${user.email} role=${user.role} account_type=${user.account_type} page=${currentPageName}`);
+  }
+
   const NavLink = ({ item, onClick }) => {
     const Icon = item.icon;
     const basePage = item.page.split("?")[0];
