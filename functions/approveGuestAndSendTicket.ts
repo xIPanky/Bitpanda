@@ -243,9 +243,47 @@ async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode
   throw new Error(lastError?.message || 'EMAIL_SEND_FAILED');
 }
 
-// ── Email template ────────────────────────────────────────────────────────────
+// ── ICS Calendar File Generation ─────────────────────────────────────────
 
-function buildApprovalEmail(guest, ticket, eventData, pdfUrl) {
+function generateICSFile(eventData) {
+  const eventName = eventData?.name || 'Event';
+  const eventDate = eventData?.date || '';
+  const eventTime = eventData?.time || '09:00';
+  const eventLocation = eventData?.location || '';
+
+  if (!eventDate) return null;
+
+  const startDate = new Date(eventDate + `T${eventTime}`);
+  const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const formatDateTime = (date) => {
+    return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}Z`;
+  };
+
+  const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SYNERGY//Event Calendar//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:${eventName.replace(/\s+/g, '-')}-${Date.now()}@synergy.event
+DTSTAMP:${formatDateTime(new Date())}
+DTSTART:${formatDateTime(startDate)}
+DTEND:${formatDateTime(endDate)}
+SUMMARY:${eventName}
+LOCATION:${eventLocation}
+DESCRIPTION:Du bist dabei – wir sehen uns auf einem unvergesslichen Event!
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR`;
+
+  return ics;
+}
+
+// ── Email template (Premium design) ───────────────────────────────────────
+
+function buildApprovalEmail(guest, eventData) {
   const eventName = eventData?.name || 'Event';
   const eventDate = eventData?.date
     ? new Date(eventData.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -255,53 +293,76 @@ function buildApprovalEmail(guest, ticket, eventData, pdfUrl) {
 
   return `<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#070707;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#070707;padding:40px 16px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#070707;padding:20px 16px;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:16px;overflow:hidden;">
-        <tr><td style="background:#beff00;height:4px;font-size:0;">&nbsp;</td></tr>
-        <tr><td style="padding:40px 40px 32px;text-align:center;border-bottom:1px solid #161616;">
-          <p style="margin:0 0 8px;color:#beff00;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;">INVITE APPROVED</p>
-          <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;letter-spacing:-0.02em;">${eventName}</h1>
+      <table width="100%" style="max-width:600px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:20px;overflow:hidden;">
+        
+        <!-- Header Neon Bar -->
+        <tr><td style="background:#beff00;height:6px;font-size:0;">&nbsp;</td></tr>
+        
+        <!-- Hero Section -->
+        <tr><td style="padding:48px 40px 32px;text-align:center;border-bottom:1px solid #161616;">
+          <p style="margin:0 0 12px;color:#beff00;font-size:11px;font-weight:800;letter-spacing:5px;text-transform:uppercase;">Du bist dabei</p>
+          <h1 style="margin:0;color:#ffffff;font-size:32px;font-weight:900;letter-spacing:-0.02em;line-height:1.2;">${eventName}</h1>
+          <p style="margin:12px 0 0;color:#888;font-size:14px;">Deine Anmeldung wurde bestätigt</p>
         </td></tr>
+        
+        <!-- Main Copy -->
         <tr><td style="padding:32px 40px 0;">
-          <p style="margin:0 0 12px;color:#cccccc;font-size:15px;line-height:1.6;">Hallo ${guest.first_name},</p>
-          <p style="margin:0;color:#888888;font-size:14px;line-height:1.7;">
-            deine Registrierung wurde geprüft und freigegeben.<br>
-            Dein persönliches Ticket findest du unten als Download – zeige es beim Einlass vor.
+          <p style="margin:0 0 4px;color:#cccccc;font-size:16px;line-height:1.6;">Hallo ${guest.first_name},</p>
+          <p style="margin:8px 0 0;color:#999999;font-size:14px;line-height:1.8;">
+            deine Registrierung wurde geprüft und freigegeben. Mach dich bereit für eine Nacht voller Energie, Musik und besonderer Momente. Dein Ticket befindet sich im Anhang dieser E-Mail.
           </p>
         </td></tr>
-        <tr><td style="padding:24px 40px 0;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;border:1px solid #1e1e1e;border-radius:12px;">
-            <tr><td style="padding:20px 24px;">
-              <p style="margin:0 0 8px;color:#444444;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:3px;">Ticket-Code</p>
-              <p style="margin:0;color:#beff00;font-size:24px;font-weight:700;letter-spacing:6px;font-family:'Courier New',Courier,monospace;">${ticket.ticket_code}</p>
-            </td></tr>
-          </table>
-        </td></tr>
-        ${(eventDate || eventLocation) ? `
-        <tr><td style="padding:16px 40px 0;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;border:1px solid #1e1e1e;border-radius:12px;">
-            <tr><td style="padding:20px 24px;">
-              <p style="margin:0 0 12px;color:#444444;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:3px;">Event-Details</p>
-              ${eventDate ? `<p style="margin:0 0 6px;color:#888888;font-size:14px;">📅 ${eventDate}${eventTime ? ` · ${eventTime} Uhr` : ''}</p>` : ''}
-              ${eventLocation ? `<p style="margin:0;color:#888888;font-size:14px;">📍 ${eventLocation}</p>` : ''}
+        
+        <!-- Event Details Card -->
+        ${eventDate || eventLocation ? `
+        <tr><td style="padding:28px 40px 0;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;border:1px solid #1e1e1e;border-radius:14px;">
+            <tr><td style="padding:24px;">
+              <p style="margin:0 0 16px;color:#666;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:3px;">Event-Details</p>
+              ${eventDate ? `<p style="margin:0 0 8px;color:#fff;font-size:15px;font-weight:600;">📅 ${eventDate}${eventTime ? ` · ${eventTime} Uhr` : ''}</p>` : ''}
+              ${eventLocation ? `<p style="margin:0;color:#fff;font-size:15px;font-weight:600;">📍 ${eventLocation}</p>` : ''}
             </td></tr>
           </table>
         </td></tr>` : ''}
-        <tr><td style="padding:24px 40px 0;text-align:center;">
-          <a href="${pdfUrl}" style="display:inline-block;background:#beff00;color:#070707;font-size:14px;font-weight:800;text-decoration:none;padding:14px 36px;border-radius:10px;letter-spacing:0.02em;">
-            ↓ Ticket als PDF herunterladen
-          </a>
-        </td></tr>
+        
+        <!-- Action Buttons -->
         <tr><td style="padding:32px 40px 0;">
-          <p style="margin:0;color:#555555;font-size:13px;line-height:1.6;">Wir freuen uns auf dich! Bei Fragen antworte einfach auf diese E-Mail.</p>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="width:33.33%;padding:0 6px 12px 0;">
+                <a href="#" style="display:block;background:#1a1a1a;border:1px solid #2a2a2a;color:#beff00;text-decoration:none;padding:16px 12px;border-radius:10px;text-align:center;font-weight:700;font-size:12px;line-height:1.4;text-transform:uppercase;letter-spacing:1px;">
+                  📅<br>Kalender
+                </a>
+              </td>
+              <td style="width:33.33%;padding:0 6px 12px 6px;">
+                <a href="#" style="display:block;background:#1a1a1a;border:1px solid #2a2a2a;color:#beff00;text-decoration:none;padding:16px 12px;border-radius:10px;text-align:center;font-weight:700;font-size:12px;line-height:1.4;text-transform:uppercase;letter-spacing:1px;">
+                  📱<br>Wallet
+                </a>
+              </td>
+              <td style="width:33.33%;padding:0 0 12px 6px;">
+                <a href="#" style="display:block;background:#beff00;border:1px solid #beff00;color:#070707;text-decoration:none;padding:16px 12px;border-radius:10px;text-align:center;font-weight:800;font-size:12px;line-height:1.4;text-transform:uppercase;letter-spacing:1px;">
+                  🎟️<br>Ticket
+                </a>
+              </td>
+            </tr>
+          </table>
         </td></tr>
-        <tr><td style="padding:24px 40px 24px;border-top:1px solid #141414;margin-top:32px;">
-          <p style="margin:0;color:#2a2a2a;font-size:11px;text-align:center;">${eventName} · powered by Synergy</p>
+        
+        <!-- Footer Message -->
+        <tr><td style="padding:28px 40px;text-align:center;border-top:1px solid #141414;margin-top:8px;">
+          <p style="margin:0;color:#666;font-size:12px;line-height:1.6;">
+            Fragen? Antworte einfach auf diese E-Mail.<br>
+            <span style="color:#444;font-size:11px;">powered by Synergy</span>
+          </p>
         </td></tr>
-        <tr><td style="background:#beff00;height:4px;font-size:0;">&nbsp;</td></tr>
+        
+        <!-- Footer Neon Bar -->
+        <tr><td style="background:#beff00;height:6px;font-size:0;">&nbsp;</td></tr>
+        
       </table>
     </td></tr>
   </table>
