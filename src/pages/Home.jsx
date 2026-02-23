@@ -235,6 +235,32 @@ export default function Home() {
           onCreated={() => { queryClient.invalidateQueries(["events"]); setShowCreate(false); }}
         />
       )}
+
+      <AlertDialog open={!!deleteEvent} onOpenChange={(open) => !open && setDeleteEvent(null)}>
+        <AlertDialogContent style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+          <AlertDialogTitle className="text-white">Event löschen?</AlertDialogTitle>
+          <AlertDialogDescription className="text-sm" style={{ color: "#888" }}>
+            {deleteEvent && (
+              <>
+                <strong style={{ color: "#beff00" }}>{deleteEvent.name}</strong> wird unwiederbringlich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
+              </>
+            )}
+          </AlertDialogDescription>
+          <div className="flex gap-2 justify-end pt-4">
+            <AlertDialogCancel className="bg-transparent border-[1px]" style={{ color: "#666", borderColor: "#222" }}>
+              Abbrechen
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={handleDeleteEvent}
+              style={{ background: "#d32f2f", color: "#fff" }}
+              className="hover:opacity-90"
+            >
+              {isDeleting ? "Löschen..." : "Löschen"}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
