@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     }
 
     // Generate verification link
-    const verificationLink = `${new URL(req.url).origin}/verified?token=${encodeURIComponent(user.id)}&email=${encodeURIComponent(email)}&type=${user.account_type || 'guest'}`;
+    const verificationLink = `${new URL(req.url).origin}/verify?token=${encodeURIComponent(user.id)}`;
 
     // Send verification email via Resend
     const emailResult = await resend.emails.send({
