@@ -92,7 +92,7 @@ export function ModernDropdown({
     <div className={`w-full ${className}`}>
       {label && (
         <p className="mb-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: "#888" }}>
-          {label}
+          {label}{required && <span style={{ color: "#beff00", marginLeft: "4px" }}>*</span>}
         </p>
       )}
 
