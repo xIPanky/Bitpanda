@@ -5,11 +5,11 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 Deno.serve(async (req) => {
   try {
-    const { email, full_name, company } = await req.json();
+    const { email, full_name, password, company } = await req.json();
 
     // Validation
-    if (!email || !full_name) {
-      return Response.json({ error: 'Email und Name erforderlich' }, { status: 400 });
+    if (!email || !full_name || !password) {
+      return Response.json({ error: 'Email, Name und Passwort erforderlich' }, { status: 400 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
