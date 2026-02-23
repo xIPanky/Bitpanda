@@ -6,10 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Search, Building2, Phone, Mail, Tag, MessageSquare, UserPlus, Edit2, Download } from "lucide-react";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
+import { Users, Search, Mail, Edit2, Download } from "lucide-react";
 import { EditGuestDialog } from "../components/guest/EditGuestDialog";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
