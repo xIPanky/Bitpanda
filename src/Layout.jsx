@@ -150,19 +150,7 @@ export default function Layout({ children, currentPageName }) {
           )}
         </nav>
 
-        {/* Admin logout / back button */}
-        {isAdminArea && (
-          <div className="p-3" style={{ borderTop: "1px solid #141414" }}>
-            <button
-              onClick={() => base44.auth.logout()}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-              style={{ color: "#beff00" }}
-            >
-              <X className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        )}
+
 
         {/* Organizer links */}
         {!isAdminArea && eventId && (
