@@ -194,7 +194,7 @@ async function uploadWithRetry(base44, file, maxAttempts = 3) {
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
-async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode, maxAttempts = 2) {
+async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode, icsContent, maxAttempts = 2) {
   const delays = [0, 1000];
   let lastError = null;
   
@@ -215,6 +215,21 @@ async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode
     console.error(`PDF_FETCH_ERROR: ${fetchErr.message}`);
     throw new Error(`PDF_FETCH_FAILED: ${fetchErr.message}`);
   }
+
+  // Build attachments array
+  const attachments = [
+    {
+      filename: `SYNERGY-Ticket.pdf`,
+      content: pdfBuffer,
+    },
+  ];
+
+  if (icsContent) {
+    attachments.push({
+      filename: `event.ics`,
+      content: Buffer.from(icsContent),
+    });
+  }
   
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     if (attempt > 0) await sleep(delays[attempt]);
@@ -225,12 +240,7 @@ async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode
         to,
         subject,
         html: body,
-        attachments: [
-          {
-            filename: `ticket-${ticketCode}.pdf`,
-            content: pdfBuffer,
-          },
-        ],
+        attachments,
       });
       if (error) throw new Error(error.message || JSON.stringify(error));
       console.log(`EMAIL_SENT_SUCCESS recipient=${to} with_attachment=true`);
@@ -560,8 +570,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'EMAIL_BLOCKED_NO_PDF' }, { status: 500 });
     }
 
-    console.log(`EMAIL_RECIPIENT=${guest.email}`);
-    const emailBody = buildApprovalEmail(guest, ticket, eventData, pdfUrl);
+    console.log(`EMAIL_BUILD_STARTED recipient=${guest.email}`);
+    const emailBody = buildApprovalEmail(guest, eventData);
+    const icsContent = generateICSFile(eventData);
+    console.log(`PDF_ATTACHED size=${pdfUrl ? 'yes' : 'no'}`);
+    if (icsContent) console.log(`ICS_CREATED calendar_file=yes`);
 
     let emailSuccess = false;
     let emailError = null;
@@ -569,10 +582,11 @@ Deno.serve(async (req) => {
       await sendEmailWithRetry(
         base44,
         guest.email,
-        `Dein Ticket ist bestätigt – ${eventName}`,
+        `Du bist dabei – ${eventName}`,
         emailBody,
         pdfUrl,
-        ticket.ticket_code
+        ticket.ticket_code,
+        icsContent
       );
       emailSuccess = true;
       await base44.asServiceRole.entities.Ticket.update(ticket.id, { email_sent: true });
