@@ -9,6 +9,7 @@ import { TicketRegistration } from "@/components/ticketing/TicketRegistration";
 import { toast } from "sonner";
 
 export default function EventTicketing() {
+  const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
 
