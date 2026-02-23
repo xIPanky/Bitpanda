@@ -21,27 +21,41 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
 
-    // Create user account via public signup
-    let signupResult;
+    // Create user account via public register method
+    let registerResult;
     try {
-      signupResult = await base44.auth.signUp(email, password);
-      console.log(`ORGANIZER_USER_CREATED email=${email} user_id=${signupResult.id}`);
+      registerResult = await base44.auth.register({
+        email: email,
+        password: password
+      });
+      console.log(`ORGANIZER_USER_CREATED email=${email}`);
     } catch (signupError) {
       console.error(`ORGANIZER_SIGNUP_ERROR error=${signupError.message}`);
-      if (signupError.message?.includes('already')) {
+      if (signupError.message?.includes('already') || signupError.message?.includes('exists')) {
         return Response.json({ error: 'E-Mail-Adresse ist bereits registriert' }, { status: 409 });
       }
       throw signupError;
     }
 
-    // Update user with role and account_type
+    // Login to get user ID, then update
+    let user;
     try {
-      await base44.asServiceRole.entities.User.update(signupResult.id, {
+      const loginResult = await base44.auth.loginViaEmailPassword(email, password);
+      user = loginResult.user || await base44.auth.me();
+      console.log(`ORGANIZER_LOGIN_SUCCESS user_id=${user.id}`);
+    } catch (loginError) {
+      console.error(`ORGANIZER_LOGIN_ERROR error=${loginError.message}`);
+      throw loginError;
+    }
+
+    // Update user with role and account_type (using service role)
+    try {
+      await base44.asServiceRole.entities.User.update(user.id, {
         role: 'user',
         account_type: 'organizer',
         full_name: full_name
       });
-      console.log(`ORGANIZER_USER_UPDATED email=${email} account_type=organizer`);
+      console.log(`ORGANIZER_USER_UPDATED email=${email} account_type=organizer user_id=${user.id}`);
     } catch (updateError) {
       console.error(`ORGANIZER_UPDATE_ERROR error=${updateError.message}`);
       throw updateError;
