@@ -21,8 +21,8 @@ export default function Landing() {
             <a href="#features" className="text-sm hover:text-[#beff00] transition">Funktionen</a>
             <a href="#how-it-works" className="text-sm hover:text-[#beff00] transition">Wie es funktioniert</a>
             <a href="#trust" className="text-sm hover:text-[#beff00] transition">Über uns</a>
-            <Link to={createPageUrl('Home')} className="px-4 py-2 rounded-lg" style={{ background: '#beff00', color: '#070707' }}>
-              <span className="text-sm font-bold">Anmelden</span>
+            <Link to={createPageUrl('OrganizerRegistration')} className="px-4 py-2 rounded-lg" style={{ background: '#beff00', color: '#070707' }}>
+            <span className="text-sm font-bold">Veranstalter werden</span>
             </Link>
           </div>
         </div>
@@ -51,7 +51,7 @@ export default function Landing() {
 
             <div className="flex gap-4 flex-wrap">
               <Link
-                to={createPageUrl('Home')}
+                to={createPageUrl('OrganizerRegistration')}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition hover:shadow-lg"
                 style={{ background: '#beff00', color: '#070707', boxShadow: '0 0 20px rgba(190, 255, 0, 0.2)' }}
               >
@@ -317,7 +317,7 @@ export default function Landing() {
           </p>
 
           <Link
-            to={createPageUrl('Home')}
+            to={createPageUrl('OrganizerRegistration')}
             className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold text-lg transition hover:shadow-xl"
             style={{
               background: '#beff00',
