@@ -199,8 +199,8 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
 
         <div>
-          <FieldLabel>Unternehmen</FieldLabel>
-          <DarkInput value={form.company} onChange={(e) => handleChange("company", e.target.value)} placeholder="Dein Unternehmen" />
+          <FieldLabel required>Unternehmen / Creator</FieldLabel>
+          <DarkInput required value={form.company} onChange={(e) => handleChange("company", e.target.value)} placeholder="Dein Unternehmen" />
         </div>
 
         {event.invitation_options?.length > 0 && (
