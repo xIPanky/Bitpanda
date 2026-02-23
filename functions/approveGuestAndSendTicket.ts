@@ -198,17 +198,18 @@ async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode
   const delays = [0, 1000];
   let lastError = null;
   
-  // Fetch and convert PDF to buffer
+  // Fetch and convert PDF to base64 (Resend accepts base64)
   console.log(`PDF_FETCH_START url=${pdfUrl}`);
-  let pdfBuffer = null;
+  let pdfBase64 = null;
   try {
     const response = await fetch(pdfUrl);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const arrayBuffer = await response.arrayBuffer();
-    pdfBuffer = Buffer.from(arrayBuffer);
-    console.log(`PDF_FETCH_SUCCESS size=${pdfBuffer.length} bytes`);
+    const uint8Array = new Uint8Array(arrayBuffer);
+    pdfBase64 = btoa(String.fromCharCode.apply(null, uint8Array));
+    console.log(`PDF_FETCH_SUCCESS size=${arrayBuffer.byteLength} bytes`);
     
-    if (pdfBuffer.length === 0) {
+    if (arrayBuffer.byteLength === 0) {
       throw new Error('PDF_EMPTY');
     }
   } catch (fetchErr) {
@@ -216,18 +217,19 @@ async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode
     throw new Error(`PDF_FETCH_FAILED: ${fetchErr.message}`);
   }
 
-  // Build attachments array
+  // Build attachments array (Resend expects base64 content)
   const attachments = [
     {
       filename: `SYNERGY-Ticket.pdf`,
-      content: pdfBuffer,
+      content: pdfBase64,
     },
   ];
 
   if (icsContent) {
+    const icsBase64 = btoa(icsContent);
     attachments.push({
       filename: `event.ics`,
-      content: Buffer.from(icsContent),
+      content: icsBase64,
     });
   }
   
