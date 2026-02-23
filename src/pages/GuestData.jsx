@@ -86,59 +86,208 @@ export default function GuestData() {
         return;
       }
 
-      const doc = new jsPDF({ unit: "mm", format: "a5" });
       const event = events.find(e => e.id === registration.event_id);
-      const eventName = event?.name || "Event";
+      const eventName = event?.name || "SYNERGY";
+      const eventDate = event?.date ? new Date(event.date) : null;
+      const eventLocation = event?.location || "";
+      const eventTime = event?.time || "";
 
-      doc.setFillColor(15, 23, 42);
-      doc.rect(0, 0, 148, 30, "F");
+      // A5 portrait = 148 x 210 mm
+      const doc = new jsPDF({ unit: "mm", format: "a5", orientation: "portrait" });
+      const W = 148;
+      const H = 210;
+
+      // ── BACKGROUND: deep charcoal ──────────────────────────────────────
+      doc.setFillColor(7, 7, 7);
+      doc.rect(0, 0, W, H, "F");
+
+      // subtle dark gradient bands
+      doc.setFillColor(14, 14, 14);
+      doc.rect(0, 0, W, 70, "F");
+
+      // ── NEON LIME accent line (top) ────────────────────────────────────
+      doc.setFillColor(190, 255, 0);
+      doc.rect(0, 0, W, 1.2, "F");
+
+      // ── TOP LABELS ─────────────────────────────────────────────────────
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(190, 255, 0);
+      doc.text("GUESTLIST ACCESS", 10, 10);
+
+      doc.setTextColor(120, 120, 120);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      const category = (registration.category || ticket.category || "STANDARD").toUpperCase();
+      doc.text(category, W - 10, 10, { align: "right" });
+
+      // ── EVENT NAME (HERO) ───────────────────────────────────────────────
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(38);
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(18);
-      doc.setFont("helvetica", "bold");
-      doc.text("TICKET", 14, 18);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(180, 180, 180);
-      doc.text(eventName, 14, 24);
+      doc.text(eventName.toUpperCase(), W / 2, 36, { align: "center" });
 
-      doc.setTextColor(15, 23, 42);
+      // neon underline accent under event name
+      const nameWidth = Math.min(doc.getTextWidth(eventName.toUpperCase()), 110);
+      doc.setFillColor(190, 255, 0);
+      doc.rect((W - nameWidth) / 2, 39, nameWidth, 0.8, "F");
+
+      // ── SUBTITLE ───────────────────────────────────────────────────────
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(130, 130, 130);
+      doc.text("INVITE ONLY · EXCLUSIVE ACCESS · VIP GUESTLIST", W / 2, 47, { align: "center" });
+
+      // ── DIVIDER ────────────────────────────────────────────────────────
+      doc.setDrawColor(35, 35, 35);
+      doc.setLineWidth(0.4);
+      doc.line(10, 55, W - 10, 55);
+
+      // ── EVENT INFO ROW ─────────────────────────────────────────────────
+      const infoY = 66;
+      // Date block (left)
+      if (eventDate) {
+        const day = eventDate.toLocaleDateString("de-DE", { day: "2-digit" });
+        const month = eventDate.toLocaleDateString("de-DE", { month: "short" }).toUpperCase();
+        const year = eventDate.getFullYear();
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.text(day, 28, infoY, { align: "center" });
+        doc.setFontSize(8);
+        doc.setTextColor(190, 255, 0);
+        doc.text(month, 28, infoY + 6, { align: "center" });
+        doc.setFontSize(7);
+        doc.setTextColor(100, 100, 100);
+        doc.text(String(year), 28, infoY + 12, { align: "center" });
+      }
+
+      // vertical separator
+      doc.setDrawColor(35, 35, 35);
+      doc.setLineWidth(0.4);
+      doc.line(W / 2, 57, W / 2, 80);
+
+      // Time + Location (right)
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(130, 130, 130);
+      doc.text("DOORS OPEN", W * 0.75, infoY - 6, { align: "center" });
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text(registration.email, 14, 45);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 116, 139);
-      doc.text("Dein Ticket-Code", 14, 52);
+      doc.setTextColor(255, 255, 255);
+      doc.text(eventTime || "22:00", W * 0.75, infoY + 2, { align: "center" });
+      if (eventLocation) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(120, 120, 120);
+        const locLines = doc.splitTextToSize(eventLocation, 50);
+        doc.text(locLines, W * 0.75, infoY + 9, { align: "center" });
+      }
 
-      doc.setFontSize(11);
-      doc.setTextColor(15, 23, 42);
+      // ── DIVIDER ────────────────────────────────────────────────────────
+      doc.setDrawColor(35, 35, 35);
+      doc.setLineWidth(0.4);
+      doc.line(10, 83, W - 10, 83);
+
+      // ── GUEST INFO CARD ────────────────────────────────────────────────
+      const cardY = 88;
+      const cardH = 40;
+      doc.setFillColor(16, 16, 16);
+      doc.roundedRect(10, cardY, W - 20, cardH, 3, 3, "F");
+
+      // neon left accent bar
+      doc.setFillColor(190, 255, 0);
+      doc.roundedRect(10, cardY, 2.5, cardH, 1, 1, "F");
+
       doc.setFont("helvetica", "bold");
-      doc.text("CODE", 14, 68);
-      doc.setFontSize(20);
+      doc.setFontSize(7);
+      doc.setTextColor(130, 130, 130);
+      doc.text("GUEST NAME", 18, cardY + 8);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(255, 255, 255);
+      const guestName = `${registration.first_name} ${registration.last_name}`.toUpperCase();
+      doc.text(guestName, 18, cardY + 18);
+
+      // ticket id row
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(130, 130, 130);
+      doc.text("TICKET ID", 18, cardY + 27);
+
       doc.setFont("courier", "bold");
-      doc.text(ticket.ticket_code, 14, 78);
+      doc.setFontSize(8);
+      doc.setTextColor(190, 255, 0);
+      doc.text(ticket.ticket_code, 18, cardY + 33);
+
+      // entry type top-right of card
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(190, 255, 0);
+      doc.text("ENTRY TYPE", W - 18, cardY + 8, { align: "right" });
+      doc.setFontSize(9);
+      doc.setTextColor(255, 255, 255);
+      doc.text(category, W - 18, cardY + 16, { align: "right" });
+
+      // ── QR CODE ────────────────────────────────────────────────────────
+      const qrY = cardY + cardH + 8;
+      const qrSize = 42;
+      const qrX = (W - qrSize) / 2;
+
+      // QR background frame (slightly lighter dark)
+      doc.setFillColor(20, 20, 20);
+      doc.roundedRect(qrX - 4, qrY - 4, qrSize + 8, qrSize + 8 + 10, 3, 3, "F");
+      doc.setDrawColor(35, 35, 35);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(qrX - 4, qrY - 4, qrSize + 8, qrSize + 8 + 10, 3, 3, "S");
 
       try {
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticket.ticket_code}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=BEFF00&bgcolor=141414&data=${encodeURIComponent(ticket.ticket_code)}`;
         const img = await new Promise((resolve, reject) => {
           const image = new Image();
           image.crossOrigin = "anonymous";
           image.onload = () => resolve(image);
-          image.onerror = () => reject(new Error("Failed to load QR code"));
+          image.onerror = () => reject(new Error("QR load failed"));
           image.src = qrUrl;
         });
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-        const qrImage = canvas.toDataURL("image/png");
-        doc.addImage(qrImage, "PNG", 95, 38, 40, 40);
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        doc.addImage(canvas.toDataURL("image/png"), "PNG", qrX, qrY, qrSize, qrSize);
       } catch (qrErr) {
-        console.error("QR Code generation failed:", qrErr);
+        // fallback: just show code if QR fails
+        doc.setFont("courier", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(190, 255, 0);
+        doc.text(ticket.ticket_code, W / 2, qrY + qrSize / 2, { align: "center" });
       }
 
-      doc.save(`ticket-${ticket.ticket_code}.pdf`);
+      // SCAN label
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(130, 130, 130);
+      doc.text("SCAN FOR ENTRY", W / 2, qrY + qrSize + 8, { align: "center" });
+
+      // ── DIVIDER ────────────────────────────────────────────────────────
+      const footerDivY = qrY + qrSize + 16;
+      doc.setDrawColor(35, 35, 35);
+      doc.setLineWidth(0.4);
+      doc.line(10, footerDivY, W - 10, footerDivY);
+
+      // ── FOOTER ─────────────────────────────────────────────────────────
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6);
+      doc.setTextColor(70, 70, 70);
+      doc.text("Valid only for approved guestlist entry. Non-transferable.", W / 2, footerDivY + 6, { align: "center" });
+      doc.text(eventName.toUpperCase() + " · " + (eventDate ? eventDate.getFullYear() : ""), W / 2, footerDivY + 11, { align: "center" });
+
+      // ── BOTTOM NEON LINE ───────────────────────────────────────────────
+      doc.setFillColor(190, 255, 0);
+      doc.rect(0, H - 1.2, W, 1.2, "F");
+
+      doc.save(`SYNERGY-Ticket-${ticket.ticket_code}.pdf`);
       toast.success("Ticket heruntergeladen");
     } catch (err) {
       console.error("Error downloading ticket:", err);
