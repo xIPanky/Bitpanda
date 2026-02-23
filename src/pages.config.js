@@ -70,6 +70,7 @@ import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
 import Verified from './pages/Verified';
 import Verify from './pages/Verify';
+import RootRedirect from './pages/RootRedirect';
 import __Layout from './Layout.jsx';
 
 
@@ -97,6 +98,7 @@ export const PAGES = {
     "TicketManagement": TicketManagement,
     "Verified": Verified,
     "Verify": Verify,
+    "RootRedirect": RootRedirect,
 }
 
 export const pagesConfig = {
