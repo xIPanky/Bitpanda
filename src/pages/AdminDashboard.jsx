@@ -87,121 +87,120 @@ export default function AdminDashboard() {
         <h2 className="text-xl font-bold text-white mb-6">Veranstalter</h2>
         <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #1e1e1e' }}>
           <table className="w-full text-sm">
-              <thead>
-                <tr style={{ background: '#111111', borderBottom: '1px solid #1e1e1e' }}>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Name</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Email</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Events</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Gäste</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Erstellt</th>
-                </tr>
-              </thead>
-              <tbody>
-                {organizers.map((org) => {
-                  const orgEvents = allEvents.filter(e => e.organizer_id === org.id);
-                  const orgGuests = allRegistrations.filter(r => r.organizer_id === org.id);
-                  return (
-                    <tr key={org.id} style={{ borderBottom: '1px solid #1e1e1e' }}>
-                      <td className="px-6 py-4" style={{ color: '#fff' }}>{org.full_name}</td>
-                      <td className="px-6 py-4" style={{ color: '#999' }}>{org.email}</td>
-                      <td className="px-6 py-4" style={{ color: '#fff' }}>{orgEvents.length}</td>
-                      <td className="px-6 py-4" style={{ color: '#fff' }}>{orgGuests.length}</td>
-                      <td className="px-6 py-4" style={{ color: '#666' }}>
-                        {format(new Date(org.created_date), 'd. MMM yyyy', { locale: de })}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+            <thead>
+              <tr style={{ background: '#111111', borderBottom: '1px solid #1e1e1e' }}>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Name</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Email</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Events</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Gäste</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Erstellt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {organizers.map((org) => {
+                const orgEvents = allEvents.filter(e => e.organizer_id === org.id);
+                const orgGuests = allRegistrations.filter(r => r.organizer_id === org.id);
+                return (
+                  <tr key={org.id} style={{ borderBottom: '1px solid #1e1e1e' }}>
+                    <td className="px-6 py-4" style={{ color: '#fff' }}>{org.full_name}</td>
+                    <td className="px-6 py-4" style={{ color: '#999' }}>{org.email}</td>
+                    <td className="px-6 py-4" style={{ color: '#fff' }}>{orgEvents.length}</td>
+                    <td className="px-6 py-4" style={{ color: '#fff' }}>{orgGuests.length}</td>
+                    <td className="px-6 py-4" style={{ color: '#666' }}>
+                      {format(new Date(org.created_date), 'd. MMM yyyy', { locale: de })}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        {/* Events Table */}
-        <div className="mb-12">
-          <h2 className="text-xl font-bold text-white mb-6">Events (Global)</h2>
-          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #1e1e1e' }}>
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ background: '#111111', borderBottom: '1px solid #1e1e1e' }}>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Event</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Veranstalter</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Datum</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Gäste</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allEvents.map((event) => {
-                  const eventRegs = allRegistrations.filter(r => r.event_id === event.id);
-                  const organizer = allUsers.find(u => u.id === event.organizer_id);
-                  return (
-                    <tr key={event.id} style={{ borderBottom: '1px solid #1e1e1e' }}>
-                      <td className="px-6 py-4" style={{ color: '#fff' }}>{event.name}</td>
-                      <td className="px-6 py-4" style={{ color: '#999' }}>{organizer?.full_name || '–'}</td>
-                      <td className="px-6 py-4" style={{ color: '#999' }}>
-                        {event.date ? format(new Date(event.date), 'd. MMM yyyy', { locale: de }) : '–'}
-                      </td>
-                      <td className="px-6 py-4" style={{ color: '#fff' }}>{eventRegs.length}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded text-xs font-medium" style={{
-                          background: event.status === 'published' ? 'rgba(190, 255, 0, 0.1)' : 'rgba(100, 100, 100, 0.1)',
-                          color: event.status === 'published' ? '#beff00' : '#999'
-                        }}>
-                          {event.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+      {/* Events Table */}
+      <div className="mb-12">
+        <h2 className="text-xl font-bold text-white mb-6">Events (Global)</h2>
+        <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #1e1e1e' }}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ background: '#111111', borderBottom: '1px solid #1e1e1e' }}>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Event</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Veranstalter</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Datum</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Gäste</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allEvents.map((event) => {
+                const eventRegs = allRegistrations.filter(r => r.event_id === event.id);
+                const organizer = allUsers.find(u => u.id === event.organizer_id);
+                return (
+                  <tr key={event.id} style={{ borderBottom: '1px solid #1e1e1e' }}>
+                    <td className="px-6 py-4" style={{ color: '#fff' }}>{event.name}</td>
+                    <td className="px-6 py-4" style={{ color: '#999' }}>{organizer?.full_name || '–'}</td>
+                    <td className="px-6 py-4" style={{ color: '#999' }}>
+                      {event.date ? format(new Date(event.date), 'd. MMM yyyy', { locale: de }) : '–'}
+                    </td>
+                    <td className="px-6 py-4" style={{ color: '#fff' }}>{eventRegs.length}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 rounded text-xs font-medium" style={{
+                        background: event.status === 'published' ? 'rgba(190, 255, 0, 0.1)' : 'rgba(100, 100, 100, 0.1)',
+                        color: event.status === 'published' ? '#beff00' : '#999'
+                      }}>
+                        {event.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        {/* Guests Table */}
-        <div>
-          <h2 className="text-xl font-bold text-white mb-6">Gäste (Global)</h2>
-          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #1e1e1e' }}>
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ background: '#111111', borderBottom: '1px solid #1e1e1e' }}>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Name</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Email</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Event</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Veranstalter</th>
-                  <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allRegistrations.slice(0, 50).map((guest) => {
-                  const event = allEvents.find(e => e.id === guest.event_id);
-                  const organizer = allUsers.find(u => u.id === guest.organizer_id);
-                  return (
-                    <tr key={guest.id} style={{ borderBottom: '1px solid #1e1e1e' }}>
-                      <td className="px-6 py-4" style={{ color: '#fff' }}>{guest.first_name} {guest.last_name}</td>
-                      <td className="px-6 py-4" style={{ color: '#999' }}>{guest.email}</td>
-                      <td className="px-6 py-4" style={{ color: '#fff' }}>{event?.name || '–'}</td>
-                      <td className="px-6 py-4" style={{ color: '#999' }}>{organizer?.full_name || '–'}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded text-xs font-medium" style={{
-                          background: guest.status === 'approved' ? 'rgba(190, 255, 0, 0.1)' : guest.status === 'pending' ? 'rgba(255, 200, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)',
-                          color: guest.status === 'approved' ? '#beff00' : guest.status === 'pending' ? '#ffc800' : '#ff4444'
-                        }}>
-                          {guest.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {allRegistrations.length > 50 && (
-              <div className="px-6 py-4" style={{ color: '#666', textAlign: 'center', borderTop: '1px solid #1e1e1e' }}>
-                +{allRegistrations.length - 50} weitere Gäste
-              </div>
-            )}
-          </div>
+      {/* Guests Table */}
+      <div>
+        <h2 className="text-xl font-bold text-white mb-6">Gäste (Global)</h2>
+        <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #1e1e1e' }}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ background: '#111111', borderBottom: '1px solid #1e1e1e' }}>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Name</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Email</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Event</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Veranstalter</th>
+                <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allRegistrations.slice(0, 50).map((guest) => {
+                const event = allEvents.find(e => e.id === guest.event_id);
+                const organizer = allUsers.find(u => u.id === guest.organizer_id);
+                return (
+                  <tr key={guest.id} style={{ borderBottom: '1px solid #1e1e1e' }}>
+                    <td className="px-6 py-4" style={{ color: '#fff' }}>{guest.first_name} {guest.last_name}</td>
+                    <td className="px-6 py-4" style={{ color: '#999' }}>{guest.email}</td>
+                    <td className="px-6 py-4" style={{ color: '#fff' }}>{event?.name || '–'}</td>
+                    <td className="px-6 py-4" style={{ color: '#999' }}>{organizer?.full_name || '–'}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 rounded text-xs font-medium" style={{
+                        background: guest.status === 'approved' ? 'rgba(190, 255, 0, 0.1)' : guest.status === 'pending' ? 'rgba(255, 200, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)',
+                        color: guest.status === 'approved' ? '#beff00' : guest.status === 'pending' ? '#ffc800' : '#ff4444'
+                      }}>
+                        {guest.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {allRegistrations.length > 50 && (
+            <div className="px-6 py-4" style={{ color: '#666', textAlign: 'center', borderTop: '1px solid #1e1e1e' }}>
+              +{allRegistrations.length - 50} weitere Gäste
+            </div>
+          )}
         </div>
       </div>
     </div>
