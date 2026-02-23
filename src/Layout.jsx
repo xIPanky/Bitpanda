@@ -17,7 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 
-const publicPages = ["Register", "Ticket", "Landing", "EventDetails", "EventTicketing", "RegistrationSuccess"];
+const publicPages = ["Register", "OrganizerRegistration", "Ticket", "Landing", "EventDetails", "EventTicketing", "RegistrationSuccess"];
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
