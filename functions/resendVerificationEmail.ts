@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { Resend } from 'npm:resend@4.0.0';
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
@@ -11,26 +10,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'E-Mail erforderlich' }, { status: 400 });
     }
 
-    const base44 = createClientFromRequest(req);
-
     console.log(`RESEND_START email=${email}`);
 
-    // Get user
-    const users = await base44.asServiceRole.entities.User.filter({ email });
-    const user = users?.[0];
-
-    if (!user) {
-      console.error(`RESEND_USER_NOT_FOUND email=${email}`);
-      return Response.json({ error: 'E-Mail-Adresse nicht registriert' }, { status: 404 });
-    }
-
-    if (user.email_verified) {
-      console.log(`RESEND_ALREADY_VERIFIED email=${email}`);
-      return Response.json({ success: true, message: 'E-Mail bereits bestätigt' });
-    }
-
     // Build verification link
-    const verificationLink = `${new URL(req.url).origin}/verified?userId=${user.id}`;
+    const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const verificationLink = `${new URL(req.url).origin}/verified?token=${verificationToken}&email=${encodeURIComponent(email)}`;
 
     // Send verification email
     console.log(`RESEND_EMAIL_SENDING email=${email}`);
