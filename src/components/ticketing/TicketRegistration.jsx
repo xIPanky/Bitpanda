@@ -218,7 +218,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <FieldLabel required>Vorname</FieldLabel>
