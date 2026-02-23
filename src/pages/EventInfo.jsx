@@ -60,6 +60,7 @@ export default function EventInfo() {
         location: event.location || "",
         cover_image_url: event.cover_image_url || "",
         cover_image_position: event.cover_image_position || "50% 50%",
+        cover_video_url: event.cover_video_url || "",
         is_paid: event.is_paid || false,
         currency: event.currency || "EUR",
         status: event.status || "draft",
