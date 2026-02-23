@@ -231,7 +231,7 @@ async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode
   // STEP 2: Try to add ICS calendar file (non-fatal if fails)
   if (icsContent) {
     try {
-      const icsBase64 = btoa(icsContent);
+      const icsBase64 = btoa(unescape(encodeURIComponent(icsContent)));
       attachments.push({
         filename: `event.ics`,
         content: icsBase64,
