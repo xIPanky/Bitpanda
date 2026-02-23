@@ -171,17 +171,17 @@ export default function Register() {
             <p style={{ color: '#666' }} className="text-center text-sm mb-4">
               Du hast bereits einen Account?
             </p>
-            <a
-              href={createPageUrl('SignIn')}
+            <button
+              onClick={() => base44.auth.redirectToLogin()}
               style={{
                 background: 'rgba(190, 255, 0, 0.1)',
                 color: '#beff00',
                 border: '1px solid #beff00'
               }}
-              className="block w-full px-4 py-2.5 rounded-xl font-bold text-sm text-center transition-all hover:bg-yellow-400 hover:text-black"
+              className="block w-full px-4 py-2.5 rounded-xl font-bold text-sm text-center transition-all hover:bg-yellow-400 hover:text-black cursor-pointer"
             >
               Jetzt anmelden
-            </a>
+            </button>
           </div>
         </div>
       </div>
