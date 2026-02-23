@@ -21,20 +21,32 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Ungültige E-Mail-Adresse' }, { status: 400 });
     }
 
-    const base44 = createClientFromRequest(req);
     console.log(`SIGNUP_START email=${email}`);
 
-    // Try to invite user with role="user" (only allowed role)
-    // account_type will be set separately to "guest"
+    // Create user account via public signup
+    let signupResult;
     try {
-      await base44.users.inviteUser(email, 'user');
-      console.log(`SIGNUP_USER_INVITED email=${email}`);
-    } catch (inviteError) {
-      console.error(`SIGNUP_INVITE_ERROR error=${inviteError.message}`);
-      if (inviteError.message?.includes('already')) {
+      signupResult = await base44.auth.signUp(email, password);
+      console.log(`SIGNUP_USER_CREATED email=${email} user_id=${signupResult.id}`);
+    } catch (signupError) {
+      console.error(`SIGNUP_ERROR error=${signupError.message}`);
+      if (signupError.message?.includes('already')) {
         return Response.json({ error: 'E-Mail-Adresse ist bereits registriert' }, { status: 409 });
       }
-      throw inviteError;
+      throw signupError;
+    }
+
+    // Update user with role and account_type
+    const base44 = createClientFromRequest(req);
+    try {
+      await base44.asServiceRole.entities.User.update(signupResult.id, {
+        role: 'user',
+        account_type: 'guest'
+      });
+      console.log(`SIGNUP_USER_UPDATED email=${email} account_type=guest`);
+    } catch (updateError) {
+      console.error(`SIGNUP_UPDATE_ERROR error=${updateError.message}`);
+      throw updateError;
     }
 
     // Generate verification token
