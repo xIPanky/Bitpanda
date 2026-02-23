@@ -197,62 +197,95 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode, icsContent, maxAttempts = 2) {
   const delays = [0, 1000];
   let lastError = null;
-  
-  // Fetch and convert PDF to base64 (Resend accepts base64)
-  console.log(`PDF_FETCH_START url=${pdfUrl}`);
-  let pdfBase64 = null;
-  try {
-    const response = await fetch(pdfUrl);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const arrayBuffer = await response.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    pdfBase64 = btoa(String.fromCharCode.apply(null, uint8Array));
-    console.log(`PDF_FETCH_SUCCESS size=${arrayBuffer.byteLength} bytes`);
-    
-    if (arrayBuffer.byteLength === 0) {
-      throw new Error('PDF_EMPTY');
+  let attachments = [];
+  let attachmentStatus = 'NONE';
+
+  console.log(`EMAIL_START recipient=${to}`);
+
+  // STEP 1: Try to load and attach PDF (non-fatal if fails)
+  console.log(`PDF_FOUND url=${pdfUrl ? 'yes' : 'no'}`);
+  if (pdfUrl) {
+    try {
+      console.log(`PDF_FETCH_START url=${pdfUrl}`);
+      const response = await fetch(pdfUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const arrayBuffer = await response.arrayBuffer();
+      if (arrayBuffer.byteLength === 0) throw new Error('PDF_EMPTY');
+      
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const pdfBase64 = btoa(String.fromCharCode.apply(null, uint8Array));
+      
+      console.log(`PDF_FETCH_SUCCESS size=${arrayBuffer.byteLength} bytes`);
+      
+      attachments.push({
+        filename: `SYNERGY-Ticket.pdf`,
+        content: pdfBase64,
+      });
+      attachmentStatus = 'PDF_READY';
+    } catch (fetchErr) {
+      console.error(`ATTACHMENT_FAILED type=PDF error=${fetchErr.message}`);
+      attachmentStatus = 'PDF_FAILED';
     }
-  } catch (fetchErr) {
-    console.error(`PDF_FETCH_ERROR: ${fetchErr.message}`);
-    throw new Error(`PDF_FETCH_FAILED: ${fetchErr.message}`);
   }
 
-  // Build attachments array (Resend expects base64 content)
-  const attachments = [
-    {
-      filename: `SYNERGY-Ticket.pdf`,
-      content: pdfBase64,
-    },
-  ];
-
+  // STEP 2: Try to add ICS calendar file (non-fatal if fails)
   if (icsContent) {
-    const icsBase64 = btoa(icsContent);
-    attachments.push({
-      filename: `event.ics`,
-      content: icsBase64,
-    });
+    try {
+      const icsBase64 = btoa(icsContent);
+      attachments.push({
+        filename: `event.ics`,
+        content: icsBase64,
+      });
+      console.log(`ATTACHMENT_READY type=ICS`);
+    } catch (icsErr) {
+      console.error(`ATTACHMENT_FAILED type=ICS error=${icsErr.message}`);
+    }
   }
-  
+
+  // STEP 3: Send email (WITH or WITHOUT attachments)
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     if (attempt > 0) await sleep(delays[attempt]);
     try {
-      console.log(`EMAIL_SEND_START recipient=${to} attempt=${attempt + 1}`);
-      const { error } = await resend.emails.send({
+      console.log(`EMAIL_SEND_START recipient=${to} attempt=${attempt + 1} attachments=${attachments.length}`);
+      
+      const sendPayload = {
         from: 'Synergy <ticket@eventpass.panke-management.com>',
         to,
         subject,
         html: body,
-        attachments,
-      });
+      };
+
+      if (attachments.length > 0) {
+        sendPayload.attachments = attachments;
+      }
+
+      const { error } = await resend.emails.send(sendPayload);
       if (error) throw new Error(error.message || JSON.stringify(error));
-      console.log(`EMAIL_SENT_SUCCESS recipient=${to} with_attachment=true`);
+      
+      console.log(`EMAIL_SEND_SUCCESS recipient=${to} attachments=${attachments.length} status=${attachmentStatus}`);
       return;
     } catch (err) {
       lastError = err;
-      console.error(`EMAIL_FAILED attempt=${attempt + 1} error=${err.message}`);
+      console.error(`EMAIL_SEND_ERROR attempt=${attempt + 1} error=${err.message}`);
     }
   }
-  throw new Error(lastError?.message || 'EMAIL_SEND_FAILED');
+
+  // STEP 4: Fallback to basic email if all else fails
+  console.log(`EMAIL_FALLBACK_START recipient=${to}`);
+  try {
+    const { error } = await resend.emails.send({
+      from: 'Synergy <ticket@eventpass.panke-management.com>',
+      to,
+      subject: 'Dein Ticket ist bestätigt',
+      html: `<p>Hallo,</p><p>Dein Ticket wurde bestätigt. Falls der Anhang in der vorherigen Email fehlt, nutze bitte den Download-Link im System.</p>`,
+    });
+    if (error) throw new Error(error.message || JSON.stringify(error));
+    console.log(`EMAIL_FALLBACK_SUCCESS recipient=${to}`);
+    return;
+  } catch (fallbackErr) {
+    console.error(`EMAIL_FALLBACK_FAILED error=${fallbackErr.message}`);
+    throw new Error(`EMAIL_SEND_FAILED: ${lastError?.message || fallbackErr.message}`);
+  }
 }
 
 // ── ICS Calendar File Generation ─────────────────────────────────────────
