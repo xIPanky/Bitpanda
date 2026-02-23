@@ -75,13 +75,8 @@ export default function EventTicketing() {
 
   const handleRegistrationComplete = (data) => {
     base44.analytics.track({ eventName: "registration_completed", properties: { event_id: eventId } });
-    setRegistrationData(data);
-    setStep("success");
-    
-    // Redirect to RegistrationSuccess page after a brief delay
-    setTimeout(() => {
-      navigate(`${createPageUrl("RegistrationSuccess")}?registration_id=${data.id}&event_id=${eventId}`);
-    }, 1500);
+    // Navigate directly to RegistrationSuccess without showing intermediate success screen
+    navigate(`${createPageUrl("RegistrationSuccess")}?registration_id=${data.id}&event_id=${eventId}`);
   };
 
   const handleRegistrationAbandoned = (reason) => {
