@@ -24,7 +24,13 @@ export default function Home() {
 
   const { data: user } = useQuery({
     queryKey: ["me"],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
   });
 
   const isAdmin = user?.role === "admin";
@@ -37,7 +43,7 @@ export default function Home() {
       if (isAdmin) return all;
       return all.filter((e) => e.organizer_id === user?.id);
     },
-    enabled: !!user && (isAdmin || isOrganizer),
+    enabled: !!user,
     initialData: [],
   });
 
@@ -83,7 +89,22 @@ export default function Home() {
           </button>
         </div>
 
-        {isLoading ? (
+        {!user ? (
+          <div className="text-center py-24">
+            <Ticket className="w-10 h-10 mx-auto mb-4" style={{ color: "#1a1a1a" }} />
+            <p className="font-semibold text-white">Melde dich an um deine Events zu verwalten</p>
+            <p className="text-sm mt-1" style={{ color: "#444" }}>Organisiere und verkaufe Tickets für deine Veranstaltungen</p>
+            <button
+              onClick={() => base44.auth.redirectToLogin(window.location.href)}
+              className="mt-6 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
+              style={{ background: "#beff00", color: "#070707" }}
+              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 0 24px rgba(190,255,0,0.4)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+            >
+              Jetzt anmelden
+            </button>
+          </div>
+        ) : isLoading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#2a2a2a" }} />
           </div>
