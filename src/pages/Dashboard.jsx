@@ -254,6 +254,5 @@ export default function Dashboard() {
         onFilterCategoryChange={setFilterCategory}
       />
     </div>
-    </AccessGuard>
   );
 }

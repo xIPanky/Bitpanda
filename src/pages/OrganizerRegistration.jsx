@@ -146,17 +146,17 @@ export default function OrganizerRegistration() {
           <p style={{ color: '#666' }} className="text-sm mb-4">
             Du hast bereits einen Account?
           </p>
-          <button
-            onClick={() => base44.auth.redirectToLogin()}
+          <a
+            href={createPageUrl('Landing')}
             style={{
               background: 'rgba(190, 255, 0, 0.1)',
               color: '#beff00',
               border: '1px solid #beff00'
             }}
-            className="inline-block px-6 py-2.5 rounded-xl font-bold text-sm transition-all hover:bg-yellow-400 hover:text-black cursor-pointer"
+            className="inline-block px-6 py-2.5 rounded-xl font-bold text-sm transition-all hover:bg-yellow-400 hover:text-black"
           >
-            Jetzt anmelden
-          </button>
+            Zurück zur Startseite
+          </a>
         </div>
       </div>
     </div>
