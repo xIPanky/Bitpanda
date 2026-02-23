@@ -84,9 +84,9 @@ export default function AdminDashboard() {
 
       {/* Organizers Table */}
       <div className="mb-12">
-          <h2 className="text-xl font-bold text-white mb-6">Veranstalter</h2>
-          <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #1e1e1e' }}>
-            <table className="w-full text-sm">
+        <h2 className="text-xl font-bold text-white mb-6">Veranstalter</h2>
+        <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #1e1e1e' }}>
+          <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: '#111111', borderBottom: '1px solid #1e1e1e' }}>
                   <th className="px-6 py-3 text-left" style={{ color: '#beff00', fontWeight: '600' }}>Name</th>
