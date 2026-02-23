@@ -45,34 +45,13 @@ export default function Verified() {
 
         {status === 'success' && (
           <>
-            <h1 className="text-2xl font-bold text-white mb-4">E-Mail bestätigt!</h1>
+            <h1 className="text-2xl font-bold text-white mb-4">🎉 E-Mail bestätigt!</h1>
             <p className="text-sm mb-8" style={{ color: '#888' }}>
-              Dein Konto wurde erfolgreich aktiviert. Du wirst in Kürze weitergeleitet…
+              Dein Konto wurde erfolgreich aktiviert. Du wirst zur Anmeldung weitergeleitet…
             </p>
             <div className="flex justify-center mb-8">
               <CheckCircle2 className="w-12 h-12" style={{ color: '#beff00' }} />
             </div>
-          </>
-        )}
-
-        {status === 'error' && (
-          <>
-            <h1 className="text-2xl font-bold text-white mb-4">Fehler bei der Bestätigung</h1>
-            <p className="text-sm mb-8" style={{ color: '#ff6b6b' }}>{error}</p>
-            <div className="flex justify-center mb-8">
-              <AlertCircle className="w-12 h-12" style={{ color: '#ff6b6b' }} />
-            </div>
-            <a
-              href={createPageUrl('Login')}
-              className="inline-block px-6 py-3 rounded-lg font-bold text-sm transition-all"
-              style={{
-                background: '#beff00',
-                color: '#070707',
-                textDecoration: 'none',
-              }}
-            >
-              Zur Anmeldung
-            </a>
           </>
         )}
       </div>
