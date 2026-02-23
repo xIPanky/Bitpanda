@@ -160,7 +160,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
 
       base44.analytics.track({ eventName: "registration_submitted", properties: { event_id: event.id, tier_id: tier?.id, has_plus_one: hasPlusOne } });
       toast.success("Registrierung eingegangen!");
-      onComplete(registration);
+      onComplete({ ...registration, email: form.email, ticket_code: registration.ticket_id || "TBA" });
     } catch (err) {
       console.error(err);
       setError("Fehler bei der Registrierung. Bitte versuche es erneut.");
