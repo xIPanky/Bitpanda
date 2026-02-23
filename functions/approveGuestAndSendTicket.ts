@@ -194,9 +194,28 @@ async function uploadWithRetry(base44, file, maxAttempts = 3) {
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
-async function sendEmailWithRetry(_base44, to, subject, body, maxAttempts = 2) {
+async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode, maxAttempts = 2) {
   const delays = [0, 1000];
   let lastError = null;
+  
+  // Fetch and convert PDF to buffer
+  console.log(`PDF_FETCH_START url=${pdfUrl}`);
+  let pdfBuffer = null;
+  try {
+    const response = await fetch(pdfUrl);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const arrayBuffer = await response.arrayBuffer();
+    pdfBuffer = Buffer.from(arrayBuffer);
+    console.log(`PDF_FETCH_SUCCESS size=${pdfBuffer.length} bytes`);
+    
+    if (pdfBuffer.length === 0) {
+      throw new Error('PDF_EMPTY');
+    }
+  } catch (fetchErr) {
+    console.error(`PDF_FETCH_ERROR: ${fetchErr.message}`);
+    throw new Error(`PDF_FETCH_FAILED: ${fetchErr.message}`);
+  }
+  
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     if (attempt > 0) await sleep(delays[attempt]);
     try {
@@ -206,9 +225,15 @@ async function sendEmailWithRetry(_base44, to, subject, body, maxAttempts = 2) {
         to,
         subject,
         html: body,
+        attachments: [
+          {
+            filename: `ticket-${ticketCode}.pdf`,
+            content: pdfBuffer,
+          },
+        ],
       });
       if (error) throw new Error(error.message || JSON.stringify(error));
-      console.log(`EMAIL_SEND_DONE recipient=${to}`);
+      console.log(`EMAIL_SENT_SUCCESS recipient=${to} with_attachment=true`);
       return;
     } catch (err) {
       lastError = err;
@@ -484,7 +509,9 @@ Deno.serve(async (req) => {
         base44,
         guest.email,
         `Dein Ticket ist bestätigt – ${eventName}`,
-        emailBody
+        emailBody,
+        pdfUrl,
+        ticket.ticket_code
       );
       emailSuccess = true;
       await base44.asServiceRole.entities.Ticket.update(ticket.id, { email_sent: true });
