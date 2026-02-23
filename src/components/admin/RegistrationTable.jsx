@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle, Clock, Mail, User2, Loader2, Pencil, RefreshCw } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Mail, User2, Loader2, Pencil, RefreshCw, Download } from "lucide-react";
 import EditRegistrationDialog from "./EditRegistrationDialog";
 import { format } from "date-fns";
 
