@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import AdminAccessGuard from '@/components/AdminAccessGuard.jsx';
+
 import { Users, Calendar, UserCheck, Ticket, TrendingUp, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -62,8 +62,7 @@ export default function AdminDashboard() {
   const ticketsGenerated = allTickets.length;
 
   return (
-    <AdminAccessGuard>
-      <div className="min-h-screen p-6 md:p-8" style={{ background: '#070707' }}>
+    <div className="min-h-screen p-6 md:p-8" style={{ background: '#070707' }}>
         {/* Admin Banner */}
         <div className="mb-8 p-4 rounded-lg" style={{ background: 'rgba(190, 255, 0, 0.1)', border: '1px solid #beff00' }}>
           <p style={{ color: '#beff00', fontSize: '14px', fontWeight: '600' }}>
@@ -207,6 +206,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </AdminAccessGuard>
+    </div>
   );
 }

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import StatsOverview from "../components/admin/StatsOverview";
 import RegistrationTable from "../components/admin/RegistrationTable";
 import ApprovalSuccessOverlay from "../components/admin/ApprovalSuccessOverlay";
-import AccessGuard from "@/components/AccessGuard.jsx";
+
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";

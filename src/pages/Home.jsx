@@ -8,7 +8,7 @@ import { createPageUrl } from "@/utils";
 import { Plus, Calendar, MapPin, Users, Loader2, Ticket, LayoutDashboard, ChevronDown, ChevronUp, ExternalLink, Copy, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CreateEventDialog from "@/components/events/CreateEventDialog.jsx";
-import AccessGuard from "@/components/AccessGuard.jsx";
+
 import { toast } from "sonner";
 
 const statusConfig = {
