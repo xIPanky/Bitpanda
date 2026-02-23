@@ -27,6 +27,7 @@ export default function EventInfo() {
   const [form, setForm] = useState({
     name: "", subtitle: "", description: "", date: "", time: "", location: "",
     cover_image_url: "", cover_image_position: "50% 50%",
+    cover_video_url: "",
     is_paid: false, currency: "EUR", status: "draft",
     organizer_name: "", organizer_email: "",
   });
