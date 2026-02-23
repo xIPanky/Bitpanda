@@ -193,6 +193,20 @@ export default function RegistrationTable({
                                 Ablehnen
                               </button>
                             )}
+
+                            {reg.status === "approved" && onResend && (
+                              <button
+                                disabled={isProcessing}
+                                onClick={() => onResend(reg)}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+                                style={{ background: "#111", color: "#555", border: "1px solid #1e1e1e" }}
+                                title="Ticket-E-Mail erneut senden"
+                                onMouseEnter={(e) => { e.currentTarget.style.color = "#beff00"; e.currentTarget.style.borderColor = "rgba(190,255,0,0.3)"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
+                              >
+                                {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>
