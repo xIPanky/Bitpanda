@@ -366,9 +366,9 @@ Deno.serve(async (req) => {
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i);
     }
-    const pdfBlob = new Blob([bytes], { type: 'application/pdf' });
+    const pdfFile = new File([bytes], `ticket-${ticket.ticket_code}.pdf`, { type: 'application/pdf' });
 
-    const uploadResult = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBlob });
+    const uploadResult = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfFile });
     const pdfUrl = uploadResult?.file_url || null;
     if (!pdfUrl) throw new Error('PDF upload failed — no file_url returned');
     console.log('PDF READY at:', pdfUrl);
