@@ -80,7 +80,7 @@ export default function RegistrationTable({
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid #1a1a1a" }}>
-                {["Gast", "Kontakt", "Kategorie", "Status", "Datum", "Aktionen"].map((h) => (
+                {["Gast", "Kontakt", "Kategorie", "Status", "Ticket", "Datum", "Aktionen"].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style={{ color: "#3a3a3a" }}>{h}</th>
                 ))}
               </tr>
@@ -89,7 +89,7 @@ export default function RegistrationTable({
               <AnimatePresence>
                 {registrations.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-16">
+                    <td colSpan={7} className="text-center py-16">
                       <User2 className="w-8 h-8 mx-auto mb-3" style={{ color: "#2a2a2a" }} />
                       <p className="text-sm" style={{ color: "#3a3a3a" }}>Keine Registrierungen gefunden</p>
                     </td>
