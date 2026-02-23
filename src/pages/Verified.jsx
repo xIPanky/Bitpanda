@@ -14,19 +14,22 @@ export default function Verified() {
     const verifyEmail = async () => {
       try {
         const params = new URLSearchParams(window.location.search);
-        const userId = params.get('userId');
+        const email = params.get('email');
+        const token = params.get('token');
 
-        if (!userId) {
+        if (!email) {
           setError('Ungültiger Verifikationslink');
           setLoading(false);
           return;
         }
 
-        console.log('VERIFIED_START userId=', userId);
-        const response = await base44.functions.invoke('verifyEmail', { userId });
+        console.log('VERIFIED_START email=', email);
+        const response = await base44.functions.invoke('verifyEmail', { email, token });
 
         if (response.data?.success) {
-          console.log('VERIFIED_SUCCESS');
+          console.log('VERIFIED_SUCCESS email=', email);
+          // Store verification in sessionStorage
+          sessionStorage.setItem('emailVerified', email);
           setSuccess(true);
           setTimeout(() => {
             navigate(createPageUrl('Login'));
