@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Save, Loader2, Info, ImageIcon, X, ArrowLeft, Euro, Tag, Plus, CheckCircle, Link2, Copy, Trash2 } from "lucide-react";
+import { Save, Loader2, Info, ImageIcon, X, ArrowLeft, Euro, Tag, Plus, CheckCircle, Link2, Copy, Trash2, Video } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
