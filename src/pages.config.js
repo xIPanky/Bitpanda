@@ -58,9 +58,7 @@ import GuestData from './pages/GuestData';
 import GuestList from './pages/GuestList';
 import Home from './pages/Home';
 import Index from './pages/Index';
-import Landing from './pages/Landing';
 import Marketing from './pages/Marketing';
-import OrganizerRegistration from './pages/OrganizerRegistration';
 import Register from './pages/Register';
 import RegistrationSuccess from './pages/RegistrationSuccess';
 import RoleManagement from './pages/RoleManagement';
@@ -86,9 +84,7 @@ export const PAGES = {
     "GuestList": GuestList,
     "Home": Home,
     "Index": Index,
-    "Landing": Landing,
     "Marketing": Marketing,
-    "OrganizerRegistration": OrganizerRegistration,
     "Register": Register,
     "RegistrationSuccess": RegistrationSuccess,
     "RoleManagement": RoleManagement,
