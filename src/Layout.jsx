@@ -1,6 +1,9 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "./utils";
+import { base44 } from "@/api/base44Client";
+import { Loader2 } from "lucide-react";
 import {
   LayoutDashboard,
   Users,
@@ -24,16 +27,46 @@ const publicPages = [
   "EventDetails",
   "EventTicketing",
   "RegistrationSuccess",
-  "Login",
   "Verify",
   "Verified",
 ];
 
 export default function Layout({ children, currentPageName }) {
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
+
+  // Check auth for protected pages
+  const { data: user, isLoading: authLoading } = useQuery({
+    queryKey: ["auth-check"],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    },
+    enabled: !publicPages.includes(currentPageName),
+    staleTime: Infinity,
+  });
+
+  useEffect(() => {
+    // Redirect to login if trying to access protected route without auth
+    if (!publicPages.includes(currentPageName) && !authLoading && !user) {
+      base44.auth.redirectToLogin(window.location.pathname + window.location.search);
+    }
+  }, [currentPageName, user, authLoading]);
+
+  // Show loading for protected pages during auth check
+  if (!publicPages.includes(currentPageName) && authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}>
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#beff00" }} />
+      </div>
+    );
+  }
 
   const eventNavItems = eventId ? [
     { name: "Dashboard", page: `Dashboard?event_id=${eventId}`, icon: LayoutDashboard },
