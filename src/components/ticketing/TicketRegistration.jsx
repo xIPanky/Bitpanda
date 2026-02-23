@@ -110,54 +110,42 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         return;
       }
 
-      const registration = await base44.entities.Registration.create({
+      // Call public server function (no auth required)
+      const response = await base44.functions.invoke('publicRegisterForEvent', {
         event_id: event.id,
         ticket_tier_id: tier?.id || "",
         first_name: form.first_name,
         last_name: form.last_name,
         email: form.email,
         phone: form.phone || "",
+        company: form.company || "",
+        category: tier?.color || "Standard",
         custom_answers: form.custom_answers,
         invited_by: form.invited_by || "",
-        category: tier?.color || "Standard",
-        status: "pending",
+        plus_one: hasPlusOne,
+        plus_one_first_name: hasPlusOne ? plusOne.first_name : "",
+        plus_one_last_name: hasPlusOne ? plusOne.last_name : "",
+        plus_one_email: hasPlusOne ? plusOne.email : "",
       });
 
-      // Plus-one: create registration only (no ticket — ticket generated on approval)
-      if (hasPlusOne) {
-        await base44.entities.Registration.create({
-          event_id: event.id,
-          ticket_tier_id: tier?.id || "",
-          first_name: plusOne.first_name,
-          last_name: plusOne.last_name,
-          email: plusOne.email,
-          custom_answers: form.custom_answers,
-          invited_by: form.invited_by || "",
-          category: tier?.color || "Standard",
-          status: "pending",
-        });
-      }
-
-      try {
-        await base44.functions.invoke('sendRegistrationConfirmation', {
-          email: form.email,
-          first_name: form.first_name,
-          event_id: event.id,
-          event_name: event.name,
-          event_date: event.date,
-          event_time: event.time,
-          event_location: event.location,
-        });
-      } catch (emailErr) {
-        console.error("Email error:", emailErr);
+      if (!response.data.success) {
+        setError(response.data.error || "Registrierung fehlgeschlagen. Bitte versuche es erneut.");
+        setLoading(false);
+        return;
       }
 
       base44.analytics.track({ eventName: "registration_submitted", properties: { event_id: event.id, tier_id: tier?.id, has_plus_one: hasPlusOne } });
       toast.success("Registrierung eingegangen!");
-      onComplete({ ...registration, email: form.email, ticket_code: registration.ticket_id || "TBA" });
+      onComplete({ 
+        id: response.data.registration_id, 
+        email: form.email, 
+        first_name: form.first_name,
+        last_name: form.last_name,
+        ticket_code: "TBA" 
+      });
     } catch (err) {
       console.error(err);
-      setError("Fehler bei der Registrierung. Bitte versuche es erneut.");
+      setError("Registrierung fehlgeschlagen: " + (err.message || "Bitte versuche es erneut."));
     } finally {
       setLoading(false);
     }
