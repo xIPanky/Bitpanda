@@ -213,6 +213,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
               ...event.invitation_options.map((opt) => ({ value: opt, label: opt })),
             ]}
             placeholder="-- Bitte wählen --"
+            required
           />
         )}
 
