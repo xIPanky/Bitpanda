@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import StatsOverview from "../components/admin/StatsOverview";
 import RegistrationTable from "../components/admin/RegistrationTable";
 import ApprovalSuccessOverlay from "../components/admin/ApprovalSuccessOverlay";
-
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
@@ -26,46 +25,26 @@ export default function Dashboard() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
 
-  const { data: user } = useQuery({
-    queryKey: ["me"],
-    queryFn: () => base44.auth.me(),
-  });
-
-  const isAdmin = user?.role === "admin";
-  const isOrganizer = user?.account_type === "organizer";
-
   const { data: event } = useQuery({
-    queryKey: ["event", eventId, user?.id],
-    queryFn: async () => {
-      const events = await base44.entities.Event.filter({ id: eventId });
-      const evt = events?.[0];
-      // Organizer can only access their own events
-      if (isOrganizer && evt?.organizer_id !== user?.id) {
-        return null;
-      }
-      return evt;
-    },
-    enabled: !!eventId && !!user,
-    select: (data) => data,
+    queryKey: ["event", eventId],
+    queryFn: () => base44.entities.Event.filter({ id: eventId }),
+    enabled: !!eventId,
+    select: (data) => data?.[0],
   });
 
   const { data: registrations } = useQuery({
-    queryKey: ["registrations", eventId, user?.id],
-    queryFn: () => {
-      if (!eventId) return [];
-      return base44.entities.Registration.filter({ event_id: eventId, organizer_id: user?.id }, "-created_date");
-    },
-    enabled: !!eventId && !!user,
+    queryKey: ["registrations", eventId],
+    queryFn: () => eventId
+      ? base44.entities.Registration.filter({ event_id: eventId }, "-created_date")
+      : base44.entities.Registration.list("-created_date"),
     initialData: [],
   });
 
   const { data: tickets } = useQuery({
-    queryKey: ["tickets", eventId, user?.id],
-    queryFn: () => {
-      if (!eventId) return [];
-      return base44.entities.Ticket.filter({ event_id: eventId, organizer_id: user?.id });
-    },
-    enabled: !!eventId && !!user,
+    queryKey: ["tickets", eventId],
+    queryFn: () => eventId
+      ? base44.entities.Ticket.filter({ event_id: eventId })
+      : base44.entities.Ticket.list(),
     initialData: [],
   });
 

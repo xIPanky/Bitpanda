@@ -47,8 +47,6 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Account from './pages/Account';
-import AdminDashboard from './pages/AdminDashboard';
 import Dashboard from './pages/Dashboard';
 import EmailSequences from './pages/EmailSequences';
 import EventDetails from './pages/EventDetails';
@@ -57,24 +55,19 @@ import EventTicketing from './pages/EventTicketing';
 import GuestData from './pages/GuestData';
 import GuestList from './pages/GuestList';
 import Home from './pages/Home';
-import Index from './pages/Index';
+import Landing from './pages/Landing';
 import Marketing from './pages/Marketing';
 import Register from './pages/Register';
 import RegistrationSuccess from './pages/RegistrationSuccess';
 import RoleManagement from './pages/RoleManagement';
-import RootRedirect from './pages/RootRedirect';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
-import Verified from './pages/Verified';
-import Verify from './pages/Verify';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Account": Account,
-    "AdminDashboard": AdminDashboard,
     "Dashboard": Dashboard,
     "EmailSequences": EmailSequences,
     "EventDetails": EventDetails,
@@ -83,18 +76,15 @@ export const PAGES = {
     "GuestData": GuestData,
     "GuestList": GuestList,
     "Home": Home,
-    "Index": Index,
+    "Landing": Landing,
     "Marketing": Marketing,
     "Register": Register,
     "RegistrationSuccess": RegistrationSuccess,
     "RoleManagement": RoleManagement,
-    "RootRedirect": RootRedirect,
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
-    "Verified": Verified,
-    "Verify": Verify,
 }
 
 export const pagesConfig = {

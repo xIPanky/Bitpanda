@@ -1,17 +1,76 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
-import { Menu, X, Zap } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  ScanLine,
+  Settings,
+  ClipboardList,
+  Menu,
+  X,
+  Ticket,
+  Megaphone,
+  CalendarDays,
+  ChevronRight,
+  Mail,
+  Zap,
+} from "lucide-react";
 
-const publicPages = ["Register", "Ticket", "EventDetails", "EventTicketing", "RegistrationSuccess"];
+const publicPages = ["Register", "Ticket", "Landing", "EventDetails", "EventTicketing", "RegistrationSuccess"];
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Show simple layout only for public pages
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("event_id");
+
+  const eventNavItems = eventId ? [
+    { name: "Dashboard", page: `Dashboard?event_id=${eventId}`, icon: LayoutDashboard },
+    { name: "Veranstaltungsinfos", page: `EventInfo?event_id=${eventId}`, icon: CalendarDays },
+    { name: "Ticketing", page: `TicketManagement?event_id=${eventId}`, icon: Ticket },
+    { name: "Gästeliste", page: `GuestList?event_id=${eventId}`, icon: Users },
+    { name: "Gästedaten", page: `GuestData?event_id=${eventId}`, icon: ClipboardList },
+    { name: "Marketing", page: `Marketing?event_id=${eventId}`, icon: Megaphone },
+    { name: "Rollenverteilung", page: `RoleManagement?event_id=${eventId}`, icon: Users },
+    { name: "Einstellungen", page: `Settings?event_id=${eventId}`, icon: Settings },
+    { name: "E-Mail-Sequenzen", page: `EmailSequences?event_id=${eventId}`, icon: Mail },
+    { name: "Scanner", page: `Scanner?event_id=${eventId}`, icon: ScanLine },
+  ] : [];
+
+  const topNavItems = [
+    { name: "Meine Events", page: "Home", icon: CalendarDays },
+    { name: "Gästedaten", page: "GuestData", icon: ClipboardList },
+  ];
+
   if (publicPages.includes(currentPageName)) {
     return <div style={{ background: "#070707", minHeight: "100vh" }}>{children}</div>;
   }
+
+  const currentBase = currentPageName;
+
+  const NavLink = ({ item, onClick }) => {
+    const Icon = item.icon;
+    const basePage = item.page.split("?")[0];
+    const isActive = currentBase === basePage;
+    return (
+      <Link
+        key={item.page}
+        to={createPageUrl(item.page)}
+        onClick={onClick}
+        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
+          isActive
+            ? "text-black"
+            : "text-[#555] hover:text-white hover:bg-white/5"
+        }`}
+        style={isActive ? { background: "#beff00" } : {}}
+      >
+        <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-black" : "text-[#555] group-hover:text-[#beff00]"}`} />
+        <span>{item.name}</span>
+        {isActive && <div className="ml-auto w-1 h-1 rounded-full bg-black" />}
+      </Link>
+    );
+  };
 
   return (
     <div className="min-h-screen flex" style={{ background: "#070707" }}>
@@ -24,20 +83,39 @@ export default function Layout({ children, currentPageName }) {
           </div>
           <div>
             <p className="text-sm font-bold text-white tracking-widest uppercase">Synergy</p>
-            <p className="text-[10px]" style={{ color: "#444" }}>Ticketing</p>
+            <p className="text-[10px]" style={{ color: "#444" }}>Guestlist Platform</p>
           </div>
         </div>
 
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          {/* Organizer menu items */}
-          <Link
-            to={createPageUrl("Dashboard?event_id=default")}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-            style={{ color: "#beff00" }}
-          >
-            📊 Event Dashboard
-          </Link>
+          {topNavItems.map((item) => <NavLink key={item.page} item={item} />)}
+
+          {eventNavItems.length > 0 && (
+            <>
+              <div className="pt-4 pb-1 px-3">
+                <div className="flex items-center gap-1">
+                  <ChevronRight className="w-3 h-3" style={{ color: "#333" }} />
+                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#333" }}>Event</p>
+                </div>
+              </div>
+              {eventNavItems.map((item) => <NavLink key={item.page} item={item} />)}
+            </>
+          )}
         </nav>
+
+        {eventId && (
+          <div className="p-3" style={{ borderTop: "1px solid #141414" }}>
+            <Link
+              to={createPageUrl(`EventTicketing?event_id=${eventId}`)}
+              target="_blank"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={{ color: "#beff00" }}
+            >
+              <ClipboardList className="w-4 h-4" />
+              Registrierungsseite
+            </Link>
+          </div>
+        )}
       </aside>
 
       {/* Mobile Header */}
@@ -57,14 +135,8 @@ export default function Layout({ children, currentPageName }) {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-30" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)" }} onClick={() => setMobileOpen(false)}>
           <div className="w-64 h-full shadow-2xl p-3 pt-20 space-y-0.5" style={{ background: "#0a0a0a", borderRight: "1px solid #141414" }} onClick={(e) => e.stopPropagation()}>
-            <Link
-              to={createPageUrl("Dashboard?event_id=default")}
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-              style={{ color: "#beff00" }}
-            >
-              📊 Event Dashboard
-            </Link>
+            {topNavItems.map((item) => <NavLink key={item.page} item={item} onClick={() => setMobileOpen(false)} />)}
+            {eventNavItems.map((item) => <NavLink key={item.page} item={item} onClick={() => setMobileOpen(false)} />)}
           </div>
         </div>
       )}
