@@ -16,6 +16,7 @@ export default function Verified() {
         const params = new URLSearchParams(window.location.search);
         const email = params.get('email');
         const token = params.get('token');
+        const type = params.get('type') || 'guest';
 
         if (!email) {
           setError('Ungültiger Verifikationslink');
@@ -23,8 +24,8 @@ export default function Verified() {
           return;
         }
 
-        console.log('VERIFIED_START email=', email);
-        const response = await base44.functions.invoke('verifyEmail', { email, token });
+        console.log('VERIFIED_START email=', email, 'type=', type);
+        const response = await base44.functions.invoke('verifyEmail', { email, token, type });
 
         if (response.data?.success) {
           console.log('VERIFIED_SUCCESS email=', email);
