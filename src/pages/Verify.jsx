@@ -1,25 +1,51 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { Mail, Loader2, AlertCircle } from 'lucide-react';
 
 export default function Verify() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
+  useEffect(() => {
+    // Get email from sessionStorage
+    const storedEmail = sessionStorage.getItem('signupEmail');
+    if (storedEmail) {
+      setEmail(storedEmail);
+    }
+  }, []);
+
   const handleResendEmail = async () => {
-    // This would need email input, for now just show message
-    setSuccess(true);
-    setResendCooldown(30);
-    let countdown = 30;
-    const interval = setInterval(() => {
-      countdown--;
-      setResendCooldown(countdown);
-      if (countdown <= 0) clearInterval(interval);
-    }, 1000);
+    if (!email) {
+      setError('E-Mail erforderlich');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const response = await base44.functions.invoke('resendVerificationEmail', { email });
+      if (response.data?.success) {
+        setSuccess(true);
+        setResendCooldown(30);
+        let countdown = 30;
+        const interval = setInterval(() => {
+          countdown--;
+          setResendCooldown(countdown);
+          if (countdown <= 0) clearInterval(interval);
+        }, 1000);
+      } else {
+        setError(response.data?.error || 'Fehler beim Versenden');
+      }
+    } catch (err) {
+      setError(err.message || 'Fehler beim Versenden');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
