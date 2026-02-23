@@ -37,15 +37,18 @@ Deno.serve(async (req) => {
       throw signupError;
     }
 
-    // Login to get user ID, then update
+    // Get user by email (using service role to bypass verification requirement)
     let user;
     try {
-      const loginResult = await base44.auth.loginViaEmailPassword(email, password);
-      user = loginResult.user || await base44.auth.me();
-      console.log(`ORGANIZER_LOGIN_SUCCESS user_id=${user.id}`);
-    } catch (loginError) {
-      console.error(`ORGANIZER_LOGIN_ERROR error=${loginError.message}`);
-      throw loginError;
+      const users = await base44.asServiceRole.entities.User.filter({ email: email });
+      if (!users.length) {
+        throw new Error('Benutzer konnte nicht gefunden werden');
+      }
+      user = users[0];
+      console.log(`ORGANIZER_USER_FETCHED user_id=${user.id}`);
+    } catch (fetchError) {
+      console.error(`ORGANIZER_FETCH_ERROR error=${fetchError.message}`);
+      throw fetchError;
     }
 
     // Update user with role and account_type (using service role)
