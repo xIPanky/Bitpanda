@@ -152,7 +152,17 @@ export default function RegistrationTable({
 
                         {/* Ticket column */}
                         <td className="px-6 py-4">
-                          {regTicket?.ticket_generated && regTicket?.pdf_url ? (
+                          {regTicket?.generation_status === 'creating' && (
+                            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg" style={{ background: "#1a1200", color: "#f59e0b", border: "1px solid #2a2000" }}>
+                              <Loader2 className="w-3 h-3 animate-spin" /> Generiert…
+                            </span>
+                          )}
+                          {regTicket?.generation_status === 'failed' && (
+                            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg" title={regTicket.last_generation_error || ''} style={{ background: "#1a0505", color: "#ef4444", border: "1px solid #2a0808" }}>
+                              <XCircle className="w-3 h-3" /> Fehler
+                            </span>
+                          )}
+                          {regTicket?.generation_status === 'ready' && regTicket?.pdf_url && (
                             <a
                               href={regTicket.pdf_url}
                               target="_blank"
@@ -164,10 +174,10 @@ export default function RegistrationTable({
                               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(190,255,0,0.2)"; e.currentTarget.style.boxShadow = "none"; }}
                               title="Ticket-PDF herunterladen"
                             >
-                              <Download className="w-3 h-3" />
-                              PDF
+                              <Download className="w-3 h-3" /> PDF
                             </a>
-                          ) : (
+                          )}
+                          {!regTicket && (
                             <span style={{ color: "#2a2a2a", fontSize: "12px" }}>–</span>
                           )}
                         </td>
