@@ -21,9 +21,9 @@ export default function Account() {
     },
   });
 
-  // Check email verified
+  // Check email verified + guest account
   useEffect(() => {
-    if (!userLoading && (!user || !user.email_verified)) {
+    if (!userLoading && (!user || !user.email_verified || user.account_type !== 'guest')) {
       navigate(createPageUrl('Login'));
     }
   }, [user, userLoading, navigate]);
