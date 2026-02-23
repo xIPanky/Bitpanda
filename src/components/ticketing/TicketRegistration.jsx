@@ -138,21 +138,14 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
       }
 
       try {
-        await base44.integrations.Core.SendEmail({
-          to: form.email,
-          subject: `Registrierung für ${event.name} eingegangen`,
-          body: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#070707;color:#fff;">
-            <div style="text-align:center;padding:32px 0;border-bottom:1px solid #1a1a1a;margin-bottom:32px;">
-              <p style="color:#beff00;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">REQUEST RECEIVED</p>
-              <h1 style="font-size:26px;font-weight:800;color:#fff;margin:0;">${event.name}</h1>
-            </div>
-            <p style="color:#888;line-height:1.7;">Hallo ${form.first_name},<br/><br/>deine Registrierung für <strong style="color:#fff;">${event.name}</strong> ist eingegangen und wird von unserem Team geprüft.<br/><br/>Du erhältst dein Ticket und weitere Informationen per E-Mail.</p>
-            <div style="background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:20px;margin:24px 0;">
-              <p style="font-size:11px;color:#444;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">Status</p>
-              <p style="color:#f59e0b;font-weight:600;font-size:14px;">In Prüfung</p>
-            </div>
-            <p style="color:#555;font-size:12px;">${event.date ? new Date(event.date).toLocaleDateString("de-DE", { day:"numeric", month:"long", year:"numeric" }) : ""}${event.time ? ` · ${event.time}` : ""}${event.location ? ` · ${event.location}` : ""}</p>
-          </div>`,
+        await base44.functions.invoke('sendRegistrationConfirmation', {
+          email: form.email,
+          first_name: form.first_name,
+          event_id: event.id,
+          event_name: event.name,
+          event_date: event.date,
+          event_time: event.time,
+          event_location: event.location,
         });
       } catch (emailErr) {
         console.error("Email error:", emailErr);
