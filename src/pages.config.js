@@ -66,6 +66,7 @@ import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
 import OrganizerRegistration from './pages/OrganizerRegistration';
 import AdminDashboard from './pages/AdminDashboard';
+import Index from './pages/Index';
 import __Layout from './Layout.jsx';
 
 
@@ -89,6 +90,7 @@ export const PAGES = {
     "TicketManagement": TicketManagement,
     "OrganizerRegistration": OrganizerRegistration,
     "AdminDashboard": AdminDashboard,
+    "Index": Index,
 }
 
 export const pagesConfig = {
