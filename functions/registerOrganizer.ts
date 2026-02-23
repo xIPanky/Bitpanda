@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     // Create user account via public signup
     let signupResult;
     try {
-      signupResult = await base44.auth.signUp(email, password || Math.random().toString(36).slice(-16));
+      signupResult = await base44.auth.signUp(email, password);
       console.log(`ORGANIZER_USER_CREATED email=${email} user_id=${signupResult.id}`);
     } catch (signupError) {
       console.error(`ORGANIZER_SIGNUP_ERROR error=${signupError.message}`);
