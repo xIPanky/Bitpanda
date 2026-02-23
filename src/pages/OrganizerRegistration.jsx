@@ -14,6 +14,7 @@ export default function OrganizerRegistration() {
     password: '',
     company: '',
   });
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
