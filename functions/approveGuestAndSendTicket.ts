@@ -357,12 +357,21 @@ Deno.serve(async (req) => {
 
     // ── STEP 6: Generate PDF ──
     console.log('PDF GENERATING for ticket:', ticket.ticket_code);
-    const pdfBytes = await generateTicketPDF(guest, ticket, eventData);
+    const pdfDataUri = await generateTicketPDF(guest, ticket, eventData);
 
-    const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+    // Convert data URI to Blob for upload
+    const base64Data = pdfDataUri.split(',')[1];
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const pdfBlob = new Blob([bytes], { type: 'application/pdf' });
+
     const uploadResult = await base44.asServiceRole.integrations.Core.UploadFile({ file: pdfBlob });
     const pdfUrl = uploadResult?.file_url || null;
-    console.log('PDF GENERATED at:', pdfUrl);
+    if (!pdfUrl) throw new Error('PDF upload failed — no file_url returned');
+    console.log('PDF READY at:', pdfUrl);
 
     // Save PDF url back to ticket
     await base44.asServiceRole.entities.Ticket.update(ticket.id, {
