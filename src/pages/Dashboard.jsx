@@ -178,6 +178,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen p-5 md:p-8 space-y-6" style={{ background: "#070707" }}>
+      <ApprovalSuccessOverlay show={!!successMessage} message={successMessage} />
       <div>
         <Link
           to={createPageUrl("Home")}
