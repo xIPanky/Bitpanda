@@ -97,14 +97,15 @@ export default function CreateEventDialog({ onClose, onCreated }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-900">Neues Event erstellen</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+          {/* Basic Info */}
           <div className="space-y-1.5">
             <Label>Event-Name *</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="z.B. Summit 2026" />
@@ -117,6 +118,24 @@ export default function CreateEventDialog({ onClose, onCreated }) {
             <Label>Beschreibung</Label>
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Erzähle mehr über dein Event..." className="resize-none h-20" />
           </div>
+
+          {/* Cover Image */}
+          <div className="space-y-1.5">
+            <Label>Titelbild</Label>
+            {form.cover_image_url && (
+              <div className="mb-2 rounded-lg overflow-hidden max-h-32">
+                <img src={form.cover_image_url} alt="Preview" className="w-full h-auto object-cover" />
+              </div>
+            )}
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageUpload}
+              className="w-full text-sm"
+            />
+          </div>
+
+          {/* Date & Time */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Datum *</Label>
@@ -131,6 +150,8 @@ export default function CreateEventDialog({ onClose, onCreated }) {
             <Label>Ort</Label>
             <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="z.B. Berlin, Tempodrom" />
           </div>
+
+          {/* Pricing */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={form.is_paid} onChange={(e) => setForm({ ...form, is_paid: e.target.checked })} className="rounded" />
@@ -147,6 +168,104 @@ export default function CreateEventDialog({ onClose, onCreated }) {
               </select>
             </div>
           )}
+
+          {/* Ticket Tiers */}
+          <div className="space-y-2 pt-2 border-t">
+            <Label className="font-semibold">Ticketstufen</Label>
+            {ticketTiers.map((tier, idx) => (
+              <div key={idx} className="flex gap-2 items-end">
+                <Input
+                  placeholder="Name"
+                  value={tier.name}
+                  onChange={(e) => {
+                    const updated = [...ticketTiers];
+                    updated[idx].name = e.target.value;
+                    setTicketTiers(updated);
+                  }}
+                  className="text-sm"
+                />
+                <Input
+                  placeholder="Preis"
+                  type="number"
+                  value={tier.price}
+                  onChange={(e) => {
+                    const updated = [...ticketTiers];
+                    updated[idx].price = parseFloat(e.target.value) || 0;
+                    setTicketTiers(updated);
+                  }}
+                  className="w-20 text-sm"
+                />
+                <button
+                  onClick={() => setTicketTiers(ticketTiers.filter((_, i) => i !== idx))}
+                  className="p-2 text-slate-400 hover:text-red-500"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => setTicketTiers([...ticketTiers, { name: "", price: 0, capacity: null, color: "Standard" }])}
+              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" /> Ticketstufe hinzufügen
+            </button>
+          </div>
+
+          {/* Custom Questions */}
+          <div className="space-y-2 pt-2 border-t">
+            <Label className="font-semibold">Individuelle Fragen</Label>
+            {form.custom_questions.map((q, idx) => (
+              <div key={idx} className="flex gap-2 items-center">
+                <span className="text-sm flex-1 bg-slate-100 px-3 py-2 rounded">{q}</span>
+                <button
+                  onClick={() => handleRemoveQuestion(idx)}
+                  className="p-2 text-slate-400 hover:text-red-500"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Frage hinzufügen"
+                value={newQuestion}
+                onChange={(e) => setNewQuestion(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleAddQuestion()}
+                className="text-sm"
+              />
+              <Button onClick={handleAddQuestion} size="sm" variant="outline">
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Invitation Options */}
+          <div className="space-y-2 pt-2 border-t">
+            <Label className="font-semibold">Einladungsoptionen</Label>
+            {form.invitation_options.map((opt, idx) => (
+              <div key={idx} className="flex gap-2 items-center">
+                <span className="text-sm flex-1 bg-slate-100 px-3 py-2 rounded">{opt}</span>
+                <button
+                  onClick={() => handleRemoveInvitationOption(idx)}
+                  className="p-2 text-slate-400 hover:text-red-500"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Option hinzufügen"
+                value={newInvitationOption}
+                onChange={(e) => setNewInvitationOption(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleAddInvitationOption()}
+                className="text-sm"
+              />
+              <Button onClick={handleAddInvitationOption} size="sm" variant="outline">
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </div>
         <div className="flex gap-3 mt-8">
           <Button variant="outline" onClick={onClose} className="flex-1">Abbrechen</Button>
