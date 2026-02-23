@@ -198,7 +198,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
       {tier && (
         <div className="mb-5 p-4 rounded-2xl flex items-center justify-between" style={{ background: "#0d1a00", border: "1px solid #1a2e00" }}>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: "#555" }}>Ausgewähltes Ticket</p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: "#888" }}>Ausgewähltes Ticket</p>
             <p className="font-bold text-white">{tier.name}</p>
           </div>
           <span className="text-lg font-bold" style={{ color: "#beff00" }}>
