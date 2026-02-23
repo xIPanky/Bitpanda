@@ -120,7 +120,9 @@ async function generateTicketPDF(guest, ticket, eventData) {
   doc.setFillColor(...NEON);
   doc.rect(0, H - 3, W, 3, 'F');
 
-  return doc.output('arraybuffer');
+  // Return as base64 data URL — arraybuffer cannot be passed directly to UploadFile
+  const base64 = doc.output('datauristring');
+  return base64;
 }
 
 function buildApprovalEmail(guest, ticket, eventData, pdfUrl) {
