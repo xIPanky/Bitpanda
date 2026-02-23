@@ -131,14 +131,17 @@ export default function Dashboard() {
     setProcessingId(reg.id);
     try {
       const result = await base44.functions.invoke("approveGuestAndSendTicket", { guestId: reg.id });
-      if (result.data?.success) {
-        if (result.data.emailSuccess) {
-          showSuccess("Ticket erfolgreich versendet");
-        } else {
-          toast.warning(`${reg.first_name} freigegeben – E-Mail fehlgeschlagen. Bitte erneut senden.`);
-        }
+      const d = result.data;
+      if (d?.success && d?.emailSuccess) {
+        showSuccess("Ticket generiert & versendet");
+      } else if (d?.ticketReady && !d?.emailSuccess) {
+        toast.warning(`Ticket erstellt – E-Mail fehlgeschlagen: ${d.emailError || "Unbekannter Fehler"}. Bitte erneut senden.`);
+      } else if (d?.error === "PDF_UPLOAD_FAILED_NO_URL") {
+        toast.error("Ticket konnte nicht generiert werden (PDF Upload fehlgeschlagen).");
+      } else if (d?.error === "MISSING_GUEST_EMAIL") {
+        toast.error("Keine gültige E-Mail-Adresse für diesen Gast hinterlegt.");
       } else {
-        toast.error(result.data?.error || "Fehler bei der Freigabe");
+        toast.error(d?.error || "Fehler bei der Freigabe");
       }
     } catch (err) {
       toast.error("Serverfehler: " + err.message);
