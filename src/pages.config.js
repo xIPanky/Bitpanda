@@ -64,13 +64,13 @@ import OrganizerRegistration from './pages/OrganizerRegistration';
 import Register from './pages/Register';
 import RegistrationSuccess from './pages/RegistrationSuccess';
 import RoleManagement from './pages/RoleManagement';
+import RootRedirect from './pages/RootRedirect';
 import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
 import Verified from './pages/Verified';
 import Verify from './pages/Verify';
-import RootRedirect from './pages/RootRedirect';
 import __Layout from './Layout.jsx';
 
 
@@ -92,13 +92,13 @@ export const PAGES = {
     "Register": Register,
     "RegistrationSuccess": RegistrationSuccess,
     "RoleManagement": RoleManagement,
+    "RootRedirect": RootRedirect,
     "Scanner": Scanner,
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
     "Verified": Verified,
     "Verify": Verify,
-    "RootRedirect": RootRedirect,
 }
 
 export const pagesConfig = {

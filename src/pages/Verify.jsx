@@ -1,21 +1,43 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 export default function Verify() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const email = urlParams.get('email');
-  const [status, setStatus] = React.useState('waiting'); // waiting, success, error
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('verifying'); // verifying, error
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check if verification was successful
-    const timer = setTimeout(() => {
-      // User should be on this page after signup, waiting for email click
-      // When they click email link, they go to /verified
-    }, 1000);
+    const verifyToken = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
 
-    return () => clearTimeout(timer);
-  }, []);
+      if (!token) {
+        setError('Der Bestätigungslink ist ungültig oder abgelaufen.');
+        setStatus('error');
+        return;
+      }
+
+      try {
+        const response = await base44.functions.invoke('verifyEmail', { token });
+        if (response.data?.success) {
+          setTimeout(() => {
+            navigate(createPageUrl('Verified'));
+          }, 1000);
+        } else {
+          setError(response.data?.error || 'Bestätigung fehlgeschlagen');
+          setStatus('error');
+        }
+      } catch (err) {
+        setError(err.message || 'Der Bestätigungslink ist ungültig oder abgelaufen.');
+        setStatus('error');
+      }
+    };
+
+    verifyToken();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: '#070707' }}>
@@ -31,33 +53,38 @@ export default function Verify() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-white mb-4">E-Mail-Bestätigung</h1>
-        <p className="text-sm mb-8" style={{ color: '#888' }}>
-          Wir haben einen Bestätigungslink an <strong style={{ color: '#beff00' }}>{email}</strong> gesendet.
-        </p>
+        {status === 'verifying' && (
+          <>
+            <h1 className="text-2xl font-bold text-white mb-4">E-Mail wird bestätigt</h1>
+            <div className="flex justify-center mb-8">
+              <Loader2 className="w-12 h-12 animate-spin" style={{ color: '#beff00' }} />
+            </div>
+            <p className="text-sm" style={{ color: '#888' }}>
+              Bitte warten…
+            </p>
+          </>
+        )}
 
-        {/* Animation */}
-        <div className="flex justify-center mb-8">
-          <Loader2 className="w-12 h-12 animate-spin" style={{ color: '#beff00' }} />
-        </div>
-
-        <p className="text-sm mb-6" style={{ color: '#888' }}>
-          Klicke auf den Link in der E-Mail, um dein Konto zu aktivieren.
-        </p>
-
-        {/* Back to landing */}
-        <a
-          href={createPageUrl('Landing')}
-          className="inline-block px-6 py-3 rounded-lg font-bold text-sm transition-all"
-          style={{
-            background: 'rgba(190, 255, 0, 0.1)',
-            color: '#beff00',
-            border: '1px solid #beff00',
-            textDecoration: 'none',
-          }}
-        >
-          Zur Startseite
-        </a>
+        {status === 'error' && (
+          <>
+            <AlertCircle className="w-12 h-12 mx-auto mb-4" style={{ color: '#ff6b6b' }} />
+            <h1 className="text-2xl font-bold text-white mb-4">Bestätigung fehlgeschlagen</h1>
+            <p className="text-sm mb-8" style={{ color: '#888' }}>
+              {error}
+            </p>
+            <a
+              href={createPageUrl('Landing')}
+              className="inline-block px-6 py-3 rounded-lg font-bold text-sm transition-all"
+              style={{
+                background: '#beff00',
+                color: '#070707',
+                textDecoration: 'none',
+              }}
+            >
+              Zur Startseite
+            </a>
+          </>
+        )}
       </div>
     </div>
   );
