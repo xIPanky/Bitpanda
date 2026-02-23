@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { ChevronLeft, Loader2, CheckCircle, Zap } from "lucide-react";
+import { ChevronLeft, Loader2, CheckCircle, Copy, Zap } from "lucide-react";
 import { TicketSelector } from "@/components/ticketing/TicketSelector";
 import { TicketRegistration } from "@/components/ticketing/TicketRegistration";
+import { toast } from "sonner";
 
 export default function EventTicketing() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -85,6 +86,8 @@ export default function EventTicketing() {
     setStep("tickets");
   };
 
+  // ── SHARED COMPONENTS ──────────────────────────────────────────────────
+
   const PageHeader = ({ subtitle }) => (
     <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "rgba(7,7,7,0.95)", borderBottom: "1px solid #141414", backdropFilter: "blur(12px)" }}>
       <div className="flex items-center gap-3">
@@ -106,6 +109,7 @@ export default function EventTicketing() {
 
   const SuccessScreen = ({ title, subtitle }) => (
     <div className="text-center py-12 px-6">
+      {/* Steps */}
       <div className="flex items-center justify-center gap-2 mb-12">
         {["Registriert", "In Prüfung", "Genehmigt"].map((label, i) => (
           <React.Fragment key={label}>
@@ -128,11 +132,30 @@ export default function EventTicketing() {
 
       <div className="rounded-2xl p-6 mb-8 text-left max-w-sm mx-auto" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
         <div className="space-y-4">
+          {registrationData?.ticket_code && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#444" }}>Ticket-Code</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-lg font-mono font-bold px-4 py-3 rounded-xl" style={{ background: "#111", color: "#beff00", border: "1px solid #1a2e00" }}>
+                  {registrationData.ticket_code}
+                </code>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(registrationData.ticket_code || ""); toast.success("Kopiert!"); }}
+                  className="p-3 rounded-xl transition-all"
+                  style={{ background: "#111", color: "#555", border: "1px solid #1a1a1a" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#beff00"; e.currentTarget.style.borderColor = "#1a2e00"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.borderColor = "#1a1a1a"; }}
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#444" }}>E-Mail</p>
             <p className="text-sm text-white">{registrationData?.email}</p>
           </div>
-          {selectedTicketTier && (
+          {registrationData?.ticket_code && selectedTicketTier && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#444" }}>Ticket-Typ</p>
               <p className="text-sm text-white">{selectedTicketTier.name}</p>
@@ -155,17 +178,19 @@ export default function EventTicketing() {
     </div>
   );
 
+  // ── NO TICKET TIERS (guest-only flow) ─────────────────────────────────
   if (!hasTickets) {
     return (
       <div className="min-h-screen" style={{ background: "#070707" }}>
-        <PageHeader subtitle={step === "success" ? "Registrierung abgeschlossen" : "Registrierung"} />
-        <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-          {step === "registration" ? (
+        <PageHeader subtitle={step === "success" ? "Registrierung abgeschlossen" : "Gästeliste"} />
+        <div className="max-w-xl mx-auto px-4 py-10">
+          {step !== "success" ? (
             <TicketRegistration
               event={event}
-              onRegistrationComplete={handleRegistrationComplete}
-              onAbandon={handleRegistrationAbandoned}
-              onBack={() => setStep("success")}
+              tier={null}
+              onComplete={handleRegistrationComplete}
+              onAbandoned={handleRegistrationAbandoned}
+              onBack={() => window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`)}
             />
           ) : (
             <SuccessScreen
@@ -178,26 +203,29 @@ export default function EventTicketing() {
     );
   }
 
+  // ── FULL TICKETING FLOW ────────────────────────────────────────────────
+  const stepLabel = step === "tickets" ? "Schritt 1: Ticket auswählen" : step === "registration" ? "Schritt 2: Registrierung" : "Abgeschlossen";
+
   return (
     <div className="min-h-screen" style={{ background: "#070707" }}>
-      <PageHeader subtitle={step === "tickets" ? "Ticketwahl" : step === "registration" ? "Registrierung" : "Registrierung abgeschlossen"} />
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+      <PageHeader subtitle={stepLabel} />
+      <div className="max-w-xl mx-auto px-4 py-10">
         {step === "tickets" && (
-          <TicketSelector tiers={visibleTiers} onSelectTier={handleTicketSelect} />
+          <TicketSelector event={event} tiers={visibleTiers} onSelectTier={handleTicketSelect} />
         )}
-        {step === "registration" && (
+        {step === "registration" && selectedTicketTier && (
           <TicketRegistration
             event={event}
-            ticketTier={selectedTicketTier}
-            onRegistrationComplete={handleRegistrationComplete}
-            onAbandon={handleRegistrationAbandoned}
+            tier={selectedTicketTier}
+            onComplete={handleRegistrationComplete}
+            onAbandoned={handleRegistrationAbandoned}
             onBack={handleBackToTickets}
           />
         )}
-        {step === "success" && (
+        {step === "success" && registrationData && (
           <SuccessScreen
-            title="Registrierung eingegangen!"
-            subtitle="Deine Registrierung wird geprüft. Du erhältst dein Ticket per E-Mail."
+            title={registrationData.ticket_code ? "Ticket gesichert!" : "Registrierung abgeschlossen!"}
+            subtitle={registrationData.ticket_code ? "Dein Ticket wurde erfolgreich erstellt." : "Deine Registrierung wurde gespeichert."}
           />
         )}
       </div>
