@@ -347,101 +347,81 @@ export default function GuestData() {
 
           <div className="rounded-2xl overflow-hidden" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50/50">
-                     {!eventId && <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Event</TableHead>}
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</TableHead>
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                       <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />E-Mail</span>
-                     </TableHead>
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                       <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />Telefon</span>
-                     </TableHead>
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                       <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" />Firma</span>
-                     </TableHead>
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                       <span className="flex items-center gap-1"><Download className="w-3.5 h-3.5" />Ticket</span>
-                     </TableHead>
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                       <span className="flex items-center gap-1"><UserPlus className="w-3.5 h-3.5" />Eingeladen von</span>
-                     </TableHead>
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                       <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" />Anmerkungen</span>
-                     </TableHead>
-                     <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Aktionen</TableHead>
-                   </TableRow>
-                </TableHeader>
-                <TableBody>
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    {!eventId && <th style={thStyle}>Event</th>}
+                    <th style={thStyle}>Name</th>
+                    <th style={thStyle}>E-Mail</th>
+                    <th style={thStyle}>Telefon</th>
+                    <th style={thStyle}>Ticket</th>
+                    <th style={thStyle}>Status</th>
+                    <th style={thStyle}>Eingeladen von</th>
+                    <th style={thStyle}>Anmerkungen</th>
+                    <th style={{ ...thStyle, textAlign: "right" }}>Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {filtered.length === 0 ? (
-                    <TableRow>
-                       <TableCell colSpan={10} className="text-center py-16 text-slate-400">
-                        <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                        <p>Keine Gäste gefunden</p>
-                      </TableCell>
-                    </TableRow>
+                    <tr>
+                      <td colSpan={9} className="text-center py-16">
+                        <Users className="w-8 h-8 mx-auto mb-3" style={{ color: "#1a1a1a" }} />
+                        <p className="text-xs uppercase tracking-widest" style={{ color: "#2a2a2a" }}>Keine Gäste gefunden</p>
+                      </td>
+                    </tr>
                   ) : (
-                    filtered.map((reg) => (
-                      <TableRow key={reg.id} className="border-b border-slate-50 hover:bg-slate-50/50">
-                       {!eventId && (
-                         <TableCell className="text-sm text-slate-500 whitespace-nowrap">
-                           {eventMap[reg.event_id] || <span className="text-slate-300">—</span>}
-                         </TableCell>
-                       )}
-                       <TableCell className="font-medium text-slate-900 whitespace-nowrap">
-                          {reg.first_name} {reg.last_name}
-                          {reg.plus_one && (
-                            <span className="ml-2 text-xs text-slate-400">(+1{reg.plus_one_name ? `: ${reg.plus_one_name}` : ""})</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-600">{reg.email}</TableCell>
-                        <TableCell className="text-sm text-slate-600">{reg.phone || <span className="text-slate-300">—</span>}</TableCell>
-                        <TableCell className="text-sm text-slate-600">{reg.company || <span className="text-slate-300">—</span>}</TableCell>
-                        <TableCell className="text-sm">
-                          {ticketMap[reg.id] && reg.status === "approved" ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs h-8"
-                              onClick={() => handleDownloadTicket(reg)}
+                    filtered.map((reg) => {
+                      const ss = statusStyleMap[reg.status] || statusStyleMap.pending;
+                      return (
+                        <tr key={reg.id} className="group transition-colors" onMouseEnter={(e) => e.currentTarget.style.background = "#111"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                          {!eventId && <td style={tdStyle}><span style={{ color: "#555" }}>{eventMap[reg.event_id] || "—"}</span></td>}
+                          <td style={tdStyle}>
+                            <p className="font-semibold text-white whitespace-nowrap">{reg.first_name} {reg.last_name}</p>
+                            {reg.plus_one && <p className="text-xs mt-0.5" style={{ color: "#beff00" }}>+1 {reg.plus_one_name || ""}</p>}
+                          </td>
+                          <td style={tdStyle}><span style={{ color: "#555" }}>{reg.email}</span></td>
+                          <td style={tdStyle}><span style={{ color: "#555" }}>{reg.phone || "—"}</span></td>
+                          <td style={tdStyle}>
+                            {ticketMap[reg.id] && reg.status === "approved" ? (
+                              <button
+                                onClick={() => handleDownloadTicket(reg)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                                style={{ background: "#0d1a00", color: "#beff00", border: "1px solid #1a2e00" }}
+                                onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 12px rgba(190,255,0,0.2)"}
+                                onMouseLeave={(e) => e.currentTarget.style.boxShadow = "none"}
+                              >
+                                <Download className="w-3 h-3" /> PDF
+                              </button>
+                            ) : <span style={{ color: "#2a2a2a" }}>—</span>}
+                          </td>
+                          <td style={tdStyle}>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold" style={{ background: ss.bg, color: ss.text, border: `1px solid ${ss.border}` }}>
+                              {statusLabels[reg.status] || reg.status}
+                            </span>
+                          </td>
+                          <td style={tdStyle}><span style={{ color: "#555" }}>{reg.invited_by || "—"}</span></td>
+                          <td style={{ ...tdStyle, maxWidth: "200px" }}><span className="truncate block" style={{ color: "#555" }}>{reg.notes || "—"}</span></td>
+                          <td style={{ ...tdStyle, textAlign: "right" }}>
+                            <button
+                              onClick={() => { setEditGuest(reg); setEditDialogOpen(true); }}
+                              className="p-2 rounded-lg transition-all"
+                              style={{ color: "#333" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.color = "#beff00"; e.currentTarget.style.background = "#111"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.color = "#333"; e.currentTarget.style.background = "transparent"; }}
                             >
-                              <Download className="w-3 h-3 mr-1" />
-                              PDF
-                            </Button>
-                          ) : (
-                            <span className="text-slate-300 text-xs">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={`${statusColors[reg.status] || ""} text-xs`}>
-                            {statusLabels[reg.status] || reg.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-600">{reg.invited_by || <span className="text-slate-300">—</span>}</TableCell>
-                        <TableCell className="text-sm text-slate-600 max-w-xs truncate">{reg.notes || <span className="text-slate-300">—</span>}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEditGuest(reg);
-                              setEditDialogOpen(true);
-                            }}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <p className="text-xs text-slate-400 text-right mt-2">{filtered.length} von {registrations.length} Einträgen</p>
+          <p className="text-xs text-right mt-2" style={{ color: "#333" }}>{filtered.length} von {registrations.length} Einträgen</p>
           </motion.div>
           </div>
 
