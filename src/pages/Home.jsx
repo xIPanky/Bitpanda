@@ -8,6 +8,7 @@ import { createPageUrl } from "@/utils";
 import { Plus, Calendar, MapPin, Users, Loader2, Ticket, LayoutDashboard, ChevronDown, ChevronUp, ExternalLink, Copy, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import CreateEventDialog from "@/components/events/CreateEventDialog.jsx";
+import AccessGuard from "@/components/AccessGuard.jsx";
 import { toast } from "sonner";
 
 const statusConfig = {
@@ -29,13 +30,13 @@ export default function Home() {
   const isAdmin = user?.role === "admin";
 
   const { data: events, isLoading } = useQuery({
-    queryKey: ["events"],
+    queryKey: ["events", user?.id],
     queryFn: async () => {
       const all = await base44.entities.Event.list("-created_date");
       if (isAdmin) return all;
-      return all.filter((e) => e.created_by === user?.email);
+      return all.filter((e) => e.organizer_id === user?.id);
     },
-    enabled: !!user,
+    enabled: !!user && (isAdmin || user?.role === 'organizer'),
     initialData: [],
   });
 
@@ -59,6 +60,7 @@ export default function Home() {
   const visibleEvents = eventsExpanded ? events : upcomingEvents;
 
   return (
+    <AccessGuard requiredRole="organizer">
     <div className="min-h-screen p-5 md:p-8" style={{ background: "#070707" }}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
@@ -215,5 +217,6 @@ export default function Home() {
         />
       )}
     </div>
+    </AccessGuard>
   );
 }
