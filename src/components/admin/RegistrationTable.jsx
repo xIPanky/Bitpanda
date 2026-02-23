@@ -80,7 +80,7 @@ export default function RegistrationTable({
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid #1a1a1a" }}>
-                {["Gast", "Kontakt", "Kategorie", "Status", "Ticket", "Datum", "Aktionen"].map((h) => (
+                {["Gast", "Kontakt", "Unternehmen", "Quelle", "Status", "Ticket", "Datum", "Aktionen"].map((h) => (
                   <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style={{ color: "#3a3a3a" }}>{h}</th>
                 ))}
               </tr>
