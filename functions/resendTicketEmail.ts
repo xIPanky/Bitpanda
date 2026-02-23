@@ -114,11 +114,13 @@ Deno.serve(async (req) => {
       if (attempt > 0) await sleep(1000);
       try {
         console.log(`EMAIL_SEND_START recipient=${guest.email} attempt=${attempt + 1}`);
-        await base44.asServiceRole.integrations.Core.SendEmail({
+        const { error: resendError } = await resend.emails.send({
+          from: 'Synergy <onboarding@resend.dev>',
           to: guest.email,
           subject: `Dein Ticket (erneut gesendet) – ${eventName}`,
-          body: emailBody,
+          html: emailBody,
         });
+        if (resendError) throw new Error(resendError.message || JSON.stringify(resendError));
         console.log(`EMAIL_SEND_DONE recipient=${guest.email}`);
         lastErr = null;
         break;
