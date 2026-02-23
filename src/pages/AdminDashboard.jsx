@@ -49,11 +49,9 @@ export default function AdminDashboard() {
 
   if (usersLoading || eventsLoading || regsLoading || ticketsLoading) {
     return (
-      <AdminAccessGuard>
-        <div className="min-h-screen flex items-center justify-center" style={{ background: '#070707' }}>
-          <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#beff00' }} />
-        </div>
-      </AdminAccessGuard>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070707' }}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#beff00' }} />
+      </div>
     );
   }
 
