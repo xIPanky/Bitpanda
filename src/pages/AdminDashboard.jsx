@@ -61,18 +61,18 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen p-6 md:p-8" style={{ background: '#070707' }}>
-        {/* Admin Banner */}
-        <div className="mb-8 p-4 rounded-lg" style={{ background: 'rgba(190, 255, 0, 0.1)', border: '1px solid #beff00' }}>
-          <p style={{ color: '#beff00', fontSize: '14px', fontWeight: '600' }}>
-            🔐 ADMIN MODUS AKTIV
-          </p>
-        </div>
+      {/* Admin Banner */}
+      <div className="mb-8 p-4 rounded-lg" style={{ background: 'rgba(190, 255, 0, 0.1)', border: '1px solid #beff00' }}>
+        <p style={{ color: '#beff00', fontSize: '14px', fontWeight: '600' }}>
+          🔐 ADMIN MODUS AKTIV
+        </p>
+      </div>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-          <p style={{ color: '#666', marginTop: '4px' }}>Globale Plattformübersicht</p>
-        </div>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+        <p style={{ color: '#666', marginTop: '4px' }}>Globale Plattformübersicht</p>
+      </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
