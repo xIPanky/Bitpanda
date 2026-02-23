@@ -77,6 +77,8 @@ Deno.serve(async (req) => {
         first_name: payload.plus_one_first_name.trim(),
         last_name: payload.plus_one_last_name.trim(),
         email: payload.plus_one_email?.toLowerCase() || '',
+        phone: payload.phone.trim(),
+        company: payload.company.trim(),
         custom_answers: payload.custom_answers || [],
         category: payload.category || 'Standard',
         status: 'pending',
