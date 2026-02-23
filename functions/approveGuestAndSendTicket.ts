@@ -291,8 +291,22 @@ Deno.serve(async (req) => {
 
     // ── STEP 1: Load guest ──────────────────────────────────────────────────
     console.log(`APPROVE_START guestId=${guestId}`);
-    const registrations = await base44.asServiceRole.entities.Registration.filter({ id: guestId });
-    const guest = registrations?.[0];
+    let guest = null;
+    try {
+      // Try filter first, fall back to full list scan
+      const byFilter = await base44.asServiceRole.entities.Registration.filter({ id: guestId });
+      guest = byFilter?.[0] || null;
+      if (!guest) {
+        console.log(`GUEST_FILTER_EMPTY — falling back to list scan`);
+        const allRegs = await base44.asServiceRole.entities.Registration.list();
+        guest = allRegs.find(r => r.id === guestId) || null;
+      }
+    } catch (loadErr) {
+      console.error(`GUEST_LOAD_ERROR: ${loadErr.message}`);
+      const allRegs = await base44.asServiceRole.entities.Registration.list();
+      guest = allRegs.find(r => r.id === guestId) || null;
+    }
+    console.log(`GUEST_LOADED found=${!!guest} id=${guest?.id || 'null'}`);
     if (!guest) return Response.json({ error: 'GUEST_NOT_FOUND' }, { status: 404 });
 
     if (!guest.email || !isValidEmail(guest.email)) {
