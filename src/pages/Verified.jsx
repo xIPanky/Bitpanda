@@ -10,9 +10,9 @@ export default function Verified() {
   useEffect(() => {
     const verify = async () => {
       setStatus('success');
-      // Redirect after 2 seconds to login
+      // Redirect after 2 seconds to signin
       setTimeout(() => {
-        window.location.replace(createPageUrl('Login'));
+        window.location.replace(createPageUrl('SignIn'));
       }, 2000);
     };
 
