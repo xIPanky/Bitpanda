@@ -23,34 +23,51 @@ Deno.serve(async (req) => {
 
     console.log(`SIGNUP_START email=${email}`);
 
-    // Create user account via public signup
-    let signupResult;
+    const base44 = createClientFromRequest(req);
+
+    // Create user account via public register method
+    let user;
     try {
-      signupResult = await base44.auth.signUp(email, password);
-      console.log(`SIGNUP_USER_CREATED email=${email} user_id=${signupResult.id}`);
+      await base44.auth.register({
+        email: email,
+        password: password
+      });
+      console.log(`SIGNUP_USER_CREATED email=${email}`);
     } catch (signupError) {
       console.error(`SIGNUP_ERROR error=${signupError.message}`);
-      if (signupError.message?.includes('already')) {
+      if (signupError.message?.includes('already') || signupError.message?.includes('exists')) {
         return Response.json({ error: 'E-Mail-Adresse ist bereits registriert' }, { status: 409 });
       }
       throw signupError;
     }
 
-    // Update user with role and account_type
-    const base44 = createClientFromRequest(req);
+    // Get user by email (using service role to bypass verification requirement)
     try {
-      await base44.asServiceRole.entities.User.update(signupResult.id, {
+      const users = await base44.asServiceRole.entities.User.filter({ email: email });
+      if (!users.length) {
+        throw new Error('Benutzer konnte nicht gefunden werden');
+      }
+      user = users[0];
+      console.log(`SIGNUP_USER_FETCHED user_id=${user.id}`);
+    } catch (fetchError) {
+      console.error(`SIGNUP_FETCH_ERROR error=${fetchError.message}`);
+      throw fetchError;
+    }
+
+    // Update user with role and account_type
+    try {
+      await base44.asServiceRole.entities.User.update(user.id, {
         role: 'user',
         account_type: 'guest'
       });
-      console.log(`SIGNUP_USER_UPDATED email=${email} account_type=guest`);
+      console.log(`SIGNUP_USER_UPDATED email=${email} account_type=guest user_id=${user.id}`);
     } catch (updateError) {
       console.error(`SIGNUP_UPDATE_ERROR error=${updateError.message}`);
       throw updateError;
     }
 
     // Generate verification link using user ID
-    const verificationLink = `${new URL(req.url).origin}/verified?token=${encodeURIComponent(signupResult.id)}&email=${encodeURIComponent(email)}&type=guest`;
+    const verificationLink = `${new URL(req.url).origin}/verified?token=${encodeURIComponent(user.id)}&email=${encodeURIComponent(email)}&type=guest`;
 
     // Send verification email
     console.log(`SIGNUP_EMAIL_SENDING email=${email}`);
