@@ -78,66 +78,54 @@ export default function RoleManagement() {
     },
   });
 
-  if (!eventId) return <div className="p-6 text-slate-500">Event nicht gefunden</div>;
+  if (!eventId) return <div className="p-6" style={{color:"#555"}}>Event nicht gefunden</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-screen p-5 md:p-8" style={{ background:"#070707" }}>
       <div className="max-w-3xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}>
           <div className="mb-8">
-            <Link to={createPageUrl(`Dashboard?event_id=${eventId}`)} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-3 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Dashboard
+            <Link to={createPageUrl(`Dashboard?event_id=${eventId}`)} className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest mb-4 transition-colors" style={{color:"#444"}} onMouseEnter={e=>e.currentTarget.style.color="#beff00"} onMouseLeave={e=>e.currentTarget.style.color="#444"}>
+              <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
             </Link>
-            <h1 className="text-2xl font-bold text-slate-900">Rollenverteilung</h1>
-            <p className="text-sm text-slate-500 mt-1">{event?.name}</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Rollenverteilung</h1>
+            <p className="text-xs mt-0.5 uppercase tracking-widest" style={{color:"#444"}}>{event?.name}</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-6">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Benutzer verwalten</h3>
-              <div className="space-y-3">
-                {eventUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900">{user.full_name}</p>
-                      <p className="text-xs text-slate-500">{user.email}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={user.event_roles?.[eventId] || "user"}
-                        onChange={(e) => updateRoleMutation.mutate({ userId: user.id, role: e.target.value })}
-                        className="h-9 px-2 rounded-md border border-slate-200 text-sm bg-white"
-                      >
-                        <option value="user">User</option>
-                        <option value="guest_list_manager">Gästelistenmanager</option>
-                      </select>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeUserMutation.mutate(user.id)}
-                        className="text-red-600 hover:bg-red-50 h-9"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+          <div className="rounded-2xl p-6 space-y-5" style={{background:"#0d0d0d",border:"1px solid #1a1a1a"}}>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{color:"#333"}}>Benutzer verwalten</p>
+            <div className="space-y-3">
+              {eventUsers.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-4 rounded-xl" style={{background:"#111",border:"1px solid #1a1a1a"}}>
+                  <div>
+                    <p className="font-semibold text-white text-sm">{user.full_name}</p>
+                    <p className="text-xs mt-0.5" style={{color:"#555"}}>{user.email}</p>
                   </div>
-                ))}
-              </div>
-
+                  <div className="flex items-center gap-2">
+                    <select value={user.event_roles?.[eventId]||"user"} onChange={e=>updateRoleMutation.mutate({userId:user.id,role:e.target.value})}
+                      className="h-9 px-3 rounded-xl text-sm text-white outline-none" style={{background:"#0d0d0d",border:"1px solid #1e1e1e"}}>
+                      <option value="user" style={{background:"#111"}}>User</option>
+                      <option value="guest_list_manager" style={{background:"#111"}}>Gästelistenmanager</option>
+                    </select>
+                    <button onClick={()=>removeUserMutation.mutate(user.id)} className="p-2 rounded-lg transition-all" style={{color:"#ef4444",background:"#1a0505",border:"1px solid #2a0808"}}>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
               {eventUsers.length === 0 && (
-                <div className="text-center py-8 text-slate-400">
-                  <p className="text-sm">Keine Benutzer zugewiesen</p>
+                <div className="text-center py-8">
+                  <p className="text-xs uppercase tracking-widest" style={{color:"#2a2a2a"}}>Keine Benutzer zugewiesen</p>
                 </div>
               )}
             </div>
 
-            <div className="border-t border-slate-100 pt-6">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">Neuen Benutzer hinzufügen</h4>
-              <p className="text-xs text-slate-500 mb-4">Benutzer können nur über Einladungen hinzugefügt werden. Nutze die Einladungsfunktion im Admin-Bereich, um neue Benutzer zu erstellen und dann weise ihnen hier eine Event-Rolle zu.</p>
-              <Button disabled className="gap-2">
-                <Plus className="w-4 h-4" />
-                Benutzer über Admin-Panel einladen
-              </Button>
+            <div className="pt-4 space-y-3" style={{borderTop:"1px solid #141414"}}>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{color:"#333"}}>Neuen Benutzer hinzufügen</p>
+              <p className="text-xs leading-relaxed" style={{color:"#444"}}>Benutzer können nur über Einladungen hinzugefügt werden. Nutze die Einladungsfunktion im Admin-Bereich.</p>
+              <button disabled className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider opacity-40" style={{background:"#111",color:"#555",border:"1px solid #1e1e1e"}}>
+                <Plus className="w-3.5 h-3.5" /> Über Admin-Panel einladen
+              </button>
             </div>
           </div>
         </motion.div>
