@@ -1,10 +1,17 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Loader2 } from 'lucide-react';
 import { createPageUrl } from '@/utils';
+import { Loader2, AlertCircle } from 'lucide-react';
 
+/**
+ * Admin Access Guard Component
+ * Protects routes that require admin role
+ */
 export default function AdminAccessGuard({ children }) {
+  const navigate = useNavigate();
+
   const { data: user, isLoading } = useQuery({
     queryKey: ['me'],
     queryFn: () => base44.auth.me(),
@@ -12,28 +19,31 @@ export default function AdminAccessGuard({ children }) {
   });
 
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== 'admin')) {
-      window.location.href = createPageUrl('Landing');
+    if (isLoading) return;
+
+    // Not authenticated - redirect to login
+    if (!user) {
+      navigate(createPageUrl('Login'));
+      return;
     }
-  }, [user, isLoading]);
+
+    // Not admin - redirect to landing
+    if (user.role !== 'admin') {
+      navigate(createPageUrl('Landing'));
+      return;
+    }
+  }, [user, isLoading, navigate]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#070707' }}>
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#beff00' }} />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#beff00' }} />
       </div>
     );
   }
 
   if (!user || user.role !== 'admin') {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#070707' }}>
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
-          <p style={{ color: '#999' }}>Du hast keine Admin-Berechtigung.</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return children;

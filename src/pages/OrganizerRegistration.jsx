@@ -19,10 +19,18 @@ export default function OrganizerRegistration() {
     e.preventDefault();
     setLoading(true);
 
+    // Validate form
+    if (!formData.email || !formData.full_name || !formData.password) {
+      toast.error('Bitte fülle alle erforderlichen Felder aus');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await base44.functions.invoke('registerOrganizer', {
         email: formData.email,
         full_name: formData.full_name,
+        password: formData.password,
         company: formData.company,
       });
 
