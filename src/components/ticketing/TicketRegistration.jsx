@@ -194,8 +194,8 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
 
         <div>
-          <FieldLabel>Telefonnummer</FieldLabel>
-          <DarkInput type="tel" value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="+49 123 456789" />
+          <FieldLabel required>Telefonnummer</FieldLabel>
+          <DarkInput type="tel" required value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="+49 123 456789" />
         </div>
 
         <div>
