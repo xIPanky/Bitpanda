@@ -2,40 +2,42 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
   try {
-    const { user_id, email, type } = await req.json();
+    const { token } = await req.json();
 
-    if (!user_id || !email) {
-      return Response.json({ error: 'Missing user_id or email' }, { status: 400 });
+    if (!token) {
+      return Response.json({ error: 'Verification token is required' }, { status: 400 });
     }
 
     const base44 = createClientFromRequest(req);
 
-    // Verify user exists
+    // Get user by ID (token is the user ID)
+    let user;
     try {
-      const user = await base44.asServiceRole.entities.User.get(user_id);
+      user = await base44.asServiceRole.entities.User.get(token);
       if (!user) {
-        return Response.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
+        return Response.json({ error: 'Der Bestätigungslink ist ungültig oder abgelaufen.' }, { status: 404 });
       }
     } catch (err) {
       console.error('User fetch error:', err);
-      return Response.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
+      return Response.json({ error: 'Der Bestätigungslink ist ungültig oder abgelaufen.' }, { status: 404 });
     }
 
     // Update user - mark email as verified
     try {
-      await base44.asServiceRole.entities.User.update(user_id, {
+      await base44.asServiceRole.entities.User.update(token, {
         email_verified: true,
         email_verified_at: new Date().toISOString()
       });
-      console.log(`Email verified for user: ${user_id} (${email})`);
+      console.log(`Email verified for user: ${token} (${user.email})`);
     } catch (updateError) {
       console.error('Update error:', updateError);
       return Response.json({ error: 'Fehler bei der Bestätigung' }, { status: 500 });
     }
 
     return Response.json({ 
-      message: 'Email verified successfully',
-      email: email
+      success: true,
+      message: 'E-Mail erfolgreich bestätigt',
+      email: user.email
     });
   } catch (error) {
     console.error('Error:', error);
