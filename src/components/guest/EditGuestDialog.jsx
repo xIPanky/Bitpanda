@@ -41,7 +41,6 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
         await base44.entities.Registration.update(guest.id, otherChanges);
         toast.success("Gast genehmigt und Ticket per E-Mail versendet");
       } else {
-        // Just save form changes
         await base44.entities.Registration.update(guest.id, form);
         toast.success("Gast aktualisiert");
       }
@@ -62,6 +61,7 @@ export function EditGuestDialog({ guest, open, onOpenChange, onSave }) {
         <DialogHeader>
           <DialogTitle>Gast bearbeiten</DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
