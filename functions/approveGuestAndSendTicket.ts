@@ -190,16 +190,24 @@ async function uploadWithRetry(base44, file, maxAttempts = 3) {
   throw new Error(`PDF_UPLOAD_FAILED after ${maxAttempts} attempts: ${lastError?.message}`);
 }
 
-// ── Email with retry ──────────────────────────────────────────────────────────
+// ── Email with retry (Resend) ─────────────────────────────────────────────────
 
-async function sendEmailWithRetry(base44, to, subject, body, maxAttempts = 2) {
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+
+async function sendEmailWithRetry(_base44, to, subject, body, maxAttempts = 2) {
   const delays = [0, 1000];
   let lastError = null;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     if (attempt > 0) await sleep(delays[attempt]);
     try {
       console.log(`EMAIL_SEND_START recipient=${to} attempt=${attempt + 1}`);
-      await base44.asServiceRole.integrations.Core.SendEmail({ to, subject, body });
+      const { error } = await resend.emails.send({
+        from: 'Synergy <onboarding@resend.dev>',
+        to,
+        subject,
+        html: body,
+      });
+      if (error) throw new Error(error.message || JSON.stringify(error));
       console.log(`EMAIL_SEND_DONE recipient=${to}`);
       return;
     } catch (err) {
