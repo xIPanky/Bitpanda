@@ -21,8 +21,16 @@ Deno.serve(async (req) => {
     // Create admin account via auth
     let adminUser;
     try {
-      adminUser = await base44.auth.signUp(adminEmail, adminPassword);
-      console.log(`Admin created: ${adminEmail} (user_id=${adminUser.id})`);
+      await base44.auth.register({
+        email: adminEmail,
+        password: adminPassword
+      });
+      console.log(`Admin registered: ${adminEmail}`);
+
+      // Login to get user ID
+      const loginResult = await base44.auth.loginViaEmailPassword(adminEmail, adminPassword);
+      adminUser = loginResult.user || await base44.auth.me();
+      console.log(`Admin logged in: ${adminEmail} (user_id=${adminUser.id})`);
     } catch (signupError) {
       console.error(`Signup error: ${signupError.message}`);
       throw signupError;
