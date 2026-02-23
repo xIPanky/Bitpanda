@@ -73,7 +73,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
     }) || [];
   }, [event.custom_questions]);
 
-  const [form, setForm] = useState({ first_name: "", last_name: "", email: "", phone: "", custom_answers: parsedQuestions.map(() => ""), invited_by: "" });
+  const [form, setForm] = useState({ first_name: "", last_name: "", email: "", phone: "", company: "", custom_answers: parsedQuestions.map(() => ""), invited_by: "" });
   const [hasPlusOne, setHasPlusOne] = useState(false);
   const [plusOne, setPlusOne] = useState({ first_name: "", last_name: "", email: "" });
   const [loading, setLoading] = useState(false);
