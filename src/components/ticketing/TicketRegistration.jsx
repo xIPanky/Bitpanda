@@ -104,6 +104,11 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           return;
         }
       }
+      if (event.invitation_options?.length > 0 && !form.invited_by.trim()) {
+        setError("Bitte wähle, wie du von dieser Veranstaltung erfahren hast.");
+        setLoading(false);
+        return;
+      }
       if (hasPlusOne && (!plusOne.first_name.trim() || !plusOne.last_name.trim() || !plusOne.email.trim())) {
         setError("Bitte fülle alle Felder der Begleitung aus.");
         setLoading(false);
