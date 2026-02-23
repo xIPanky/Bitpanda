@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
-import { CheckCircle, Mail, Calendar, Download, Smartphone } from "lucide-react";
+import { CheckCircle, Mail, Calendar, Download, Smartphone, MapPin, Clock } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 
