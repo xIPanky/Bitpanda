@@ -22,9 +22,9 @@ export default function AccessGuard({ children, requiredRole = 'organizer' }) {
   useEffect(() => {
     if (isLoading) return;
 
-    // Not authenticated - redirect to signin
+    // Not authenticated - redirect to built-in login
     if (!user) {
-      navigate(createPageUrl('SignIn'));
+      base44.auth.redirectToLogin();
       return;
     }
 
