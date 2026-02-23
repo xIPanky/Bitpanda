@@ -6,7 +6,7 @@ import StatsOverview from "../components/admin/StatsOverview";
 import RegistrationTable from "../components/admin/RegistrationTable";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin } from "lucide-react";
 
 function generateTicketCode() {
   const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -22,7 +22,6 @@ export default function Dashboard() {
   const [processingId, setProcessingId] = useState(null);
   const queryClient = useQueryClient();
 
-  // Get event_id from URL
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
 
@@ -63,7 +62,6 @@ export default function Dashboard() {
     initialData: [],
   });
 
-  // Auto-trigger reminder & post-event emails on dashboard load
   React.useEffect(() => {
     if (!event?.date || !emailSequences.length || !registrations.length) return;
     const today = new Date(); today.setHours(0,0,0,0);
@@ -86,9 +84,7 @@ export default function Dashboard() {
       }
 
       if (shouldSend) {
-        const recipients = registrations.filter((r) =>
-          seq.send_to === "all" ? true : r.status === "approved"
-        );
+        const recipients = registrations.filter((r) => seq.send_to === "all" ? true : r.status === "approved");
         localStorage.setItem(seqKey, "1");
         (async () => {
           for (const reg of recipients) {
@@ -101,7 +97,7 @@ export default function Dashboard() {
             await base44.integrations.Core.SendEmail({
               to: reg.email,
               subject: seq.subject,
-              body: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;">${personalBody.replace(/\n/g,"<br/>")}<hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0;"/><p style="color:#94a3b8;font-size:12px;">${event?.name || ""}</p></div>`,
+              body: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:32px;">${personalBody.replace(/\n/g,"<br/>")}</div>`,
             });
           }
         })();
@@ -134,17 +130,10 @@ export default function Dashboard() {
   const handleApprove = async (reg) => {
     setProcessingId(reg.id);
     const me = await base44.auth.me();
+    await base44.entities.Registration.update(reg.id, { status: "approved", approved_by: me?.email || "Admin" });
 
-    // Update registration status to approved
-    await base44.entities.Registration.update(reg.id, {
-      status: "approved",
-      approved_by: me?.email || "Admin",
-    });
-
-    // Create ticket with code
     const ticketCode = generateTicketCode();
     const tier = tiers.find((t) => t.id === reg.ticket_tier_id);
-
     await base44.entities.Ticket.create({
       event_id: eventId || reg.event_id,
       registration_id: reg.id,
@@ -160,8 +149,6 @@ export default function Dashboard() {
     });
 
     const ticketUrl = `${window.location.origin}/ticket?code=${ticketCode}`;
-
-    // Send email
     const confirmSeq = emailSequences.find((s) => s.trigger === "on_registration" && s.enabled);
     try {
       if (confirmSeq) {
@@ -174,13 +161,13 @@ export default function Dashboard() {
         await base44.integrations.Core.SendEmail({
           to: reg.email,
           subject: confirmSeq.subject,
-          body: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;">${personalBody.replace(/\n/g,"<br/>")}<div style="background:#f8fafc;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:14px;color:#94a3b8;margin-bottom:8px;">Ihr Ticket-Code</p><p style="font-size:32px;font-weight:700;color:#0f172a;letter-spacing:2px;">${ticketCode}</p></div><p style="color:#64748b;"><a href="${ticketUrl}" style="color:#d97706;font-weight:600;">Ticket online ansehen →</a></p>${event?.date ? `<p style="color:#94a3b8;font-size:13px;margin-top:24px;">📅 ${new Date(event.date).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"})}${event.time ? ` um ${event.time} Uhr` : ""}${event.location ? ` · 📍 ${event.location}` : ""}</p>` : ""}</div>`,
+          body: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:32px;">${personalBody.replace(/\n/g,"<br/>")}<div style="background:#0d1a00;border:1px solid #1a2e00;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:12px;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;">Dein Ticket-Code</p><p style="font-size:28px;font-weight:700;color:#beff00;letter-spacing:3px;">${ticketCode}</p></div><p><a href="${ticketUrl}" style="color:#beff00;font-weight:600;">Ticket online ansehen →</a></p>${event?.date ? `<p style="color:#555;font-size:12px;margin-top:24px;">${new Date(event.date).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"})}${event.time ? ` · ${event.time}` : ""}${event.location ? ` · ${event.location}` : ""}</p>` : ""}</div>`,
         });
       } else {
         await base44.integrations.Core.SendEmail({
           to: reg.email,
-          subject: `Ihr Ticket: ${event?.name || "Veranstaltung"}`,
-          body: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:32px;"><h1 style="font-size:24px;color:#0f172a;">Ihre Registrierung wurde freigegeben!</h1><p style="color:#64748b;line-height:1.6;">Hallo ${reg.first_name},<br/><br/>Ihre Anmeldung für <strong>${event?.name || "die Veranstaltung"}</strong> wurde bestätigt.${tier ? `<br/>Ticketstufe: <strong>${tier.name}</strong>${tier.price > 0 ? ` (${tier.price} ${event?.currency || "EUR"})` : ""}` : ""}</p><div style="background:#f8fafc;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:14px;color:#94a3b8;margin-bottom:8px;">Ihr Ticket-Code</p><p style="font-size:32px;font-weight:700;color:#0f172a;letter-spacing:2px;">${ticketCode}</p></div><p style="color:#64748b;"><a href="${ticketUrl}" style="color:#d97706;font-weight:600;">Ticket online ansehen →</a></p>${event?.date ? `<p style="color:#94a3b8;font-size:13px;margin-top:24px;">📅 ${new Date(event.date).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"})}${event.time ? ` um ${event.time} Uhr` : ""}${event.location ? ` · 📍 ${event.location}` : ""}</p>` : ""}</div>`,
+          subject: `Dein Ticket: ${event?.name || "Veranstaltung"}`,
+          body: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#070707;color:#fff;"><div style="text-align:center;padding:32px 0;border-bottom:1px solid #1a1a1a;margin-bottom:32px;"><p style="color:#beff00;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">INVITE APPROVED</p><h1 style="font-size:28px;font-weight:800;color:#fff;margin:0;">${event?.name || "Event"}</h1></div><p style="color:#888;line-height:1.7;">Hallo ${reg.first_name},<br/><br/>deine Anmeldung wurde freigegeben. Dein Ticket ist bereit.</p><div style="background:#0d1a00;border:1px solid #1a2e00;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Ticket-Code</p><p style="font-size:28px;font-weight:700;color:#beff00;letter-spacing:3px;">${ticketCode}</p></div><p><a href="${ticketUrl}" style="color:#beff00;font-weight:600;">Ticket ansehen →</a></p></div>`,
         });
       }
     } catch (emailErr) {
@@ -189,7 +176,7 @@ export default function Dashboard() {
 
     queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
     queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
-    toast.success(`${reg.first_name} ${reg.last_name} freigegeben – Ticket gesendet!`);
+    toast.success(`${reg.first_name} ${reg.last_name} freigegeben`);
     setProcessingId(null);
   };
 
@@ -207,31 +194,49 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <Link to={createPageUrl("Home")} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-3 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Alle Events
-          </Link>
-          <h1 className="text-2xl font-bold text-slate-900">{event?.name || "Dashboard"}</h1>
-          {event?.date && <p className="text-sm text-slate-500 mt-0.5">{new Date(event.date).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}{event.location ? ` · ${event.location}` : ""}</p>}
-        </div>
-
-        <StatsOverview stats={stats} />
-
-        <RegistrationTable
-          registrations={filteredRegistrations}
-          onApprove={handleApprove}
-          onReject={handleReject}
-          onCategoryChange={handleCategoryChange}
-          onEdit={handleEdit}
-          processingId={processingId}
-          filterStatus={filterStatus}
-          filterCategory={filterCategory}
-          onFilterStatusChange={setFilterStatus}
-          onFilterCategoryChange={setFilterCategory}
-        />
+    <div className="min-h-screen p-5 md:p-8 space-y-6" style={{ background: "#070707" }}>
+      <div>
+        <Link
+          to={createPageUrl("Home")}
+          className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest mb-4 transition-colors"
+          style={{ color: "#444" }}
+          onMouseEnter={(e) => e.currentTarget.style.color = "#beff00"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "#444"}
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Alle Events
+        </Link>
+        <h1 className="text-2xl font-bold text-white tracking-tight">{event?.name || "Dashboard"}</h1>
+        {event?.date && (
+          <div className="flex items-center gap-4 mt-1.5">
+            <span className="flex items-center gap-1.5 text-sm" style={{ color: "#555" }}>
+              <Calendar className="w-3.5 h-3.5" />
+              {new Date(event.date).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+              {event.time && ` · ${event.time}`}
+            </span>
+            {event.location && (
+              <span className="flex items-center gap-1.5 text-sm" style={{ color: "#555" }}>
+                <MapPin className="w-3.5 h-3.5" />
+                {event.location}
+              </span>
+            )}
+          </div>
+        )}
       </div>
+
+      <StatsOverview stats={stats} />
+
+      <RegistrationTable
+        registrations={filteredRegistrations}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onCategoryChange={handleCategoryChange}
+        onEdit={handleEdit}
+        processingId={processingId}
+        filterStatus={filterStatus}
+        filterCategory={filterCategory}
+        onFilterStatusChange={setFilterStatus}
+        onFilterCategoryChange={setFilterCategory}
+      />
     </div>
   );
 }
