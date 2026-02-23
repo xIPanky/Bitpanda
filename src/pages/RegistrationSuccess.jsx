@@ -169,14 +169,14 @@ export default function RegistrationSuccess() {
             </p>
           </>
         ) : (
-          <>
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 mb-6">
-              <CheckCircle className="w-10 h-10 text-emerald-600" />
-            </div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">Anmeldung genehmigt!</h1>
-            <p className="text-lg text-slate-600 mb-8">
-              Deine Registrierung wurde bestätigt. Hier sind deine Tickets!
-            </p>
+           <>
+             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-6">
+               <CheckCircle className="w-10 h-10 text-green-600" />
+             </div>
+             <h1 className="text-4xl font-bold text-slate-900 mb-2">In Prüfung</h1>
+             <p className="text-lg text-slate-600 mb-8">
+               Deine Registrierung ist eingegangen und wird überprüft.
+             </p>
             
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-8">
               <h3 className="font-semibold text-slate-900 mb-4">Ticket-Optionen</h3>
