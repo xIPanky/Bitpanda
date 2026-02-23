@@ -147,7 +147,7 @@ export default function OrganizerRegistration() {
             Du hast bereits einen Account?
           </p>
           <a
-            href={createPageUrl('Login')}
+            href={createPageUrl('SignIn')}
             style={{
               background: 'rgba(190, 255, 0, 0.1)',
               color: '#beff00',
