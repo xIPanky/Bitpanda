@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
+import { ModernDropdown } from "./ModernDropdown";
 
 const inputBase = {
   background: "#0d0d0d",
