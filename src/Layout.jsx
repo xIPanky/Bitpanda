@@ -81,6 +81,8 @@ export default function Layout({ children, currentPageName }) {
   }
 
   const isAdminArea = currentPageName && currentPageName.startsWith("Admin");
+  const isAdminUser = user?.role === 'admin';
+  const isOrganizerUser = user?.role === 'user' && user?.account_type === 'organizer';
   const currentBase = currentPageName;
 
   const NavLink = ({ item, onClick }) => {
