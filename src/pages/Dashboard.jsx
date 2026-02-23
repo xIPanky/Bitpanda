@@ -129,54 +129,33 @@ export default function Dashboard() {
 
   const handleApprove = async (reg) => {
     setProcessingId(reg.id);
-    const me = await base44.auth.me();
-    await base44.entities.Registration.update(reg.id, { status: "approved", approved_by: me?.email || "Admin" });
-
-    const ticketCode = generateTicketCode();
-    const tier = tiers.find((t) => t.id === reg.ticket_tier_id);
-    await base44.entities.Ticket.create({
-      event_id: eventId || reg.event_id,
-      registration_id: reg.id,
-      ticket_tier_id: reg.ticket_tier_id || null,
-      ticket_code: ticketCode,
-      guest_name: `${reg.first_name} ${reg.last_name}`,
-      guest_email: reg.email,
-      category: reg.category || "Standard",
-      tier_name: tier?.name || null,
-      tier_price: tier?.price || null,
-      status: "valid",
-      email_sent: true,
-    });
-
-    const ticketUrl = `${window.location.origin}/ticket?code=${ticketCode}`;
-    const confirmSeq = emailSequences.find((s) => s.trigger === "on_registration" && s.enabled);
     try {
-      if (confirmSeq) {
-        const personalBody = (confirmSeq.body || "")
-          .replace(/\{\{vorname\}\}/gi, reg.first_name || "")
-          .replace(/\{\{nachname\}\}/gi, reg.last_name || "")
-          .replace(/\{\{name\}\}/gi, `${reg.first_name || ""} ${reg.last_name || ""}`.trim())
-          .replace(/\{\{email\}\}/gi, reg.email || "")
-          .replace(/\{\{kategorie\}\}/gi, reg.category || "Standard");
-        await base44.integrations.Core.SendEmail({
-          to: reg.email,
-          subject: confirmSeq.subject,
-          body: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:32px;">${personalBody.replace(/\n/g,"<br/>")}<div style="background:#0d1a00;border:1px solid #1a2e00;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:12px;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:2px;">Dein Ticket-Code</p><p style="font-size:28px;font-weight:700;color:#beff00;letter-spacing:3px;">${ticketCode}</p></div><p><a href="${ticketUrl}" style="color:#beff00;font-weight:600;">Ticket online ansehen →</a></p>${event?.date ? `<p style="color:#555;font-size:12px;margin-top:24px;">${new Date(event.date).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"})}${event.time ? ` · ${event.time}` : ""}${event.location ? ` · ${event.location}` : ""}</p>` : ""}</div>`,
-        });
+      const result = await base44.functions.invoke("approveGuestAndSendTicket", { guestId: reg.id });
+      if (result.data?.success) {
+        toast.success(`${reg.first_name} ${reg.last_name} freigegeben · Ticket gesendet`);
       } else {
-        await base44.integrations.Core.SendEmail({
-          to: reg.email,
-          subject: `Dein Ticket: ${event?.name || "Veranstaltung"}`,
-          body: `<div style="font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:32px;background:#070707;color:#fff;"><div style="text-align:center;padding:32px 0;border-bottom:1px solid #1a1a1a;margin-bottom:32px;"><p style="color:#beff00;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">INVITE APPROVED</p><h1 style="font-size:28px;font-weight:800;color:#fff;margin:0;">${event?.name || "Event"}</h1></div><p style="color:#888;line-height:1.7;">Hallo ${reg.first_name},<br/><br/>deine Anmeldung wurde freigegeben. Dein Ticket ist bereit.</p><div style="background:#0d1a00;border:1px solid #1a2e00;border-radius:16px;padding:24px;margin:24px 0;text-align:center;"><p style="font-size:11px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Ticket-Code</p><p style="font-size:28px;font-weight:700;color:#beff00;letter-spacing:3px;">${ticketCode}</p></div><p><a href="${ticketUrl}" style="color:#beff00;font-weight:600;">Ticket ansehen →</a></p></div>`,
-        });
+        toast.error(result.data?.error || "Fehler bei der Freigabe");
       }
-    } catch (emailErr) {
-      console.error("Email send error:", emailErr);
+    } catch (err) {
+      toast.error("Serverfehler: " + err.message);
     }
-
     queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
     queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
-    toast.success(`${reg.first_name} ${reg.last_name} freigegeben`);
+    setProcessingId(null);
+  };
+
+  const handleResendTicket = async (reg) => {
+    setProcessingId(reg.id);
+    try {
+      const result = await base44.functions.invoke("resendTicketEmail", { guestId: reg.id });
+      if (result.data?.success) {
+        toast.success(`Ticket erneut gesendet an ${reg.email}`);
+      } else {
+        toast.error(result.data?.error || "Fehler beim Senden");
+      }
+    } catch (err) {
+      toast.error("Serverfehler: " + err.message);
+    }
     setProcessingId(null);
   };
 
