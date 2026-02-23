@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { ChevronLeft, Loader2, CheckCircle, Copy, Zap } from "lucide-react";
+import { ChevronLeft, Loader2, CheckCircle, Zap } from "lucide-react";
 import { TicketSelector } from "@/components/ticketing/TicketSelector";
 import { TicketRegistration } from "@/components/ticketing/TicketRegistration";
 import { toast } from "sonner";
