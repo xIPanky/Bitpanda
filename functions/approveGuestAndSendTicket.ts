@@ -190,7 +190,7 @@ async function uploadWithRetry(base44, file, maxAttempts = 3) {
   throw new Error(`PDF_UPLOAD_FAILED after ${maxAttempts} attempts: ${lastError?.message}`);
 }
 
-// ── Email with retry (Resend) ─────────────────────────────────────────────────
+// ── Email with retry (Resend) — v2 ───────────────────────────────────────────
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
