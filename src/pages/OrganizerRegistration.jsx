@@ -1,0 +1,126 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '@/utils';
+import { Zap, ArrowRight, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+export default function OrganizerRegistration() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    company: '',
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Register organizer via auth system
+      const response = await base44.auth.inviteUser(formData.email, 'organizer');
+      
+      // Update user profile with organizer info
+      await base44.auth.updateMe({
+        full_name: formData.full_name,
+        organizer_company: formData.company,
+      });
+
+      toast.success('Veranstalter-Account erstellt! Du wirst weitergeleitet...');
+      setTimeout(() => navigate(createPageUrl('Home')), 1500);
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast.error(error.message || 'Registrierung fehlgeschlagen');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ background: '#070707', minHeight: '100vh' }} className="flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="flex items-center gap-2 mb-10 justify-center">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#beff00' }}>
+            <Zap className="w-5 h-5 text-black" />
+          </div>
+          <span className="font-bold text-lg text-white tracking-widest uppercase">Synergy</span>
+        </div>
+
+        {/* Card */}
+        <div className="rounded-2xl border p-8 mb-6" style={{ background: '#0a0a0a', border: '1px solid #1e1e1e' }}>
+          <h1 className="text-2xl font-black text-white mb-2">Veranstalter Account</h1>
+          <p className="text-gray-400 text-sm mb-6">Registriere dich als Veranstalter und verkaufe deine Tickets professionell.</p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-white mb-2">Name</label>
+              <input
+                type="text"
+                required
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg border text-white"
+                style={{ background: '#111', border: '1px solid #1e1e1e' }}
+                placeholder="Dein Name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-white mb-2">E-Mail</label>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg border text-white"
+                style={{ background: '#111', border: '1px solid #1e1e1e' }}
+                placeholder="deine@email.de"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-white mb-2">Unternehmen / Event-Name (optional)</label>
+              <input
+                type="text"
+                value={formData.company}
+                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg border text-white"
+                style={{ background: '#111', border: '1px solid #1e1e1e' }}
+                placeholder="z.B. SYN Club"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold transition-all"
+              style={{ background: '#beff00', color: '#070707' }}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Registrierung läuft...
+                </>
+              ) : (
+                <>
+                  Veranstalter-Account erstellen
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center text-gray-500 text-sm">
+          Bereits angemeldet?{' '}
+          <a href="#" onClick={() => navigate(createPageUrl('Home'))} className="text-[#beff00] hover:underline">
+            Zum Dashboard
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}

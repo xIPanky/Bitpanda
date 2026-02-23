@@ -64,6 +64,8 @@ import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
+import OrganizerRegistration from './pages/OrganizerRegistration';
+import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -85,6 +87,8 @@ export const PAGES = {
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
+    "OrganizerRegistration": OrganizerRegistration,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {
