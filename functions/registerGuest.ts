@@ -49,9 +49,8 @@ Deno.serve(async (req) => {
       throw updateError;
     }
 
-    // Generate verification token
-    const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const verificationLink = `${new URL(req.url).origin}/verified?token=${verificationToken}&email=${encodeURIComponent(email)}&type=guest`;
+    // Generate verification link using user ID
+    const verificationLink = `${new URL(req.url).origin}/verified?token=${encodeURIComponent(signupResult.id)}&email=${encodeURIComponent(email)}&type=guest`;
 
     // Send verification email
     console.log(`SIGNUP_EMAIL_SENDING email=${email}`);
