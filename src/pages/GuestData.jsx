@@ -60,6 +60,9 @@ export default function GuestData() {
 
   const eventMap = Object.fromEntries(events.map((e) => [e.id, e.name]));
   const ticketMap = Object.fromEntries(tickets.map((t) => [t.registration_id, t]));
+  
+  const currentEvent = eventId ? events.find((e) => e.id === eventId) : null;
+  const invitationOptions = currentEvent?.invitation_options || [];
 
   const filtered = registrations.filter((r) => {
     const term = search.toLowerCase();
@@ -70,7 +73,8 @@ export default function GuestData() {
       r.phone?.toLowerCase().includes(term);
     const matchCat = filterCategory === "all" || r.category === filterCategory;
     const matchStatus = filterStatus === "all" || r.status === filterStatus;
-    return matchSearch && matchCat && matchStatus;
+    const matchInvitedBy = filterInvitedBy === "all" || r.invited_by === filterInvitedBy;
+    return matchSearch && matchCat && matchStatus && matchInvitedBy;
   });
 
   const handleDownloadTicket = async (registration) => {
