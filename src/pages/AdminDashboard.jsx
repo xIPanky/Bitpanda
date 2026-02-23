@@ -74,16 +74,16 @@ export default function AdminDashboard() {
         <p style={{ color: '#666', marginTop: '4px' }}>Globale Plattformübersicht</p>
       </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <StatCard label="Veranstalter" value={organizers.length} icon={Users} />
-          <StatCard label="Events" value={allEvents.length} icon={Calendar} />
-          <StatCard label="Gäste" value={totalGuests} icon={UserCheck} />
-          <StatCard label="Tickets generiert" value={ticketsGenerated} icon={Ticket} />
-        </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <StatCard label="Veranstalter" value={organizers.length} icon={Users} />
+        <StatCard label="Events" value={allEvents.length} icon={Calendar} />
+        <StatCard label="Gäste" value={totalGuests} icon={UserCheck} />
+        <StatCard label="Tickets generiert" value={ticketsGenerated} icon={Ticket} />
+      </div>
 
-        {/* Organizers Table */}
-        <div className="mb-12">
+      {/* Organizers Table */}
+      <div className="mb-12">
           <h2 className="text-xl font-bold text-white mb-6">Veranstalter</h2>
           <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #1e1e1e' }}>
             <table className="w-full text-sm">
