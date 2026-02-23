@@ -227,7 +227,7 @@ export default function RegistrationTable({
                               </button>
                             )}
 
-                            {reg.status === "approved" && onResend && (
+                            {reg.status === "approved" && onResend && regTicket?.generation_status === 'ready' && (
                               <button
                                 disabled={isProcessing}
                                 onClick={() => onResend(reg)}
@@ -238,6 +238,20 @@ export default function RegistrationTable({
                                 onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
                               >
                                 {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                              </button>
+                            )}
+                            {reg.status === "approved" && onApprove && !regTicket && (
+                              <button
+                                disabled={isProcessing}
+                                onClick={() => onApprove(reg)}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+                                style={{ background: "#0d1a00", color: "#beff00", border: "1px solid rgba(190,255,0,0.2)" }}
+                                title="Ticket generieren & E-Mail senden"
+                                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(190,255,0,0.5)"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(190,255,0,0.2)"; }}
+                              >
+                                {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                                Ticket
                               </button>
                             )}
                           </div>
