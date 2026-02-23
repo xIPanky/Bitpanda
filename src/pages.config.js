@@ -71,7 +71,6 @@ import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
 import Verified from './pages/Verified';
 import Verify from './pages/Verify';
-import SignIn from './pages/SignIn';
 import __Layout from './Layout.jsx';
 
 
@@ -100,7 +99,6 @@ export const PAGES = {
     "TicketManagement": TicketManagement,
     "Verified": Verified,
     "Verify": Verify,
-    "SignIn": SignIn,
 }
 
 export const pagesConfig = {
