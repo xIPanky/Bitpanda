@@ -25,7 +25,7 @@ const categoryColors = {
 };
 
 export default function RegistrationTable({
-  registrations, onApprove, onReject, onResend, onCategoryChange, onEdit,
+  registrations, tickets = [], onApprove, onReject, onResend, onCategoryChange, onEdit,
   processingId, filterStatus, filterCategory, onFilterStatusChange, onFilterCategoryChange,
 }) {
   const [editTarget, setEditTarget] = React.useState(null);
