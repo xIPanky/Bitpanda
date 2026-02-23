@@ -88,141 +88,103 @@ function EmailSequenceCard({ type, sequence, eventDate, onSave }) {
     .replace(/\{\{email\}\}/gi, "max@beispiel.de")
     .replace(/\{\{kategorie\}\}/gi, "VIP");
 
+  const di = { background:"#111", border:"1px solid #1e1e1e", borderRadius:"10px", color:"#fff", padding:"10px 14px", fontSize:"13px", width:"100%", outline:"none" };
+  const onF = e => e.target.style.borderColor="#beff00";
+  const onB = e => e.target.style.borderColor="#1e1e1e";
+
+  const iconBg = { Mail:"#0a0f1a", Clock:"#1a1500", PartyPopper:"#0a1a0d" };
+  const iconColor = { Mail:"#60a5fa", Clock:"#f59e0b", PartyPopper:"#34d399" };
+
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className={`flex items-center justify-between px-6 py-4 border-b ${type.color} border-opacity-60`}>
+    <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} className="rounded-2xl overflow-hidden" style={{background:"#0d0d0d",border:"1px solid #1a1a1a"}}>
+      <div className="flex items-center justify-between px-6 py-4" style={{borderBottom:"1px solid #141414"}}>
         <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shadow-sm`}>
-            <Icon className={`w-5 h-5 ${type.iconColor}`} />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{background:iconBg[Icon.displayName]||"#111"}}>
+            <Icon className="w-5 h-5" style={{color:iconColor[Icon.displayName]||"#beff00"}} />
           </div>
           <div>
-            <p className="font-semibold text-slate-900 text-sm">{type.label}</p>
-            <p className="text-xs text-slate-500">{type.description}</p>
+            <p className="font-semibold text-white text-sm">{type.label}</p>
+            <p className="text-xs" style={{color:"#444"}}>{type.description}</p>
           </div>
         </div>
-        <Switch checked={form.enabled} onCheckedChange={(v) => setForm((f) => ({ ...f, enabled: v }))} />
+        <Switch checked={form.enabled} onCheckedChange={v=>setForm(f=>({...f,enabled:v}))} />
       </div>
 
-      {/* Body */}
-      <div className={`p-6 space-y-5 transition-opacity ${!form.enabled ? "opacity-40 pointer-events-none" : ""}`}>
-        {/* Days offset (not for on_registration) */}
+      <div className={`p-6 space-y-5 transition-opacity ${!form.enabled?"opacity-30 pointer-events-none":""}`}>
         {type.trigger !== "on_registration" && (
-          <div className="flex items-center gap-4 bg-slate-50 rounded-xl px-5 py-3">
-            <CalendarCheck className="w-4 h-4 text-slate-400 shrink-0" />
-            <span className="text-sm text-slate-600">
-              {type.trigger === "reminder_before" ? "Versenden" : "Versenden"}
-            </span>
-            <input
-              type="number"
-              min="1"
-              max="365"
-              value={form.days_offset}
-              onChange={(e) => setForm((f) => ({ ...f, days_offset: parseInt(e.target.value) || 1 }))}
-              className="w-16 h-8 text-center text-sm font-semibold border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-amber-500"
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{background:"#111",border:"1px solid #1a1a1a"}}>
+            <CalendarCheck className="w-4 h-4 flex-shrink-0" style={{color:"#555"}} />
+            <span className="text-sm" style={{color:"#555"}}>Versenden</span>
+            <input type="number" min="1" max="365" value={form.days_offset}
+              onChange={e=>setForm(f=>({...f,days_offset:parseInt(e.target.value)||1}))}
+              className="w-14 h-8 text-center text-sm font-bold rounded-lg outline-none"
+              style={{background:"#0d0d0d",border:"1px solid #1e1e1e",color:"#beff00"}}
+              onFocus={onF} onBlur={onB}
             />
-            <span className="text-sm text-slate-600">
-              Tage {type.trigger === "reminder_before" ? "vor" : "nach"} der Veranstaltung
-            </span>
+            <span className="text-sm" style={{color:"#555"}}>Tage {type.trigger==="reminder_before"?"vor":"nach"} der Veranstaltung</span>
             {eventDate && (
-              <span className="text-xs text-slate-400 ml-auto">
-                ≈ {(() => {
-                  const d = new Date(eventDate);
-                  const offset = type.trigger === "reminder_before" ? -form.days_offset : form.days_offset;
-                  d.setDate(d.getDate() + offset);
-                  return d.toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" });
-                })()}
-              </span>
+              <span className="text-xs ml-auto" style={{color:"#333"}}>≈ {(() => { const d=new Date(eventDate); d.setDate(d.getDate()+(type.trigger==="reminder_before"?-form.days_offset:form.days_offset)); return d.toLocaleDateString("de-DE",{day:"numeric",month:"short",year:"numeric"}); })()}</span>
             )}
           </div>
         )}
 
-        {/* Send to */}
-        <div className="flex items-center gap-4">
-          <Label className="text-sm text-slate-600 shrink-0">Empfänger:</Label>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-bold uppercase tracking-widest flex-shrink-0" style={{color:"#444"}}>Empfänger:</span>
           <div className="flex gap-2">
-            {[{ value: "approved", label: "Nur Freigegebene" }, { value: "all", label: "Alle Registrierungen" }].map((o) => (
-              <button
-                key={o.value}
-                onClick={() => setForm((f) => ({ ...f, send_to: o.value }))}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${form.send_to === o.value ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"}`}
-              >
-                {o.label}
-              </button>
+            {[["approved","Freigegebene"],["all","Alle"]].map(([v,l])=>(
+              <button key={v} onClick={()=>setForm(f=>({...f,send_to:v}))}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+                style={form.send_to===v?{background:"#beff00",color:"#070707"}:{background:"#111",color:"#555",border:"1px solid #1e1e1e"}}
+              >{l}</button>
             ))}
           </div>
         </div>
 
-        {/* Subject */}
-        <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Betreff</Label>
-          <Input
-            value={form.subject}
-            onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-            className="h-10 border-slate-200 text-sm"
-          />
+        <div>
+          <label style={{display:"block",fontSize:"11px",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",color:"#444",marginBottom:"6px"}}>Betreff</label>
+          <input style={di} value={form.subject} onChange={e=>setForm(f=>({...f,subject:e.target.value}))} onFocus={onF} onBlur={onB} />
         </div>
 
-        {/* Body */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Nachricht</Label>
-            <span className="text-xs text-slate-400">Platzhalter: {`{{vorname}}`}, {`{{name}}`}, {`{{email}}`}, {`{{kategorie}}`}</span>
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label style={{fontSize:"11px",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",color:"#444"}}>Nachricht</label>
+            <span style={{fontSize:"11px",color:"#333"}}>{`{{vorname}}`}, {`{{name}}`}, {`{{email}}`}, {`{{kategorie}}`}</span>
           </div>
-          <textarea
-            value={form.body}
-            onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
-            rows={7}
-            className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 resize-y"
-          />
+          <textarea style={{...di,resize:"vertical"}} rows={7} value={form.body} onChange={e=>setForm(f=>({...f,body:e.target.value}))} onFocus={onF} onBlur={onB} />
         </div>
 
-        {/* Preview toggle */}
-        <button
-          onClick={() => setShowPreview((v) => !v)}
-          className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-800 transition-colors"
-        >
+        <button onClick={()=>setShowPreview(v=>!v)} className="flex items-center gap-2 text-xs transition-colors" style={{color:"#444"}} onMouseEnter={e=>e.currentTarget.style.color="#beff00"} onMouseLeave={e=>e.currentTarget.style.color="#444"}>
           {showPreview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
           {showPreview ? "Vorschau verbergen" : "E-Mail-Vorschau anzeigen"}
         </button>
 
         <AnimatePresence>
           {showPreview && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="rounded-xl border border-slate-200 overflow-hidden"
-            >
-              <div className="bg-slate-100 px-5 py-3 flex items-center justify-between border-b border-slate-200">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Vorschau</p>
-                <span className="text-xs text-slate-400">Beispiel: Max Mustermann</span>
+            <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}} className="rounded-xl overflow-hidden" style={{border:"1px solid #1e1e1e"}}>
+              <div className="px-5 py-3 flex items-center justify-between" style={{background:"#111",borderBottom:"1px solid #1e1e1e"}}>
+                <p className="text-xs font-bold uppercase tracking-widest" style={{color:"#444"}}>Vorschau</p>
+                <span className="text-xs" style={{color:"#333"}}>Beispiel: Max Mustermann</span>
               </div>
-              <div className="bg-white p-5">
-                <div className="space-y-1 border-b border-slate-100 pb-4 mb-4">
-                  <div className="flex gap-2 text-xs text-slate-500">
-                    <span className="font-semibold w-14">Betreff:</span>
-                    <span className="font-medium text-slate-800">{form.subject}</span>
-                  </div>
-                  <div className="flex gap-2 text-xs text-slate-500">
-                    <span className="font-semibold w-14">An:</span>
-                    <span>max@beispiel.de</span>
-                  </div>
+              <div className="p-5" style={{background:"#0a0a0a"}}>
+                <div className="space-y-1 pb-3 mb-3" style={{borderBottom:"1px solid #141414"}}>
+                  {[["Betreff",form.subject],["An","max@beispiel.de"]].map(([k,v])=>(
+                    <div key={k} className="flex gap-2 text-xs"><span className="font-bold w-14" style={{color:"#333"}}>{k}:</span><span style={{color:"#555"}}>{v}</span></div>
+                  ))}
                 </div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{previewBody}</p>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{color:"#666"}}>{previewBody}</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Save button */}
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className={`w-full h-10 rounded-xl text-sm font-medium transition-all ${savedOk ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-900 hover:bg-slate-800"}`}
+        <button onClick={handleSave} disabled={saving}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+          style={savedOk?{background:"#0d1a00",color:"#beff00",border:"1px solid #1a2e00"}:{background:"#beff00",color:"#070707"}}
+          onMouseEnter={e=>{if(!saving&&!savedOk)e.currentTarget.style.boxShadow="0 0 24px rgba(190,255,0,0.4)"}}
+          onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}
         >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : savedOk ? <><CheckCircle className="w-4 h-4 mr-2" />Gespeichert!</> : <><Save className="w-4 h-4 mr-2" />Speichern</>}
-        </Button>
+          {saving?<Loader2 className="w-4 h-4 animate-spin"/>:savedOk?<><CheckCircle className="w-4 h-4"/>Gespeichert!</>:<><Save className="w-4 h-4"/>Speichern</>}
+        </button>
       </div>
     </motion.div>
   );
