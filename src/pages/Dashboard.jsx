@@ -208,6 +208,7 @@ export default function Dashboard() {
         registrations={filteredRegistrations}
         onApprove={handleApprove}
         onReject={handleReject}
+        onResend={handleResendTicket}
         onCategoryChange={handleCategoryChange}
         onEdit={handleEdit}
         processingId={processingId}
