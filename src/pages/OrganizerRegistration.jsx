@@ -142,12 +142,22 @@ export default function OrganizerRegistration() {
           </form>
         </div>
 
-        <p className="text-center text-gray-500 text-sm">
-          Bereits angemeldet?{' '}
-          <a href="#" onClick={() => navigate(createPageUrl('Home'))} className="text-[#beff00] hover:underline">
-            Zum Dashboard
+        <div className="mt-8 pt-8 text-center" style={{ borderTop: '1px solid #1a1a1a' }}>
+          <p style={{ color: '#666' }} className="text-sm mb-4">
+            Du hast bereits einen Account?
+          </p>
+          <a
+            href={createPageUrl('Login')}
+            style={{
+              background: 'rgba(190, 255, 0, 0.1)',
+              color: '#beff00',
+              border: '1px solid #beff00'
+            }}
+            className="inline-block px-6 py-2.5 rounded-xl font-bold text-sm transition-all hover:bg-yellow-400 hover:text-black"
+          >
+            Jetzt anmelden
           </a>
-        </p>
+        </div>
       </div>
     </div>
   );
