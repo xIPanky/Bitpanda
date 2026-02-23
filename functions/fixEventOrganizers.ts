@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
     // Get all users to find admin
     const allUsers = await base44.asServiceRole.entities.User.list();
-    const adminUser = allUsers.find(u => u.email === 'yannik.panke@googlemail.com' && u.role === 'admin');
+    const adminUser = allUsers.find(u => u.role === 'admin');
 
     if (!adminUser) {
       return Response.json({ error: 'Admin user not found' }, { status: 400 });
