@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 import {
   LayoutDashboard,
   Users,
@@ -15,16 +17,32 @@ import {
   ChevronRight,
   Mail,
   Zap,
+  BarChart3,
 } from "lucide-react";
 
-const publicPages = ["Register", "OrganizerRegistration", "Ticket", "Landing", "EventDetails", "EventTicketing", "RegistrationSuccess"];
+const publicPages = ["Register", "OrganizerRegistration", "Ticket", "Landing", "EventDetails", "EventTicketing", "RegistrationSuccess", "Login"];
 
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const { data: user } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => base44.auth.me(),
+    retry: false,
+  });
+
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
 
+  // Admin nav items
+  const adminNavItems = [
+    { name: "Dashboard", page: "AdminDashboard", icon: LayoutDashboard },
+    { name: "Veranstalter", page: "AdminOrganizers", icon: Users },
+    { name: "Events", page: "AdminEvents", icon: CalendarDays },
+    { name: "Gäste", page: "AdminGuests", icon: ClipboardList },
+  ];
+
+  // Organizer event nav items
   const eventNavItems = eventId ? [
     { name: "Dashboard", page: `Dashboard?event_id=${eventId}`, icon: LayoutDashboard },
     { name: "Veranstaltungsinfos", page: `EventInfo?event_id=${eventId}`, icon: CalendarDays },
@@ -47,6 +65,12 @@ export default function Layout({ children, currentPageName }) {
     return <div style={{ background: "#070707", minHeight: "100vh" }}>{children}</div>;
   }
 
+  // Show layout only if user is logged in
+  if (!user) {
+    return <div style={{ background: "#070707", minHeight: "100vh" }}>{children}</div>;
+  }
+
+  const isAdminArea = currentPageName && currentPageName.startsWith("Admin");
   const currentBase = currentPageName;
 
   const NavLink = ({ item, onClick }) => {
@@ -88,22 +112,43 @@ export default function Layout({ children, currentPageName }) {
         </div>
 
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          {topNavItems.map((item) => <NavLink key={item.page} item={item} />)}
-
-          {eventNavItems.length > 0 && (
+          {isAdminArea ? (
+            adminNavItems.map((item) => <NavLink key={item.page} item={item} />)
+          ) : (
             <>
-              <div className="pt-4 pb-1 px-3">
-                <div className="flex items-center gap-1">
-                  <ChevronRight className="w-3 h-3" style={{ color: "#333" }} />
-                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#333" }}>Event</p>
-                </div>
-              </div>
-              {eventNavItems.map((item) => <NavLink key={item.page} item={item} />)}
+              {topNavItems.map((item) => <NavLink key={item.page} item={item} />)}
+
+              {eventNavItems.length > 0 && (
+                <>
+                  <div className="pt-4 pb-1 px-3">
+                    <div className="flex items-center gap-1">
+                      <ChevronRight className="w-3 h-3" style={{ color: "#333" }} />
+                      <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#333" }}>Event</p>
+                    </div>
+                  </div>
+                  {eventNavItems.map((item) => <NavLink key={item.page} item={item} />)}
+                </>
+              )}
             </>
           )}
         </nav>
 
-        {eventId && (
+        {/* Admin logout / back button */}
+        {isAdminArea && (
+          <div className="p-3" style={{ borderTop: "1px solid #141414" }}>
+            <button
+              onClick={() => base44.auth.logout()}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={{ color: "#beff00" }}
+            >
+              <X className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
+        )}
+
+        {/* Organizer links */}
+        {!isAdminArea && eventId && (
           <div className="p-3" style={{ borderTop: "1px solid #141414" }}>
             <Link
               to={createPageUrl(`EventTicketing?event_id=${eventId}`)}
