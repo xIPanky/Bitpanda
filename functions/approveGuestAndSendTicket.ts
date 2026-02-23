@@ -202,7 +202,7 @@ async function sendEmailWithRetry(_base44, to, subject, body, maxAttempts = 2) {
     try {
       console.log(`EMAIL_SEND_START recipient=${to} attempt=${attempt + 1}`);
       const { error } = await resend.emails.send({
-        from: 'Synergy <onboarding@resend.dev>',
+        from: 'Synergy <ticket@eventpass.panke-management.com>',
         to,
         subject,
         html: body,

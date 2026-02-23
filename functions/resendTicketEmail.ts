@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
       try {
         console.log(`EMAIL_SEND_START recipient=${guest.email} attempt=${attempt + 1}`);
         const { error: resendError } = await resend.emails.send({
-          from: 'Synergy <onboarding@resend.dev>',
+          from: 'Synergy <ticket@eventpass.panke-management.com>',
           to: guest.email,
           subject: `Dein Ticket (erneut gesendet) – ${eventName}`,
           html: emailBody,
