@@ -223,40 +223,25 @@ export default function EmailSequences() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-screen p-5 md:p-8" style={{ background:"#070707" }}>
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <Link
-            to={createPageUrl(`Settings?event_id=${eventId}`)}
-            className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-3 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Einstellungen
+          <Link to={createPageUrl(`Settings?event_id=${eventId}`)} className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest mb-4 transition-colors" style={{color:"#444"}} onMouseEnter={e=>e.currentTarget.style.color="#beff00"} onMouseLeave={e=>e.currentTarget.style.color="#444"}>
+            <ArrowLeft className="w-3.5 h-3.5" /> Einstellungen
           </Link>
-          <div className="flex items-center gap-3 mb-1">
-            <Mail className="w-6 h-6 text-slate-400" />
-            <h1 className="text-2xl font-bold text-slate-900">E-Mail-Sequenzen</h1>
-          </div>
-          <p className="text-sm text-slate-500 ml-9">Automatische E-Mails für {event?.name}</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">E-Mail-Sequenzen</h1>
+          <p className="text-xs mt-0.5 uppercase tracking-widest" style={{color:"#444"}}>Automatische E-Mails für {event?.name}</p>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           {SEQUENCE_TYPES.map((type) => (
-            <EmailSequenceCard
-              key={type.trigger}
-              type={type}
-              sequence={getSequence(type.trigger)}
-              eventDate={event?.date}
-              onSave={handleSave}
-            />
+            <EmailSequenceCard key={type.trigger} type={type} sequence={getSequence(type.trigger)} eventDate={event?.date} onSave={handleSave} />
           ))}
         </div>
 
-        <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
-          <p className="text-xs font-semibold text-amber-700 mb-1">Hinweis zu automatischen Sendungen</p>
-          <p className="text-xs text-amber-600 leading-relaxed">
-            Erinnerungs- und Dankesmails werden beim Öffnen des Dashboards automatisch ausgelöst, wenn das entsprechende Datum erreicht wurde.
-            Bestätigungsmails werden direkt bei der Freigabe einer Registrierung versendet.
-          </p>
+        <div className="mt-5 px-5 py-4 rounded-xl" style={{background:"#1a1500",border:"1px solid #2a2000"}}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{color:"#f59e0b"}}>Hinweis</p>
+          <p className="text-xs leading-relaxed" style={{color:"#8a6000"}}>Erinnerungs- und Dankesmails werden beim Öffnen des Dashboards automatisch ausgelöst.</p>
         </div>
       </div>
     </div>
