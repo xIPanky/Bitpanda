@@ -211,15 +211,16 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
 
         {event.invitation_options?.length > 0 && (
-          <div>
-            <FieldLabel>Wie hast du von dieser Veranstaltung erfahren?</FieldLabel>
-            <DarkSelect value={form.invited_by} onChange={(e) => handleChange("invited_by", e.target.value)}>
-              <option value="" style={{ background: "#111" }}>-- Bitte wählen --</option>
-              {event.invitation_options.map((opt, idx) => (
-                <option key={idx} value={opt} style={{ background: "#111" }}>{opt}</option>
-              ))}
-            </DarkSelect>
-          </div>
+          <ModernDropdown
+            label="Wie hast du von dieser Veranstaltung erfahren?"
+            value={form.invited_by}
+            onChange={(value) => handleChange("invited_by", value)}
+            options={[
+              { value: "", label: "-- Bitte wählen --" },
+              ...event.invitation_options.map((opt) => ({ value: opt, label: opt })),
+            ]}
+            placeholder="-- Bitte wählen --"
+          />
         )}
 
         {parsedQuestions.length > 0 && (
