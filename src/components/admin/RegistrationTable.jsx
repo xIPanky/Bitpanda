@@ -126,18 +126,11 @@ export default function RegistrationTable({
                         </td>
 
                         <td className="px-6 py-4">
-                          <Select value={reg.category || "Standard"} onValueChange={(val) => onCategoryChange(reg.id, val)}>
-                            <SelectTrigger className="w-auto h-6 border-0 p-0 bg-transparent shadow-none focus:ring-0">
-                              <span className="text-xs font-semibold px-2 py-0.5 rounded-md" style={{ background: catStyle.bg, color: catStyle.text, border: `1px solid ${catStyle.border}` }}>
-                                {reg.category || "Standard"}
-                              </span>
-                            </SelectTrigger>
-                            <SelectContent style={{ background: "#111", border: "1px solid #222" }}>
-                              {Object.keys(categoryColors).map((cat) => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <p className="text-xs" style={{ color: "#888" }}>{reg.company || "—"}</p>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <p className="text-xs" style={{ color: "#888" }}>{reg.invited_by || "—"}</p>
                         </td>
 
                         <td className="px-6 py-4">
