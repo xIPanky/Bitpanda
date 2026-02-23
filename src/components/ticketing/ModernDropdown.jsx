@@ -9,6 +9,7 @@ export function ModernDropdown({
   placeholder = "Auswählen…",
   disabled = false,
   className = "",
+  required = false,
 }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
