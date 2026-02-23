@@ -89,7 +89,7 @@ export default function RegistrationTable({
               <AnimatePresence>
                 {registrations.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-16">
+                    <td colSpan={8} className="text-center py-16">
                       <User2 className="w-8 h-8 mx-auto mb-3" style={{ color: "#2a2a2a" }} />
                       <p className="text-sm" style={{ color: "#3a3a3a" }}>Keine Registrierungen gefunden</p>
                     </td>
