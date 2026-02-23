@@ -4,12 +4,12 @@ import { Loader2 } from 'lucide-react';
 
 /**
  * Root Redirect Page
- * Handles "/" route and redirects to "/landing"
+ * Handles "/" route and redirects to "/home"
  */
 export default function RootRedirect() {
   useEffect(() => {
-    // Redirect to landing page
-    window.location.replace(createPageUrl('Landing'));
+    // Redirect to home page
+    window.location.replace(createPageUrl('Home'));
   }, []);
 
   return (

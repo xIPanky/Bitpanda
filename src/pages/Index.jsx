@@ -3,7 +3,7 @@ import { createPageUrl } from '@/utils';
 
 export default function Index() {
   React.useEffect(() => {
-    window.location.replace(createPageUrl('Landing'));
+    window.location.replace(createPageUrl('Home'));
   }, []);
 
   return (
