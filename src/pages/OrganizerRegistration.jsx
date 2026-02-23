@@ -95,6 +95,20 @@ export default function OrganizerRegistration() {
             </div>
 
             <div>
+              <label className="block text-sm font-semibold text-white mb-2">Passwort</label>
+              <input
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full px-4 py-2 rounded-lg border text-white"
+                style={{ background: '#111', border: '1px solid #1e1e1e' }}
+                placeholder="••••••••"
+              />
+              <p className="text-xs text-gray-500 mt-1">Mindestens 8 Zeichen</p>
+            </div>
+
+            <div>
               <label className="block text-sm font-semibold text-white mb-2">Unternehmen / Event-Name (optional)</label>
               <input
                 type="text"
