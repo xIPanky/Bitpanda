@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Account from './pages/Account';
 import AdminDashboard from './pages/AdminDashboard';
 import Dashboard from './pages/Dashboard';
 import EmailSequences from './pages/EmailSequences';
@@ -67,13 +68,13 @@ import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
-import Verify from './pages/Verify';
 import Verified from './pages/Verified';
-import Account from './pages/Account';
+import Verify from './pages/Verify';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Account": Account,
     "AdminDashboard": AdminDashboard,
     "Dashboard": Dashboard,
     "EmailSequences": EmailSequences,
@@ -94,9 +95,8 @@ export const PAGES = {
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
-    "Verify": Verify,
     "Verified": Verified,
-    "Account": Account,
+    "Verify": Verify,
 }
 
 export const pagesConfig = {

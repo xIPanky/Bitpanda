@@ -28,6 +28,7 @@ export default function Home() {
   });
 
   const isAdmin = user?.role === "admin";
+  const isOrganizer = user?.account_type === "organizer";
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["events", user?.id],
@@ -36,7 +37,7 @@ export default function Home() {
       if (isAdmin) return all;
       return all.filter((e) => e.organizer_id === user?.id);
     },
-    enabled: !!user && (isAdmin || user?.role === 'organizer'),
+    enabled: !!user && (isAdmin || isOrganizer),
     initialData: [],
   });
 
