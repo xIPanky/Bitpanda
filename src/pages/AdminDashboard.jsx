@@ -1,13 +1,18 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useAccessControl } from '@/lib/useAccessControl';
+import AccessGuard from '@/components/AccessGuard.jsx';
 import { Users, Zap, Ticket, TrendingUp, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 export default function AdminDashboard() {
-  const { user, isLoading: userLoading } = useAccessControl('admin');
+  const { data: user } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const userLoading = !user;
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['all-users'],
@@ -58,6 +63,7 @@ export default function AdminDashboard() {
   ];
 
   return (
+    <AccessGuard requiredRole="admin">
     <div className="min-h-screen p-5 md:p-8" style={{ background: '#070707' }}>
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
@@ -126,5 +132,6 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
+    </AccessGuard>
   );
 }
