@@ -198,6 +198,11 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           <DarkInput type="tel" value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="+49 123 456789" />
         </div>
 
+        <div>
+          <FieldLabel>Unternehmen</FieldLabel>
+          <DarkInput value={form.company} onChange={(e) => handleChange("company", e.target.value)} placeholder="Dein Unternehmen" />
+        </div>
+
         {event.invitation_options?.length > 0 && (
           <ModernDropdown
             label="Wie hast du von dieser Veranstaltung erfahren?"
