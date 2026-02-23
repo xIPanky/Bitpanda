@@ -1,8 +1,5 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,18 +10,18 @@ import EditRegistrationDialog from "./EditRegistrationDialog";
 import { format } from "date-fns";
 
 const statusConfig = {
-  pending:  { label: "Ausstehend",  color: "bg-amber-50 text-amber-700 border-amber-200",   icon: Clock },
-  approved: { label: "Freigegeben", color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
-  rejected: { label: "Abgelehnt",   color: "bg-red-50 text-red-600 border-red-200",          icon: XCircle },
+  pending:  { label: "Ausstehend",  bg: "#1a1500", text: "#f59e0b", border: "#2a2000", icon: Clock },
+  approved: { label: "Freigegeben", bg: "#0d1a00", text: "#beff00", border: "#1a2e00", icon: CheckCircle2 },
+  rejected: { label: "Abgelehnt",   bg: "#1a0505", text: "#ef4444", border: "#2a0808", icon: XCircle },
 };
 
 const categoryColors = {
-  VIP:      "bg-amber-50 text-amber-700 border-amber-200",
-  Business: "bg-blue-50 text-blue-700 border-blue-200",
-  Presse:   "bg-purple-50 text-purple-700 border-purple-200",
-  Standard: "bg-slate-50 text-slate-600 border-slate-200",
-  Speaker:  "bg-emerald-50 text-emerald-700 border-emerald-200",
-  Sponsor:  "bg-pink-50 text-pink-700 border-pink-200",
+  VIP:      { bg: "#1a1200", text: "#f59e0b", border: "#2a1e00" },
+  Business: { bg: "#0a0f1a", text: "#60a5fa", border: "#0f1a2e" },
+  Presse:   { bg: "#120a1a", text: "#a78bfa", border: "#1e0f2e" },
+  Standard: { bg: "#111111", text: "#888888", border: "#1e1e1e" },
+  Speaker:  { bg: "#0a1a0d", text: "#34d399", border: "#0f2e14" },
+  Sponsor:  { bg: "#1a0a12", text: "#f472b6", border: "#2e0f1e" },
 };
 
 export default function RegistrationTable({
@@ -48,26 +45,28 @@ export default function RegistrationTable({
         />
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-        {/* Filters */}
-        <div className="p-5 border-b border-slate-100 flex flex-wrap items-center gap-3">
-          <h3 className="text-lg font-semibold text-slate-900 mr-auto">Registrierungen</h3>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+        {/* Header + Filters */}
+        <div className="px-6 py-4 flex flex-wrap items-center gap-3" style={{ borderBottom: "1px solid #1a1a1a" }}>
+          <h3 className="text-sm font-bold text-white uppercase tracking-widest mr-auto">Registrierungen</h3>
+
           <Select value={filterStatus} onValueChange={onFilterStatusChange}>
-            <SelectTrigger className="w-40 h-9 text-sm">
+            <SelectTrigger className="w-40 h-8 text-xs border-0" style={{ background: "#161616", color: "#888", borderRadius: "8px" }}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent style={{ background: "#111", border: "1px solid #222" }}>
               <SelectItem value="all">Alle Status</SelectItem>
               <SelectItem value="pending">Ausstehend</SelectItem>
               <SelectItem value="approved">Freigegeben</SelectItem>
               <SelectItem value="rejected">Abgelehnt</SelectItem>
             </SelectContent>
           </Select>
+
           <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
-            <SelectTrigger className="w-40 h-9 text-sm">
+            <SelectTrigger className="w-40 h-8 text-xs border-0" style={{ background: "#161616", color: "#888", borderRadius: "8px" }}>
               <SelectValue placeholder="Kategorie" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent style={{ background: "#111", border: "1px solid #222" }}>
               <SelectItem value="all">Alle Kategorien</SelectItem>
               {Object.keys(categoryColors).map((cat) => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -78,139 +77,131 @@ export default function RegistrationTable({
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50/50">
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gast</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kontakt</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kategorie</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Datum</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Aktionen</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <table className="w-full">
+            <thead>
+              <tr style={{ borderBottom: "1px solid #1a1a1a" }}>
+                {["Gast", "Kontakt", "Kategorie", "Status", "Datum", "Aktionen"].map((h) => (
+                  <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style={{ color: "#3a3a3a" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
               <AnimatePresence>
                 {registrations.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-16 text-slate-400">
-                      <User2 className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                      <p>Keine Registrierungen gefunden</p>
-                    </TableCell>
-                  </TableRow>
+                  <tr>
+                    <td colSpan={6} className="text-center py-16">
+                      <User2 className="w-8 h-8 mx-auto mb-3" style={{ color: "#2a2a2a" }} />
+                      <p className="text-sm" style={{ color: "#3a3a3a" }}>Keine Registrierungen gefunden</p>
+                    </td>
+                  </tr>
                 ) : (
                   registrations.map((reg) => {
                     const status = statusConfig[reg.status] || statusConfig.pending;
                     const StatusIcon = status.icon;
                     const isProcessing = processingId === reg.id;
+                    const catStyle = categoryColors[reg.category || "Standard"] || categoryColors.Standard;
+
                     return (
                       <motion.tr
                         key={reg.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors"
+                        className="group transition-colors"
+                        style={{ borderBottom: "1px solid #141414" }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "#111111"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                       >
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-slate-900">{reg.first_name} {reg.last_name}</p>
-                            {reg.company && <p className="text-xs text-slate-500 mt-0.5">{reg.company}</p>}
-                            {reg.plus_one && <p className="text-xs text-amber-600 mt-0.5">+ {reg.plus_one_name || "Begleitperson"}</p>}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                            <Mail className="w-3.5 h-3.5 text-slate-400" />
+                        <td className="px-6 py-4">
+                          <p className="font-semibold text-sm text-white">{reg.first_name} {reg.last_name}</p>
+                          {reg.plus_one && <p className="text-xs mt-0.5" style={{ color: "#beff00" }}>+1 {reg.plus_one_name || ""}</p>}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1.5 text-xs" style={{ color: "#555" }}>
+                            <Mail className="w-3 h-3" style={{ color: "#333" }} />
                             {reg.email}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={reg.category || "Standard"}
-                            onValueChange={(val) => onCategoryChange(reg.id, val)}
-                          >
-                            <SelectTrigger className="w-32 h-8 text-xs border-0 p-0">
-                              <Badge variant="outline" className={`${categoryColors[reg.category || "Standard"]} border text-xs`}>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <Select value={reg.category || "Standard"} onValueChange={(val) => onCategoryChange(reg.id, val)}>
+                            <SelectTrigger className="w-auto h-6 border-0 p-0 bg-transparent shadow-none focus:ring-0">
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded-md" style={{ background: catStyle.bg, color: catStyle.text, border: `1px solid ${catStyle.border}` }}>
                                 {reg.category || "Standard"}
-                              </Badge>
+                              </span>
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent style={{ background: "#111", border: "1px solid #222" }}>
                               {Object.keys(categoryColors).map((cat) => (
                                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <Badge variant="outline" className={`${status.color} border text-xs`}>
-                              <StatusIcon className="w-3 h-3 mr-1" />
-                              {status.label}
-                            </Badge>
-                            {reg.status === "approved" && reg.approved_by && (
-                              <p className="text-xs text-slate-400 mt-1">von {reg.approved_by}</p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-500">
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: status.bg, color: status.text, border: `1px solid ${status.border}` }}>
+                            <StatusIcon className="w-3 h-3" />
+                            {status.label}
+                          </span>
+                          {reg.status === "approved" && reg.approved_by && (
+                            <p className="text-[10px] mt-1" style={{ color: "#333" }}>von {reg.approved_by}</p>
+                          )}
+                        </td>
+
+                        <td className="px-6 py-4 text-xs" style={{ color: "#444" }}>
                           {reg.created_date ? format(new Date(reg.created_date), "dd.MM.yyyy") : "–"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1.5">
+                            <button
                               onClick={() => setEditTarget(reg)}
-                              className="h-8 px-2 text-slate-500 hover:text-slate-700"
+                              className="p-1.5 rounded-lg transition-all"
+                              style={{ color: "#444" }}
                               title="Bearbeiten"
+                              onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#1a1a1a"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.color = "#444"; e.currentTarget.style.background = "transparent"; }}
                             >
                               <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                            {reg.status === "pending" && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={isProcessing}
-                                  onClick={() => onApprove(reg)}
-                                  className="h-8 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                                >
-                                  {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1" />}
-                                  Freigeben
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={isProcessing}
-                                  onClick={() => onReject(reg.id)}
-                                  className="h-8 text-xs border-red-200 text-red-600 hover:bg-red-50"
-                                >
-                                  <XCircle className="w-3.5 h-3.5 mr-1" />
-                                  Ablehnen
-                                </Button>
-                              </>
-                            )}
-                            {reg.status === "rejected" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
+                            </button>
+
+                            {(reg.status === "pending" || reg.status === "rejected") && (
+                              <button
                                 disabled={isProcessing}
                                 onClick={() => onApprove(reg)}
-                                className="h-8 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                                style={{ background: "#beff00", color: "#070707" }}
+                                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 0 16px rgba(190,255,0,0.4)"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
                               >
-                                {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1" />}
-                                Doch freigeben
-                              </Button>
+                                {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                                {reg.status === "rejected" ? "Doch freigeben" : "Freigeben"}
+                              </button>
+                            )}
+
+                            {reg.status === "pending" && (
+                              <button
+                                disabled={isProcessing}
+                                onClick={() => onReject(reg.id)}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+                                style={{ background: "#1a0505", color: "#ef4444", border: "1px solid #2a0808" }}
+                                onMouseEnter={(e) => { e.currentTarget.style.background = "#220808"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.background = "#1a0505"; }}
+                              >
+                                <XCircle className="w-3 h-3" />
+                                Ablehnen
+                              </button>
                             )}
                           </div>
-                        </TableCell>
+                        </td>
                       </motion.tr>
                     );
                   })
                 )}
               </AnimatePresence>
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
