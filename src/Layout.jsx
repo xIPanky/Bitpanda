@@ -25,9 +25,15 @@ const publicPages = ["Register", "OrganizerRegistration", "Ticket", "Landing", "
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ["me"],
-    queryFn: () => base44.auth.me(),
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch (err) {
+        return null;
+      }
+    },
     retry: false,
   });
 
@@ -66,6 +72,10 @@ export default function Layout({ children, currentPageName }) {
   }
 
   // Show layout only if user is logged in
+  if (userLoading) {
+    return <div style={{ background: "#070707", minHeight: "100vh" }}>{children}</div>;
+  }
+
   if (!user) {
     return <div style={{ background: "#070707", minHeight: "100vh" }}>{children}</div>;
   }
