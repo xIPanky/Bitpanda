@@ -31,13 +31,16 @@ export default function Dashboard() {
     queryFn: () => base44.auth.me(),
   });
 
+  const isAdmin = user?.role === "admin";
+  const isOrganizer = user?.account_type === "organizer";
+
   const { data: event } = useQuery({
     queryKey: ["event", eventId, user?.id],
     queryFn: async () => {
       const events = await base44.entities.Event.filter({ id: eventId });
       const evt = events?.[0];
       // Organizer can only access their own events
-      if (user?.role === 'organizer' && evt?.organizer_id !== user?.id) {
+      if (isOrganizer && evt?.organizer_id !== user?.id) {
         return null;
       }
       return evt;
