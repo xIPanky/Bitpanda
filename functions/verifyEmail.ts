@@ -2,51 +2,43 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
   try {
-    const { email, token, type } = await req.json();
+    const { user_id, email, type } = await req.json();
 
-    if (!email) {
-      return Response.json({ error: 'email erforderlich' }, { status: 400 });
+    if (!user_id || !email) {
+      return Response.json({ error: 'Missing user_id or email' }, { status: 400 });
     }
-
-    console.log(`VERIFY_START email=${email} type=${type}`);
 
     const base44 = createClientFromRequest(req);
 
-    // Update user with email verification and account type
-    const account_type = type === 'organizer' ? 'organizer' : 'guest';
-    
+    // Verify user exists
     try {
-      // Try to get all users via service role to find the user
-      const allUsers = await base44.asServiceRole.entities.User.list();
-      const user = allUsers.find(u => u.email === email);
-
+      const user = await base44.asServiceRole.entities.User.get(user_id);
       if (!user) {
-        console.error(`VERIFY_USER_NOT_FOUND email=${email}`);
         return Response.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
       }
-
-      // Update user with email verification and account type
-      const updateResult = await base44.asServiceRole.entities.User.update(user.id, {
-        email_verified: true,
-        email_verified_at: new Date().toISOString(),
-        account_type: account_type
-      });
-
-      console.log(`VERIFY_SUCCESS email=${email} account_type=${account_type}`);
-      
-      return Response.json({
-        success: true,
-        email,
-        account_type,
-        message: 'E-Mail erfolgreich bestätigt'
-      });
-    } catch (updateError) {
-      console.error(`VERIFY_UPDATE_ERROR error=${updateError.message}`);
-      return Response.json({ error: 'Konnte Benutzer nicht aktualisieren: ' + updateError.message }, { status: 500 });
+    } catch (err) {
+      console.error('User fetch error:', err);
+      return Response.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
     }
 
+    // Update user - mark email as verified
+    try {
+      await base44.asServiceRole.entities.User.update(user_id, {
+        email_verified: true,
+        email_verified_at: new Date().toISOString()
+      });
+      console.log(`Email verified for user: ${user_id} (${email})`);
+    } catch (updateError) {
+      console.error('Update error:', updateError);
+      return Response.json({ error: 'Fehler bei der Bestätigung' }, { status: 500 });
+    }
+
+    return Response.json({ 
+      message: 'Email verified successfully',
+      email: email
+    });
   } catch (error) {
-    console.error(`VERIFY_ERROR error=${error.message}`);
+    console.error('Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

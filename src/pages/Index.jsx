@@ -13,7 +13,7 @@ export default function Index() {
       try {
         return await base44.auth.me();
       } catch (err) {
-        console.log('User not authenticated (expected for guests)');
+        console.log('User not authenticated (expected for public users)');
         return null;
       }
     },
@@ -23,10 +23,10 @@ export default function Index() {
   useEffect(() => {
     if (!isLoading) {
       try {
-        // Route based on user role
+        // Route based on user role and account_type
         if (user?.role === 'admin') {
           window.location.replace(createPageUrl('AdminDashboard'));
-        } else if (user?.role === 'organizer') {
+        } else if (user?.role === 'user' && user?.account_type === 'organizer') {
           window.location.replace(createPageUrl('Home'));
         } else {
           // Default to Landing for guests and unauthenticated users

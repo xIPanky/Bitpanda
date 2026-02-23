@@ -1,69 +1,79 @@
-import { Resend } from 'npm:resend@4.0.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+const resend = {
+  emails: {
+    send: async (params) => {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+      return response.json();
+    }
+  }
+};
 
 Deno.serve(async (req) => {
   try {
     const { email } = await req.json();
 
     if (!email) {
-      return Response.json({ error: 'E-Mail erforderlich' }, { status: 400 });
+      return Response.json({ error: 'Missing email' }, { status: 400 });
     }
 
-    console.log(`RESEND_START email=${email}`);
+    const base44 = createClientFromRequest(req);
 
-    // Build verification link
-    const verificationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const verificationLink = `${new URL(req.url).origin}/verified?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+    // Find user by email
+    const users = await base44.asServiceRole.entities.User.filter({ email: email });
+    if (users.length === 0) {
+      return Response.json({ error: 'Benutzer nicht gefunden' }, { status: 404 });
+    }
 
-    // Send verification email
-    console.log(`RESEND_EMAIL_SENDING email=${email}`);
-    const { error: emailError } = await resend.emails.send({
-      from: 'Synergy <ticket@eventpass.panke-management.com>',
+    const user = users[0];
+
+    // If already verified, return success silently
+    if (user.email_verified) {
+      return Response.json({ message: 'Email already verified' });
+    }
+
+    // Generate verification link
+    const verificationLink = `${new URL(req.url).origin}/verified?token=${encodeURIComponent(user.id)}&email=${encodeURIComponent(email)}&type=${user.account_type || 'guest'}`;
+
+    // Send verification email via Resend
+    const emailResult = await resend.emails.send({
+      from: 'noreply@synergy.events',
       to: email,
       subject: 'Bestätige deine E-Mail-Adresse',
-      html: `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#070707;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#070707;padding:20px;">
-    <tr><td align="center">
-      <table width="100%" style="max-width:600px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:20px;overflow:hidden;">
-        <tr><td style="background:#beff00;height:6px;"></td></tr>
-        <tr><td style="padding:48px 40px;text-align:center;">
-          <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:900;">E-Mail bestätigen</h1>
-          <p style="margin:12px 0 0;color:#888;font-size:14px;">Bestätige deine E-Mail-Adresse</p>
-        </td></tr>
-        <tr><td style="padding:0 40px 32px;text-align:center;">
-          <p style="margin:0 0 24px;color:#cccccc;font-size:14px;line-height:1.6;">
-            Bitte bestätige deine E-Mail-Adresse, um dein Konto zu aktivieren.
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #070707;">Willkommen bei Synergy!</h1>
+          <p>Hallo ${user.full_name || 'Benutzer'},</p>
+          <p>um dein Konto zu aktivieren, klicke bitte auf den Link unten:</p>
+          <p>
+            <a href="${verificationLink}" style="display: inline-block; padding: 12px 24px; background-color: #beff00; color: #070707; text-decoration: none; border-radius: 8px; font-weight: bold;">
+              E-Mail bestätigen
+            </a>
           </p>
-          <a href="${verificationLink}" style="display:inline-block;background:#beff00;color:#070707;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:1px;">
-            E-Mail bestätigen
-          </a>
-        </td></tr>
-        <tr><td style="background:#beff00;height:6px;"></td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`
+          <p style="color: #666; font-size: 12px;">
+            Oder kopiere diesen Link in deine Adressleiste:<br/>
+            ${verificationLink}
+          </p>
+          <p style="color: #888; margin-top: 32px; font-size: 12px;">Synergy Ticketing Platform</p>
+        </div>
+      `
     });
 
-    if (emailError) {
-      console.error(`RESEND_EMAIL_ERROR error=${emailError.message}`);
-      return Response.json({ error: 'E-Mail konnte nicht versendet werden' }, { status: 500 });
+    if (!emailResult.id) {
+      console.error('Resend error:', emailResult);
+      return Response.json({ error: 'Fehler beim Versenden der E-Mail' }, { status: 500 });
     }
 
-    console.log(`RESEND_EMAIL_SENT email=${email}`);
-
-    return Response.json({
-      success: true,
-      message: 'Bestätigungs-E-Mail erneut versendet'
-    });
-
+    return Response.json({ message: 'Verification email sent' });
   } catch (error) {
-    console.error(`RESEND_ERROR error=${error.message}`);
+    console.error('Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
