@@ -192,295 +192,169 @@ export default function TicketManagement() {
     toast.success("Custom Checkout gespeichert");
   };
 
-  if (!eventId) {
-    return <div className="p-6 text-center text-slate-500">Event nicht gefunden.</div>;
-  }
+  const di = { background:"#111", border:"1px solid #1e1e1e", borderRadius:"10px", color:"#fff", padding:"10px 14px", fontSize:"13px", width:"100%", outline:"none" };
+  const onF = e => e.target.style.borderColor="#beff00";
+  const onB = e => e.target.style.borderColor="#1e1e1e";
+  const DI = ({ label, children }) => (
+    <div>
+      <label style={{ display:"block", fontSize:"11px", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:"#444", marginBottom:"6px" }}>{label}</label>
+      {children}
+    </div>
+  );
 
-  if (eventLoading || tiersLoading) {
-    return <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;
-  }
+  if (!eventId) return <div className="p-6 text-center" style={{color:"#555"}}>Event nicht gefunden.</div>;
+  if (eventLoading || tiersLoading) return <div className="flex items-center justify-center min-h-screen" style={{background:"#070707"}}><Loader2 className="w-6 h-6 animate-spin" style={{color:"#333"}} /></div>;
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-6 py-6 flex items-center gap-4">
-          <Link to={createPageUrl(`Dashboard?event_id=${eventId}`)} className="text-slate-400 hover:text-slate-600">
-            <ChevronLeft className="w-5 h-5" />
+    <div className="min-h-screen p-5 md:p-8" style={{ background:"#070707" }}>
+      <div className="max-w-3xl mx-auto space-y-5">
+        <div>
+          <Link to={createPageUrl(`Dashboard?event_id=${eventId}`)} className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest mb-4 transition-colors" style={{color:"#444"}} onMouseEnter={e=>e.currentTarget.style.color="#beff00"} onMouseLeave={e=>e.currentTarget.style.color="#444"}>
+            <ChevronLeft className="w-3.5 h-3.5" /> Dashboard
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Ticketing</h1>
-            <p className="text-sm text-slate-500 mt-1">{event?.name}</p>
-          </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Ticketing</h1>
+          <p className="text-xs mt-0.5 uppercase tracking-widest" style={{color:"#444"}}>{event?.name}</p>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="flex gap-2 border-b border-slate-200 bg-white rounded-t-2xl px-6 mb-6">
-          <button
-            onClick={() => setActiveTab("tiers")}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "tiers" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Ticketstufen
-          </button>
-          <button
-            onClick={() => setActiveTab("checkout")}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === "checkout" ? "border-slate-900 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Custom Checkout
-          </button>
+        {/* Tabs */}
+        <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background:"#0d0d0d",border:"1px solid #1a1a1a"}}>
+          {[["tiers","Ticketstufen"],["checkout","Custom Checkout"]].map(([id,label])=>(
+            <button key={id} onClick={()=>setActiveTab(id)} className="px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all"
+              style={activeTab===id?{background:"#beff00",color:"#070707"}:{color:"#444"}}
+            >{label}</button>
+          ))}
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}>
           {activeTab === "tiers" && (
-          <div className="bg-white rounded-lg border border-slate-200 p-8">
-            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <Tag className="w-5 h-5 text-amber-500" />
-              Ticketstufen
-            </h2>
-
-            <div className="space-y-6">
-              {tiers.map((tier, index) => (
-                <div key={index} className="border border-slate-200 rounded-lg p-6 bg-slate-50">
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <Label className="text-slate-700 font-medium">Name *</Label>
-                      <Input
-                        value={tier.name}
-                        onChange={(e) => handleTierChange(index, "name", e.target.value)}
-                        className="mt-1"
-                        placeholder="z.B. Early Bird"
-                      />
+            <div className="rounded-2xl p-6 space-y-5" style={{background:"#0d0d0d",border:"1px solid #1a1a1a"}}>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{color:"#333"}}>Ticketstufen</p>
+              <div className="space-y-4">
+                {tiers.map((tier, index) => (
+                  <div key={index} className="rounded-xl p-5 space-y-4" style={{background:"#111",border:"1px solid #1a1a1a"}}>
+                    <div className="grid grid-cols-3 gap-4">
+                      <DI label="Name *"><input style={di} value={tier.name} onChange={e=>handleTierChange(index,"name",e.target.value)} placeholder="Early Bird" onFocus={onF} onBlur={onB} /></DI>
+                      <DI label={`Preis (${event?.currency})`}><input type="number" style={di} value={tier.price||0} onChange={e=>handleTierChange(index,"price",parseFloat(e.target.value)||0)} min="0" onFocus={onF} onBlur={onB} /></DI>
+                      <DI label="Kapazität"><input type="number" style={di} value={tier.capacity||""} onChange={e=>handleTierChange(index,"capacity",e.target.value?parseInt(e.target.value):null)} placeholder="∞" onFocus={onF} onBlur={onB} /></DI>
                     </div>
-                    <div>
-                      <Label className="text-slate-700 font-medium">Preis ({event?.currency})</Label>
-                      <Input
-                        type="number"
-                        value={tier.price || 0}
-                        onChange={(e) => handleTierChange(index, "price", parseFloat(e.target.value) || 0)}
-                        className="mt-1"
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-slate-700 font-medium">Kapazität</Label>
-                      <Input
-                        type="number"
-                        value={tier.capacity || ""}
-                        onChange={(e) => handleTierChange(index, "capacity", e.target.value ? parseInt(e.target.value) : null)}
-                        className="mt-1"
-                        placeholder="Unbegrenzt"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <Label className="text-slate-700 font-medium">Beschreibung</Label>
-                    <Input
-                      value={tier.description || ""}
-                      onChange={(e) => handleTierChange(index, "description", e.target.value)}
-                      className="mt-1"
-                      placeholder="Optional"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <Label className="text-slate-700 font-medium">Kategorie</Label>
-                      <select
-                        value={tier.color || "Standard"}
-                        onChange={(e) => handleTierChange(index, "color", e.target.value)}
-                        className="mt-1 w-full h-9 rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm"
-                      >
-                        <option>Standard</option>
-                        <option>VIP</option>
-                        <option>Business</option>
-                        <option>Presse</option>
-                        <option>Speaker</option>
-                        <option>Sponsor</option>
-                      </select>
-                    </div>
-                    <div className="flex items-end">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={tier.is_visible !== false}
-                          onCheckedChange={(checked) => handleTierChange(index, "is_visible", checked)}
-                        />
-                        <label className="text-sm text-slate-700">Sichtbar</label>
+                    <DI label="Beschreibung"><input style={di} value={tier.description||""} onChange={e=>handleTierChange(index,"description",e.target.value)} placeholder="Optional" onFocus={onF} onBlur={onB} /></DI>
+                    <div className="grid grid-cols-2 gap-4">
+                      <DI label="Kategorie">
+                        <select style={{...di,cursor:"pointer"}} value={tier.color||"Standard"} onChange={e=>handleTierChange(index,"color",e.target.value)} onFocus={onF} onBlur={onB}>
+                          {["Standard","VIP","Business","Presse","Speaker","Sponsor"].map(c=><option key={c} value={c} style={{background:"#111"}}>{c}</option>)}
+                        </select>
+                      </DI>
+                      <div className="flex items-end pb-0.5">
+                        <div className="flex items-center gap-3">
+                          <Switch checked={tier.is_visible!==false} onCheckedChange={c=>handleTierChange(index,"is_visible",c)} />
+                          <span className="text-sm text-white">Sichtbar</span>
+                        </div>
                       </div>
                     </div>
+                    <button onClick={()=>handleRemoveTier(index)} className="w-full py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all" style={{background:"#1a0505",color:"#ef4444",border:"1px solid #2a0808"}}>
+                      <Trash2 className="w-3.5 h-3.5 inline mr-1" /> Löschen
+                    </button>
                   </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50 w-full"
-                    onClick={() => handleRemoveTier(index)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Löschen
-                  </Button>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full mt-6 border-dashed"
-              onClick={handleAddTier}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Neue Ticketstufe
-            </Button>
-
-            <div className="flex gap-4 mt-8">
-              <Button
-                onClick={handleSaveTiers}
-                disabled={savingTiers}
-                className="flex-1 bg-amber-500 hover:bg-amber-600"
+                ))}
+              </div>
+              <button onClick={handleAddTier} className="w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all" style={{background:"transparent",color:"#444",border:"2px dashed #1e1e1e"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="#beff00";e.currentTarget.style.color="#beff00";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="#1e1e1e";e.currentTarget.style.color="#444";}}
               >
-                {savingTiers && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {savingTiers ? "Wird gespeichert..." : "Speichern"}
-              </Button>
-              {savingTiersOk && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-green-600 flex items-center gap-2">
-                  Gespeichert ✓
-                </motion.div>
-              )}
+                <Plus className="w-3.5 h-3.5 inline mr-1" /> Neue Ticketstufe
+              </button>
+              <button onClick={handleSaveTiers} disabled={savingTiers} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+                style={{background:"#beff00",color:"#070707"}}
+                onMouseEnter={e=>{if(!savingTiers)e.currentTarget.style.boxShadow="0 0 24px rgba(190,255,0,0.4)"}}
+                onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}
+              >
+                {savingTiers ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" />{savingTiersOk?"Gespeichert!":"Ticketstufen speichern"}</>}
+              </button>
             </div>
-          </div>
           )}
 
           {activeTab === "checkout" && (
-          <div className="bg-white rounded-lg border border-slate-200 p-8 space-y-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-1">Custom Checkout Fragen</h2>
-                <p className="text-xs text-slate-500">Individuelle Fragen die Gäste beim Checkout beantworten müssen.</p>
+            <div className="rounded-2xl p-6 space-y-5" style={{background:"#0d0d0d",border:"1px solid #1a1a1a"}}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-white">Custom Checkout Fragen</p>
+                  <p className="text-xs mt-0.5" style={{color:"#444"}}>Individuelle Fragen beim Checkout</p>
+                </div>
+                <button onClick={addCheckoutQuestion} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all" style={{background:"#0d1a00",color:"#beff00",border:"1px solid #1a2e00"}}>
+                  <Plus className="w-3.5 h-3.5" /> Frage hinzufügen
+                </button>
               </div>
-              <Button size="sm" onClick={addCheckoutQuestion} className="gap-2">
-                <Plus className="w-4 h-4" />
-                Frage hinzufügen
-              </Button>
-            </div>
 
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="checkout-questions">
-                {(provided, snapshot) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3 border-t border-slate-200 pt-5">
-                    {checkoutQuestions.map((question, index) => (
-                      <Draggable key={question.id} draggableId={String(question.id)} index={index}>
-                        {(provided, snapshot) => (
-                          <div ref={provided.innerRef} {...provided.draggableProps} className={`border border-slate-200 rounded-lg p-4 space-y-3 ${snapshot.isDragging ? 'bg-blue-50 border-blue-300' : ''}`}>
-                  <div className="flex gap-3 items-start">
-                     <div {...provided.dragHandleProps} className="mt-6">
-                       <GripVertical className="w-5 h-5 text-slate-400" />
-                     </div>
-                     <div className="flex-1">
-                       <Label className="text-xs">Frage</Label>
-                       <Input 
-                         value={question.text} 
-                         onChange={(e) => updateCheckoutQuestion(question.id, "text", e.target.value)} 
-                         placeholder="z.B. Diätische Anforderungen?" 
-                         className="mt-1 h-9 text-sm" 
-                       />
-                     </div>
-                     <div className="w-32">
-                       <Label className="text-xs">Typ</Label>
-                       <Select value={question.type || "text"} onValueChange={(val) => updateCheckoutQuestion(question.id, "type", val)}>
-                         <SelectTrigger className="mt-1 h-9 text-sm">
-                           <SelectValue />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="text">Textfeld</SelectItem>
-                           <SelectItem value="dropdown">Dropdown</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                     <Button variant="ghost" size="sm" onClick={() => removeCheckoutQuestion(question.id)} className="text-red-600 hover:bg-red-50 h-8 mt-6">
-                       <Trash2 className="w-4 h-4" />
-                     </Button>
-                   </div>
-
-                  {question.type === "dropdown" && (
-                    <div className="border-t border-slate-200 pt-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium">Optionen</Label>
-                        <Button size="sm" variant="ghost" onClick={() => addCheckoutOption(question.id)} className="h-6 text-xs">
-                          <Plus className="w-3 h-3 mr-1" />
-                          Option
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {(question.options || []).map((option, optIdx) => (
-                          <div key={optIdx} className="flex gap-2">
-                            <Input 
-                              value={option} 
-                              onChange={(e) => updateCheckoutOption(question.id, optIdx, e.target.value)} 
-                              placeholder="z.B. Vegetarisch" 
-                              className="h-8 text-xs" 
-                            />
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => removeCheckoutOption(question.id, optIdx)} 
-                              className="text-red-600 hover:bg-red-50 h-8"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
+              <DragDropContext onDragEnd={handleDragEnd}>
+                <Droppable droppableId="checkout-questions">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                      {checkoutQuestions.map((question, index) => (
+                        <Draggable key={question.id} draggableId={String(question.id)} index={index}>
+                          {(provided, snapshot) => (
+                            <div ref={provided.innerRef} {...provided.draggableProps} className="rounded-xl p-4 space-y-3" style={{background:snapshot.isDragging?"#161616":"#111",border:"1px solid #1e1e1e"}}>
+                              <div className="flex gap-3 items-start">
+                                <div {...provided.dragHandleProps} className="mt-2 cursor-grab">
+                                  <GripVertical className="w-4 h-4" style={{color:"#333"}} />
+                                </div>
+                                <div className="flex-1">
+                                  <DI label="Frage"><input style={di} value={question.text} onChange={e=>updateCheckoutQuestion(question.id,"text",e.target.value)} placeholder="z.B. Diätische Anforderungen?" onFocus={onF} onBlur={onB} /></DI>
+                                </div>
+                                <div className="w-32">
+                                  <DI label="Typ">
+                                    <select style={{...di,cursor:"pointer"}} value={question.type||"text"} onChange={e=>updateCheckoutQuestion(question.id,"type",e.target.value)} onFocus={onF} onBlur={onB}>
+                                      <option value="text" style={{background:"#111"}}>Textfeld</option>
+                                      <option value="dropdown" style={{background:"#111"}}>Dropdown</option>
+                                    </select>
+                                  </DI>
+                                </div>
+                                <button onClick={()=>removeCheckoutQuestion(question.id)} className="mt-6 p-1.5 rounded-lg transition-all" style={{color:"#ef4444"}}
+                                  onMouseEnter={e=>e.currentTarget.style.background="#1a0505"}
+                                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+                                ><Trash2 className="w-3.5 h-3.5" /></button>
+                              </div>
+                              {question.type === "dropdown" && (
+                                <div className="pt-3 space-y-2" style={{borderTop:"1px solid #1e1e1e"}}>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold uppercase tracking-widest" style={{color:"#444"}}>Optionen</span>
+                                    <button onClick={()=>addCheckoutOption(question.id)} className="text-xs px-2 py-1 rounded-lg transition-all" style={{color:"#beff00",background:"#0d1a00",border:"1px solid #1a2e00"}}>+ Option</button>
+                                  </div>
+                                  {(question.options||[]).map((opt,oi)=>(
+                                    <div key={oi} className="flex gap-2">
+                                      <input style={di} value={opt} onChange={e=>updateCheckoutOption(question.id,oi,e.target.value)} placeholder="z.B. Vegetarisch" onFocus={onF} onBlur={onB} />
+                                      <button onClick={()=>removeCheckoutOption(question.id,oi)} className="p-2 rounded-lg" style={{color:"#ef4444",background:"#1a0505"}}><Trash2 className="w-3 h-3" /></button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              <label className="flex items-center gap-2 text-xs text-white cursor-pointer">
+                                <input type="checkbox" checked={question.required||false} onChange={e=>updateCheckoutQuestion(question.id,"required",e.target.checked)} />
+                                Pflichtfeld
+                              </label>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
                     </div>
                   )}
+                </Droppable>
+              </DragDropContext>
 
-                  <label className="flex items-center gap-2 text-xs">
-                    <input 
-                      type="checkbox" 
-                      checked={question.required || false} 
-                      onChange={(e) => updateCheckoutQuestion(question.id, "required", e.target.checked)} 
-                      className="rounded" 
-                    />
-                    Pflichtfeld
-                  </label>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                  </div>
-                  )}
-                  </Droppable>
-                  </DragDropContext>
-
-            {checkoutQuestions.length === 0 && (
-              <div className="text-center py-8 text-slate-400">
-                <p className="text-sm">Keine Fragen hinzugefügt</p>
-              </div>
-            )}
-
-            <div className="flex gap-4">
-              <Button onClick={handleSaveCheckout} disabled={savingCheckout} className="flex-1 h-10 bg-slate-900 hover:bg-slate-800 rounded-xl text-sm font-medium">
-                {savingCheckout ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <>Custom Checkout speichern</>}
-              </Button>
-              {savingCheckoutOk && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-green-600 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" /> Gespeichert
-                </motion.div>
+              {checkoutQuestions.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-xs uppercase tracking-widest" style={{color:"#2a2a2a"}}>Keine Fragen hinzugefügt</p>
+                </div>
               )}
+
+              <button onClick={handleSaveCheckout} disabled={savingCheckout} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+                style={{background:"#beff00",color:"#070707"}}
+                onMouseEnter={e=>{if(!savingCheckout)e.currentTarget.style.boxShadow="0 0 24px rgba(190,255,0,0.4)"}}
+                onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}
+              >
+                {savingCheckout ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" />{savingCheckoutOk?"Gespeichert!":"Custom Checkout speichern"}</>}
+              </button>
             </div>
-          </div>
           )}
         </motion.div>
       </div>
