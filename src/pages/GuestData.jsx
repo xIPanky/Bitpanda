@@ -28,6 +28,7 @@ export default function GuestData() {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterInvitedBy, setFilterInvitedBy] = useState("all");
   const [editGuest, setEditGuest] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
