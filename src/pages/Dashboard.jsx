@@ -8,13 +8,6 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
 
-function generateTicketCode() {
-  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const pick = () => letters.charAt(Math.floor(Math.random() * letters.length));
-  const a = pick(), b = pick(), c = pick();
-  const suffix = Math.floor(100 + Math.random() * 900);
-  return `${a}${b}${c}-${suffix}`;
-}
 
 export default function Dashboard() {
   const [filterStatus, setFilterStatus] = useState("all");
