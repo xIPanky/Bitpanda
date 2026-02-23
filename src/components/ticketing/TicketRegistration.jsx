@@ -287,7 +287,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
 
           {hasPlusOne && (
             <div className="mt-5 p-5 rounded-2xl space-y-4" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
-              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#555" }}>Begleitung</p>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#888" }}>Begleitung</p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <FieldLabel required>Vorname</FieldLabel>
