@@ -342,6 +342,16 @@ export default function GuestData() {
               <option value="pending" style={{ background: "#111" }}>Ausstehend</option>
               <option value="rejected" style={{ background: "#111" }}>Abgelehnt</option>
             </select>
+            {invitationOptions.length > 0 && (
+              <select value={filterInvitedBy} onChange={(e) => setFilterInvitedBy(e.target.value)}
+                className="h-9 px-3 rounded-xl text-sm text-white outline-none w-44"
+                style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+                <option value="all" style={{ background: "#111" }}>Alle Quellen</option>
+                {invitationOptions.map((opt) => (
+                  <option key={opt} value={opt} style={{ background: "#111" }}>{opt}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="rounded-2xl overflow-hidden" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
