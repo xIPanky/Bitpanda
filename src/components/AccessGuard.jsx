@@ -34,13 +34,20 @@ export default function AccessGuard({ children, requiredRole = 'organizer' }) {
       return;
     }
 
-    // Organizer accessing admin routes
+    // Admin routes - require role=admin
     if (requiredRole === 'admin' && user.role !== 'admin') {
       navigate(createPageUrl('Landing'));
       return;
     }
 
-    // Everything else is allowed (organizers and admins can proceed)
+    // Organizer routes - require role=user AND account_type=organizer, or role=admin
+    if (requiredRole === 'organizer') {
+      const isOrganizerOrAdmin = (user.role === 'user' && user.account_type === 'organizer') || user.role === 'admin';
+      if (!isOrganizerOrAdmin) {
+        navigate(createPageUrl('Landing'));
+        return;
+      }
+    }
   }, [user, isLoading, navigate, requiredRole]);
 
   if (isLoading) {
