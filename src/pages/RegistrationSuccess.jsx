@@ -216,9 +216,7 @@ export default function RegistrationSuccess() {
           style={{ color: "#888", fontSize: "15px" }}
           variants={itemVariants}
         >
-          {isPending
-            ? "Vielen Dank für deine Registrierung! Wir überprüfen deine Anmeldung und senden dir alle Details per E-Mail, sobald es genehmigt wurde."
-            : "Deine Anmeldung wurde genehmigt! Du erhältst dein Ticket und alle Informationen per E-Mail."}
+          Vielen Dank für deine Registrierung! Wir überprüfen deine Anmeldung und senden dir alle Details per E-Mail, sobald es genehmigt wurde.
         </motion.p>
 
         {/* Info Card */}
