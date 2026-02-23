@@ -14,7 +14,13 @@ export default function Dashboard() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [processingId, setProcessingId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const queryClient = useQueryClient();
+
+  const showSuccess = useCallback((msg) => {
+    setSuccessMessage(msg);
+    setTimeout(() => setSuccessMessage(null), 2000);
+  }, []);
 
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
