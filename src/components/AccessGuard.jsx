@@ -24,7 +24,7 @@ export default function AccessGuard({ children, requiredRole = 'organizer' }) {
 
     // Not authenticated - redirect to built-in login
     if (!user) {
-      base44.auth.redirectToLogin();
+      base44.auth.redirectToLogin(createPageUrl('Home'));
       return;
     }
 
