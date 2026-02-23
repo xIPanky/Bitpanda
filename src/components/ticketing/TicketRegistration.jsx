@@ -307,7 +307,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-3 pt-2">
           <button
             type="button"
             onClick={() => { onAbandoned("back"); onBack(); }}
