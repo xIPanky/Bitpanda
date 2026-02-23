@@ -53,7 +53,7 @@ const DarkSelect = ({ value, onChange, children }) => (
 );
 
 const FieldLabel = ({ children, required }) => (
-  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#555", marginBottom: "8px" }}>
+  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#888", marginBottom: "5px" }}>
     {children}{required && <span style={{ color: "#beff00", marginLeft: "4px" }}>*</span>}
   </label>
 );
