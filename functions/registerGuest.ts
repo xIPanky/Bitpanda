@@ -24,10 +24,10 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     console.log(`SIGNUP_START email=${email}`);
 
-    // Try to invite user as guest
-    // This will fail if email already exists
+    // Try to invite user with role="user" (only allowed role)
+    // account_type will be set separately to "guest"
     try {
-      await base44.users.inviteUser(email, 'guest');
+      await base44.users.inviteUser(email, 'user');
       console.log(`SIGNUP_USER_INVITED email=${email}`);
     } catch (inviteError) {
       console.error(`SIGNUP_INVITE_ERROR error=${inviteError.message}`);
