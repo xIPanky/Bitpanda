@@ -60,18 +60,21 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Ensure admin user exists (yannik.panke@googlemail.com)
-    const adminEmail = 'yannik.panke@googlemail.com';
-    const adminExists = allUsers.find(u => u.email === adminEmail && u.role === 'admin');
-
-    if (!adminExists) {
-      console.log(`MIGRATION_CREATING_ADMIN email=${adminEmail}`);
+    // Ensure primary admin has verified email
+    const primaryAdminEmail = 'yannik@panke-management.com';
+    const primaryAdmin = allUsers.find(u => u.email === primaryAdminEmail && u.role === 'admin');
+    
+    if (primaryAdmin && !primaryAdmin.email_verified) {
       try {
-        await base44.users.inviteUser(adminEmail, 'admin');
+        await base44.asServiceRole.entities.User.update(primaryAdmin.id, {
+          email_verified: true,
+          email_verified_at: new Date().toISOString()
+        });
         migrated++;
+        console.log(`MIGRATION_ADMIN_VERIFIED email=${primaryAdminEmail}`);
       } catch (err) {
-        errors.push(`Failed to create admin: ${err.message}`);
-        console.error(`MIGRATION_ADMIN_ERROR error=${err.message}`);
+        errors.push(`Failed to verify admin: ${err.message}`);
+        console.error(`MIGRATION_ADMIN_VERIFY_ERROR error=${err.message}`);
       }
     }
 
