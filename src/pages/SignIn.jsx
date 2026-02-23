@@ -15,43 +15,8 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setUnverifiedEmail(false);
-
-    if (!email || !password) {
-      setError('E-Mail und Passwort erforderlich');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Attempt sign in
-      await base44.auth.signIn(email, password);
-      
-      // Get current user to check verification status
-      const user = await base44.auth.me();
-      
-      // Check if email is verified
-      if (!user.email_verified) {
-        setUnverifiedEmail(true);
-        setLoading(false);
-        return;
-      }
-
-      // Redirect based on role and account_type
-      if (user.role === 'admin') {
-        navigate(createPageUrl('AdminDashboard'));
-      } else if (user.role === 'user' && user.account_type === 'organizer') {
-        navigate(createPageUrl('Home'));
-      } else {
-        navigate(createPageUrl('Landing'));
-      }
-    } catch (err) {
-      console.error('LOGIN_ERROR', err);
-      const errorMsg = err.response?.data?.error || err.message || 'Anmeldung fehlgeschlagen';
-      setError(errorMsg);
-      setLoading(false);
-    }
+    // Redirect to built-in login page
+    base44.auth.redirectToLogin(window.location.pathname);
   };
 
   const handleResendVerification = async () => {
