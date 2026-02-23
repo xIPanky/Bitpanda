@@ -67,6 +67,9 @@ import Scanner from './pages/Scanner';
 import Settings from './pages/Settings';
 import Ticket from './pages/Ticket';
 import TicketManagement from './pages/TicketManagement';
+import Verify from './pages/Verify';
+import Verified from './pages/Verified';
+import Account from './pages/Account';
 import __Layout from './Layout.jsx';
 
 
@@ -91,6 +94,9 @@ export const PAGES = {
     "Settings": Settings,
     "Ticket": Ticket,
     "TicketManagement": TicketManagement,
+    "Verify": Verify,
+    "Verified": Verified,
+    "Account": Account,
 }
 
 export const pagesConfig = {
