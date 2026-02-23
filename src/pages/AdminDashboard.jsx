@@ -7,12 +7,10 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 export default function AdminDashboard() {
-  const { data: user } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['me'],
     queryFn: () => base44.auth.me(),
   });
-
-  const userLoading = !user;
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['all-users'],
