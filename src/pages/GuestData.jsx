@@ -295,54 +295,57 @@ export default function GuestData() {
     }
   };
 
+  const thStyle = { color: "#2a2a2a", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", padding: "12px 20px", borderBottom: "1px solid #141414", textAlign: "left" };
+  const tdStyle = { padding: "12px 20px", borderBottom: "1px solid #101010", fontSize: "13px" };
+
+  const statusStyleMap = {
+    pending:  { bg: "#1a1500", text: "#f59e0b", border: "#2a2000" },
+    approved: { bg: "#0d1a00", text: "#beff00", border: "#1a2e00" },
+    rejected: { bg: "#1a0505", text: "#ef4444", border: "#2a0808" },
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-screen p-5 md:p-8 space-y-6" style={{ background: "#070707" }}>
       <div className="max-w-7xl mx-auto space-y-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-6">
-            <div className="flex items-center gap-3 mb-1">
-              <Users className="w-6 h-6 text-slate-400" />
-              <h1 className="text-2xl font-bold text-slate-900">Gästedaten</h1>
-            </div>
-            <p className="text-sm text-slate-500 ml-9">{registrations.length} Registrierungen insgesamt</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Gästedaten</h1>
+            <p className="text-xs mt-1 uppercase tracking-widest" style={{ color: "#444" }}>{registrations.length} Registrierungen insgesamt</p>
           </div>
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#333" }} />
+              <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Suche nach Name, E-Mail, Firma..."
-                className="pl-10 h-10 border-slate-200"
+                placeholder="Suche nach Name, E-Mail..."
+                className="w-full h-9 pl-9 pr-4 rounded-xl text-sm text-white outline-none transition-all"
+                style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", color: "#fff" }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#beff00"; e.currentTarget.style.boxShadow = "0 0 0 2px rgba(190,255,0,0.1)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "#1a1a1a"; e.currentTarget.style.boxShadow = "none"; }}
               />
             </div>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="h-10 w-44 border-slate-200">
-                <SelectValue placeholder="Kategorie" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Kategorien</SelectItem>
-                {["VIP", "Business", "Presse", "Standard", "Speaker", "Sponsor"].map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="h-10 w-44 border-slate-200">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Status</SelectItem>
-                <SelectItem value="approved">Freigegeben</SelectItem>
-                <SelectItem value="pending">Ausstehend</SelectItem>
-                <SelectItem value="rejected">Abgelehnt</SelectItem>
-              </SelectContent>
-            </Select>
+            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
+              className="h-9 px-3 rounded-xl text-sm text-white outline-none w-44"
+              style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+              <option value="all" style={{ background: "#111" }}>Alle Kategorien</option>
+              {["VIP", "Business", "Presse", "Standard", "Speaker", "Sponsor"].map((c) => (
+                <option key={c} value={c} style={{ background: "#111" }}>{c}</option>
+              ))}
+            </select>
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+              className="h-9 px-3 rounded-xl text-sm text-white outline-none w-44"
+              style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+              <option value="all" style={{ background: "#111" }}>Alle Status</option>
+              <option value="approved" style={{ background: "#111" }}>Freigegeben</option>
+              <option value="pending" style={{ background: "#111" }}>Ausstehend</option>
+              <option value="rejected" style={{ background: "#111" }}>Abgelehnt</option>
+            </select>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+          <div className="rounded-2xl overflow-hidden" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
