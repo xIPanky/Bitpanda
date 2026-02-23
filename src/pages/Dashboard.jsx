@@ -155,14 +155,19 @@ export default function Dashboard() {
     setProcessingId(reg.id);
     try {
       const result = await base44.functions.invoke("resendTicketEmail", { guestId: reg.id });
-      if (result.data?.success) {
-        showSuccess("Ticket erfolgreich versendet");
+      const d = result.data;
+      if (d?.success) {
+        showSuccess("Ticket erneut versendet");
+      } else if (d?.error === "NO_TICKET_READY") {
+        toast.error("Kein fertiges Ticket vorhanden. Bitte erneut freigeben.");
       } else {
-        toast.error(result.data?.error || "Fehler beim Senden");
+        toast.error(`E-Mail konnte nicht versendet werden: ${d?.error || "Unbekannter Fehler"}`);
       }
     } catch (err) {
       toast.error("Serverfehler: " + err.message);
     }
+    queryClient.invalidateQueries({ queryKey: ["registrations", eventId] });
+    queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
     setProcessingId(null);
   };
 
