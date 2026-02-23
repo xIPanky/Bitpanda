@@ -20,18 +20,22 @@ export default function OrganizerRegistration() {
     setLoading(true);
 
     try {
-      // Register organizer via auth system
-      await base44.auth.inviteUser(formData.email, 'user');
-      
-      // Update user profile with organizer info and account type
-      await base44.auth.updateMe({
+      const response = await base44.functions.invoke('registerOrganizer', {
+        email: formData.email,
         full_name: formData.full_name,
-        organizer_company: formData.company,
-        account_type: 'organizer',
+        company: formData.company,
       });
 
-      toast.success('Veranstalter-Account erstellt! Du wirst weitergeleitet...');
-      setTimeout(() => navigate(createPageUrl('Home')), 1500);
+      if (response.data?.success) {
+        toast.success('Bestätigungs-E-Mail versendet!');
+        sessionStorage.setItem('signupEmail', formData.email);
+        sessionStorage.setItem('signupType', 'organizer');
+        sessionStorage.setItem('signupFullName', formData.full_name);
+        setTimeout(() => navigate(createPageUrl('Verify')), 1500);
+      } else {
+        toast.error(response.data?.error || 'Registrierung fehlgeschlagen');
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Registration error:', error);
       toast.error(error.message || 'Registrierung fehlgeschlagen');
