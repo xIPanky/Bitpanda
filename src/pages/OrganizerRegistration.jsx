@@ -40,7 +40,7 @@ export default function OrganizerRegistration() {
         sessionStorage.setItem('signupEmail', formData.email);
         sessionStorage.setItem('signupType', 'organizer');
         sessionStorage.setItem('signupFullName', formData.full_name);
-        setTimeout(() => navigate(createPageUrl('Verify')), 1500);
+        setTimeout(() => navigate(createPageUrl('Landing')), 1500);
       } else {
         toast.error(response.data?.error || 'Registrierung fehlgeschlagen');
         setLoading(false);
