@@ -10,9 +10,9 @@ export default function Verified() {
   useEffect(() => {
     const verify = async () => {
       setStatus('success');
-      // Redirect after 2 seconds to signin
+      // Redirect after 2 seconds to built-in login
       setTimeout(() => {
-        window.location.replace(createPageUrl('SignIn'));
+        base44.auth.redirectToLogin();
       }, 2000);
     };
 
