@@ -273,7 +273,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         )}
 
         {/* Plus One */}
-        <div className="pt-4" style={{ borderTop: "1px solid #141414" }}>
+        <div className="pt-3" style={{ borderTop: "1px solid #141414" }}>
           <label className="flex items-center gap-3 cursor-pointer group">
             <div
               onClick={() => setHasPlusOne(!hasPlusOne)}
