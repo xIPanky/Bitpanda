@@ -1,194 +1,241 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { createPageUrl } from "@/utils";
+import { ChevronLeft, Loader2, CheckCircle, Copy, Zap } from "lucide-react";
+import { TicketSelector } from "@/components/ticketing/TicketSelector";
+import { TicketRegistration } from "@/components/ticketing/TicketRegistration";
+import { toast } from "sonner";
 
-/**
- * ModernDropdown (SYNERGY CI)
- * - Looks like Linear/Notion (not native select)
- * - Keyboard: Enter/Space open, ArrowUp/Down navigate, Enter select, Esc close
- * - Click outside closes
- */
-export function ModernDropdown({
-  label,
-  value,
-  onChange,
-  options,
-  placeholder = "Auswählen…",
-  disabled = false,
-  className = "",
-  menuClassName = "",
-}) {
-  const [open, setOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
+export default function EventTicketing() {
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("event_id");
 
-  const btnRef = useRef(null);
-  const menuRef = useRef(null);
+  const [step, setStep] = useState("tickets");
+  const [selectedTicketTier, setSelectedTicketTier] = useState(null);
+  const [registrationData, setRegistrationData] = useState(null);
 
-  const selected = useMemo(
-    () => options.find((o) => o.value === value) || null,
-    [options, value]
+  const { data: event, isLoading: eventLoading } = useQuery({
+    queryKey: ["event", eventId],
+    queryFn: () => base44.entities.Event.filter({ id: eventId }).then(res => res[0]),
+    enabled: !!eventId,
+  });
+
+  const { data: ticketTiers, isLoading: tiersLoading } = useQuery({
+    queryKey: ["ticketTiers", eventId],
+    queryFn: () => base44.entities.TicketTier.filter({ event_id: eventId }),
+    enabled: !!eventId,
+    initialData: [],
+  });
+
+  useEffect(() => {
+    if (event) {
+      base44.analytics.track({ eventName: "ticketing_page_viewed", properties: { event_id: eventId, event_name: event.name, step } });
+    }
+  }, [event, eventId, step]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (step !== "success") {
+        base44.analytics.track({ eventName: "ticketing_abandoned", properties: { event_id: eventId, step } });
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [eventId, step]);
+
+  if (!eventId) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}>
+      <p className="text-sm" style={{ color: "#444" }}>Event nicht gefunden.</p>
+    </div>
   );
 
-  useEffect(() => {
-    const onDoc = (e) => {
-      const btn = btnRef.current;
-      const menu = menuRef.current;
-      if (!btn || !menu) return;
-      if (btn.contains(e.target) || menu.contains(e.target)) return;
-      setOpen(false);
-      setActiveIndex(-1);
-    };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
+  if (eventLoading || tiersLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}>
+      <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#beff00" }} />
+    </div>
+  );
 
-  useEffect(() => {
-    if (!open) return;
-    // set active index to selected option when menu opens
-    const idx = Math.max(
-      0,
-      options.findIndex((o) => o.value === value)
+  if (!event) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}>
+      <p className="text-sm" style={{ color: "#444" }}>Event konnte nicht geladen werden.</p>
+    </div>
+  );
+
+  const visibleTiers = ticketTiers?.filter(t => t.is_visible !== false) || [];
+  const hasTickets = visibleTiers.length > 0;
+
+  const handleTicketSelect = (tier) => {
+    base44.analytics.track({ eventName: "ticket_tier_selected", properties: { event_id: eventId, tier_id: tier.id } });
+    setSelectedTicketTier(tier);
+    setStep("registration");
+  };
+
+  const handleRegistrationComplete = (data) => {
+    base44.analytics.track({ eventName: "registration_completed", properties: { event_id: eventId } });
+    setRegistrationData(data);
+    setStep("success");
+    
+    // Redirect to RegistrationSuccess page after a brief delay
+    setTimeout(() => {
+      navigate(`${createPageUrl("RegistrationSuccess")}?registration_id=${data.id}&event_id=${eventId}`);
+    }, 1500);
+  };
+
+  const handleRegistrationAbandoned = (reason) => {
+    base44.analytics.track({ eventName: "ticketing_abandoned", properties: { event_id: eventId, step: "registration", reason } });
+  };
+
+  const handleBackToTickets = () => {
+    setSelectedTicketTier(null);
+    setStep("tickets");
+  };
+
+  // ── SHARED COMPONENTS ──────────────────────────────────────────────────
+
+  const PageHeader = ({ subtitle }) => (
+    <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "rgba(7,7,7,0.95)", borderBottom: "1px solid #141414", backdropFilter: "blur(12px)" }}>
+      <div className="flex items-center gap-3">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#beff00" }}>
+          <Zap className="w-3.5 h-3.5 text-black" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-white tracking-tight">{event.name}</p>
+          {subtitle && <p className="text-xs" style={{ color: "#444" }}>{subtitle}</p>}
+        </div>
+      </div>
+      <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} className="p-2 rounded-xl transition-all" style={{ color: "#333" }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#111"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = "#333"; e.currentTarget.style.background = "transparent"; }}>
+        <ChevronLeft className="w-5 h-5" />
+      </a>
+    </div>
+  );
+
+  const SuccessScreen = ({ title, subtitle }) => (
+    <div className="text-center py-12 px-6">
+      {/* Steps */}
+      <div className="flex items-center justify-center gap-2 mb-12">
+        {["Registriert", "In Prüfung", "Genehmigt"].map((label, i) => (
+          <React.Fragment key={label}>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: i === 0 ? "#beff00" : "#111", color: i === 0 ? "#070707" : "#333", border: i > 0 ? "1px solid #1a1a1a" : "none" }}>
+                {i === 0 ? "✓" : i + 1}
+              </div>
+              <span className="text-xs font-semibold" style={{ color: i === 0 ? "#beff00" : "#333" }}>{label}</span>
+            </div>
+            {i < 2 && <div className="w-6 h-px" style={{ background: "#1a1a1a" }} />}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6" style={{ background: "#0d1a00", border: "1px solid #1a2e00" }}>
+        <CheckCircle className="w-8 h-8" style={{ color: "#beff00" }} />
+      </div>
+      <h2 className="text-3xl font-bold text-white mb-2">{title}</h2>
+      <p className="text-sm mb-10" style={{ color: "#555" }}>{subtitle}</p>
+
+      <div className="rounded-2xl p-6 mb-8 text-left max-w-sm mx-auto" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+        <div className="space-y-4">
+          {registrationData?.ticket_code && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#444" }}>Ticket-Code</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-lg font-mono font-bold px-4 py-3 rounded-xl" style={{ background: "#111", color: "#beff00", border: "1px solid #1a2e00" }}>
+                  {registrationData.ticket_code}
+                </code>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(registrationData.ticket_code || ""); toast.success("Kopiert!"); }}
+                  className="p-3 rounded-xl transition-all"
+                  style={{ background: "#111", color: "#555", border: "1px solid #1a1a1a" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#beff00"; e.currentTarget.style.borderColor = "#1a2e00"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.borderColor = "#1a1a1a"; }}
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#444" }}>E-Mail</p>
+            <p className="text-sm text-white">{registrationData?.email}</p>
+          </div>
+          {registrationData?.ticket_code && selectedTicketTier && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#444" }}>Ticket-Typ</p>
+              <p className="text-sm text-white">{selectedTicketTier.name}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <p className="text-xs mb-8" style={{ color: "#444" }}>Bestätigung wurde per E-Mail gesendet.</p>
+
+      <a
+        href={createPageUrl(`EventDetails?event_id=${eventId}`)}
+        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all"
+        style={{ background: "#beff00", color: "#070707" }}
+        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 0 24px rgba(190,255,0,0.4)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+      >
+        Zur Veranstaltungsseite
+      </a>
+    </div>
+  );
+
+  // ── NO TICKET TIERS (guest-only flow) ─────────────────────────────────
+  if (!hasTickets) {
+    return (
+      <div className="min-h-screen" style={{ background: "#070707" }}>
+        <PageHeader subtitle={step === "success" ? "Registrierung abgeschlossen" : "Gästeliste"} />
+        <div className="max-w-xl mx-auto px-4 py-10">
+          {step !== "success" ? (
+            <TicketRegistration
+              event={event}
+              tier={null}
+              onComplete={handleRegistrationComplete}
+              onAbandoned={handleRegistrationAbandoned}
+              onBack={() => window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`)}
+            />
+          ) : (
+            <SuccessScreen
+              title="Registrierung eingegangen!"
+              subtitle="Deine Registrierung wird geprüft. Du erhältst dein Ticket per E-Mail."
+            />
+          )}
+        </div>
+      </div>
     );
-    setActiveIndex(idx);
-    // focus menu for keyboard
-    setTimeout(() => menuRef.current?.focus(), 0);
-  }, [open, options, value]);
+  }
 
-  const selectAt = (idx) => {
-    const opt = options[idx];
-    if (!opt) return;
-    onChange?.(opt.value);
-    setOpen(false);
-    setActiveIndex(-1);
-    btnRef.current?.focus();
-  };
-
-  const onButtonKeyDown = (e) => {
-    if (disabled) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setOpen((v) => !v);
-    }
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setOpen(true);
-    }
-  };
-
-  const onMenuKeyDown = (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      setOpen(false);
-      setActiveIndex(-1);
-      btnRef.current?.focus();
-      return;
-    }
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveIndex((i) => Math.min(options.length - 1, i + 1));
-      return;
-    }
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((i) => Math.max(0, i - 1));
-      return;
-    }
-    if (e.key === "Enter") {
-      e.preventDefault();
-      selectAt(activeIndex);
-      return;
-    }
-  };
+  // ── FULL TICKETING FLOW ────────────────────────────────────────────────
+  const stepLabel = step === "tickets" ? "Schritt 1: Ticket auswählen" : step === "registration" ? "Schritt 2: Registrierung" : "Abgeschlossen";
 
   return (
-    <div className={`w-full ${className}`}>
-      {label && (
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: "#444" }}>
-          {label}
-        </p>
-      )}
-
-      <button
-        ref={btnRef}
-        type="button"
-        disabled={disabled}
-        onClick={() => !disabled && setOpen((v) => !v)}
-        onKeyDown={onButtonKeyDown}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all outline-none"
-        style={{
-          background: "#0d0d0d",
-          border: "1px solid #1a1a1a",
-          color: "#fff",
-          opacity: disabled ? 0.6 : 1,
-          boxShadow: open ? "0 0 0 2px rgba(190,255,0,0.15)" : "none",
-        }}
-        onMouseEnter={(e) => {
-          if (disabled) return;
-          e.currentTarget.style.borderColor = "#1f1f1f";
-        }}
-        onMouseLeave={(e) => {
-          if (disabled) return;
-          e.currentTarget.style.borderColor = "#1a1a1a";
-        }}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-      >
-        <span className="text-sm font-semibold truncate" style={{ color: selected ? "#fff" : "#666" }}>
-          {selected ? selected.label : placeholder}
-        </span>
-
-        <ChevronDown
-          className="w-4 h-4 transition-transform"
-          style={{ color: "#666", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
-        />
-      </button>
-
-      {open && (
-        <div
-          ref={menuRef}
-          tabIndex={-1}
-          onKeyDown={onMenuKeyDown}
-          className={`mt-2 rounded-2xl overflow-hidden outline-none ${menuClassName}`}
-          style={{
-            background: "rgba(13,13,13,0.98)",
-            border: "1px solid #1a1a1a",
-            boxShadow: "0 16px 40px rgba(0,0,0,0.55)",
-            backdropFilter: "blur(10px)",
-            animation: "synergyFadeIn 140ms ease-out",
-          }}
-          role="listbox"
-        >
-          {options.map((opt, idx) => {
-            const isSelected = opt.value === value;
-            const isActive = idx === activeIndex;
-
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onMouseEnter={() => setActiveIndex(idx)}
-                onClick={() => selectAt(idx)}
-                className="w-full px-4 py-3 flex items-center justify-between text-left transition-all"
-                style={{
-                  background: isActive ? "#111" : "transparent",
-                  color: "#fff",
-                  borderLeft: isActive ? "2px solid #beff00" : "2px solid transparent",
-                }}
-              >
-                <span className="text-sm font-semibold truncate">{opt.label}</span>
-                {isSelected ? <Check className="w-4 h-4" style={{ color: "#beff00" }} /> : <span />}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* small keyframes (inline, so you don't need to touch global css) */}
-      <style>{`
-        @keyframes synergyFadeIn {
-          from { opacity: 0; transform: translateY(-4px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+    <div className="min-h-screen" style={{ background: "#070707" }}>
+      <PageHeader subtitle={stepLabel} />
+      <div className="max-w-xl mx-auto px-4 py-10">
+        {step === "tickets" && (
+          <TicketSelector event={event} tiers={visibleTiers} onSelectTier={handleTicketSelect} />
+        )}
+        {step === "registration" && selectedTicketTier && (
+          <TicketRegistration
+            event={event}
+            tier={selectedTicketTier}
+            onComplete={handleRegistrationComplete}
+            onAbandoned={handleRegistrationAbandoned}
+            onBack={handleBackToTickets}
+          />
+        )}
+        {step === "success" && registrationData && (
+          <SuccessScreen
+            title={registrationData.ticket_code ? "Ticket gesichert!" : "Registrierung abgeschlossen!"}
+            subtitle={registrationData.ticket_code ? "Dein Ticket wurde erfolgreich erstellt." : "Deine Registrierung wurde gespeichert."}
+          />
+        )}
+      </div>
     </div>
   );
 }
