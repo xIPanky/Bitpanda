@@ -108,6 +108,24 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
+    // Fetch PDF as attachment
+    console.log(`PDF_FETCH_START url=${pdfUrl}`);
+    let pdfBuffer = null;
+    try {
+      const response = await fetch(pdfUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const arrayBuffer = await response.arrayBuffer();
+      pdfBuffer = Buffer.from(arrayBuffer);
+      console.log(`PDF_FETCH_SUCCESS size=${pdfBuffer.length} bytes`);
+      
+      if (pdfBuffer.length === 0) {
+        throw new Error('PDF_EMPTY');
+      }
+    } catch (fetchErr) {
+      console.error(`PDF_FETCH_ERROR: ${fetchErr.message}`);
+      return Response.json({ error: `PDF_FETCH_FAILED: ${fetchErr.message}` }, { status: 500 });
+    }
+
     // Send with 2 retries
     let lastErr = null;
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -119,9 +137,15 @@ Deno.serve(async (req) => {
           to: guest.email,
           subject: `Dein Ticket (erneut gesendet) – ${eventName}`,
           html: emailBody,
+          attachments: [
+            {
+              filename: `ticket-${ticket.ticket_code}.pdf`,
+              content: pdfBuffer,
+            },
+          ],
         });
         if (resendError) throw new Error(resendError.message || JSON.stringify(resendError));
-        console.log(`EMAIL_SEND_DONE recipient=${guest.email}`);
+        console.log(`EMAIL_SENT_SUCCESS recipient=${guest.email} with_attachment=true`);
         lastErr = null;
         break;
       } catch (err) {
