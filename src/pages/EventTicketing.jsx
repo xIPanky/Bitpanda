@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
 import { createPageUrl } from "@/utils";
-import { ChevronLeft, Loader2, CheckCircle, Copy } from "lucide-react";
+import { ChevronLeft, Loader2, CheckCircle, Copy, Zap } from "lucide-react";
 import { TicketSelector } from "@/components/ticketing/TicketSelector";
 import { TicketRegistration } from "@/components/ticketing/TicketRegistration";
 import { toast } from "sonner";
@@ -12,7 +11,7 @@ export default function EventTicketing() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
 
-  const [step, setStep] = useState("tickets"); // "tickets", "registration", or "success"
+  const [step, setStep] = useState("tickets");
   const [selectedTicketTier, setSelectedTicketTier] = useState(null);
   const [registrationData, setRegistrationData] = useState(null);
 
@@ -29,103 +28,162 @@ export default function EventTicketing() {
     initialData: [],
   });
 
-  // Track page visits
   useEffect(() => {
     if (event) {
-      base44.analytics.track({
-        eventName: "ticketing_page_viewed",
-        properties: { event_id: eventId, event_name: event.name, step }
-      });
+      base44.analytics.track({ eventName: "ticketing_page_viewed", properties: { event_id: eventId, event_name: event.name, step } });
     }
   }, [event, eventId, step]);
 
-  // Track if user leaves without completing
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (step === "tickets" && !selectedTicketTier) {
-        base44.analytics.track({
-          eventName: "ticketing_abandoned",
-          properties: { event_id: eventId, step: "ticket_selection", reason: "page_unload" }
-        });
-      } else if (step === "registration" && !registrationData) {
-        base44.analytics.track({
-          eventName: "ticketing_abandoned",
-          properties: { event_id: eventId, step: "registration", reason: "page_unload" }
-        });
+    const handleBeforeUnload = () => {
+      if (step !== "success") {
+        base44.analytics.track({ eventName: "ticketing_abandoned", properties: { event_id: eventId, step } });
       }
     };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [eventId, step, selectedTicketTier, registrationData]);
+  }, [eventId, step]);
 
-  if (!eventId) {
-    return <div className="p-6 text-center text-slate-500">Event nicht gefunden.</div>;
-  }
+  if (!eventId) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}>
+      <p className="text-sm" style={{ color: "#444" }}>Event nicht gefunden.</p>
+    </div>
+  );
 
-  if (eventLoading || tiersLoading) {
-    return <div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;
-  }
+  if (eventLoading || tiersLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}>
+      <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#beff00" }} />
+    </div>
+  );
 
-  if (!event) {
-    return <div className="p-6 text-center text-slate-500">Event konnte nicht geladen werden.</div>;
-  }
+  if (!event) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}>
+      <p className="text-sm" style={{ color: "#444" }}>Event konnte nicht geladen werden.</p>
+    </div>
+  );
 
-  // Check if event has visible tickets
-  const hasTickets = ticketTiers && ticketTiers.filter(t => t.is_visible !== false).length > 0;
   const visibleTiers = ticketTiers?.filter(t => t.is_visible !== false) || [];
+  const hasTickets = visibleTiers.length > 0;
 
   const handleTicketSelect = (tier) => {
-    base44.analytics.track({
-      eventName: "ticket_tier_selected",
-      properties: { event_id: eventId, tier_id: tier.id, tier_name: tier.name }
-    });
+    base44.analytics.track({ eventName: "ticket_tier_selected", properties: { event_id: eventId, tier_id: tier.id } });
     setSelectedTicketTier(tier);
     setStep("registration");
   };
 
   const handleRegistrationComplete = (data) => {
-    base44.analytics.track({
-      eventName: "registration_completed",
-      properties: { event_id: eventId, tier_id: selectedTicketTier?.id }
-    });
+    base44.analytics.track({ eventName: "registration_completed", properties: { event_id: eventId } });
     setRegistrationData(data);
     setStep("success");
   };
 
   const handleRegistrationAbandoned = (reason) => {
-    base44.analytics.track({
-      eventName: "ticketing_abandoned",
-      properties: { event_id: eventId, step: "registration", reason }
-    });
+    base44.analytics.track({ eventName: "ticketing_abandoned", properties: { event_id: eventId, step: "registration", reason } });
   };
 
   const handleBackToTickets = () => {
-    base44.analytics.track({
-      eventName: "registration_back_clicked",
-      properties: { event_id: eventId, tier_id: selectedTicketTier.id }
-    });
     setSelectedTicketTier(null);
     setStep("tickets");
   };
 
-  // If no tickets, show only guest registration
+  // ── SHARED COMPONENTS ──────────────────────────────────────────────────
+
+  const PageHeader = ({ subtitle }) => (
+    <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "rgba(7,7,7,0.95)", borderBottom: "1px solid #141414", backdropFilter: "blur(12px)" }}>
+      <div className="flex items-center gap-3">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#beff00" }}>
+          <Zap className="w-3.5 h-3.5 text-black" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-white tracking-tight">{event.name}</p>
+          {subtitle && <p className="text-xs" style={{ color: "#444" }}>{subtitle}</p>}
+        </div>
+      </div>
+      <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} className="p-2 rounded-xl transition-all" style={{ color: "#333" }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#111"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = "#333"; e.currentTarget.style.background = "transparent"; }}>
+        <ChevronLeft className="w-5 h-5" />
+      </a>
+    </div>
+  );
+
+  const SuccessScreen = ({ title, subtitle }) => (
+    <div className="text-center py-12 px-6">
+      {/* Steps */}
+      <div className="flex items-center justify-center gap-2 mb-12">
+        {["Registriert", "In Prüfung", "Genehmigt"].map((label, i) => (
+          <React.Fragment key={label}>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: i === 0 ? "#beff00" : "#111", color: i === 0 ? "#070707" : "#333", border: i > 0 ? "1px solid #1a1a1a" : "none" }}>
+                {i === 0 ? "✓" : i + 1}
+              </div>
+              <span className="text-xs font-semibold" style={{ color: i === 0 ? "#beff00" : "#333" }}>{label}</span>
+            </div>
+            {i < 2 && <div className="w-6 h-px" style={{ background: "#1a1a1a" }} />}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6" style={{ background: "#0d1a00", border: "1px solid #1a2e00" }}>
+        <CheckCircle className="w-8 h-8" style={{ color: "#beff00" }} />
+      </div>
+      <h2 className="text-3xl font-bold text-white mb-2">{title}</h2>
+      <p className="text-sm mb-10" style={{ color: "#555" }}>{subtitle}</p>
+
+      <div className="rounded-2xl p-6 mb-8 text-left max-w-sm mx-auto" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
+        <div className="space-y-4">
+          {registrationData?.ticket_code && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#444" }}>Ticket-Code</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-lg font-mono font-bold px-4 py-3 rounded-xl" style={{ background: "#111", color: "#beff00", border: "1px solid #1a2e00" }}>
+                  {registrationData.ticket_code}
+                </code>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(registrationData.ticket_code || ""); toast.success("Kopiert!"); }}
+                  className="p-3 rounded-xl transition-all"
+                  style={{ background: "#111", color: "#555", border: "1px solid #1a1a1a" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#beff00"; e.currentTarget.style.borderColor = "#1a2e00"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.borderColor = "#1a1a1a"; }}
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#444" }}>E-Mail</p>
+            <p className="text-sm text-white">{registrationData?.email}</p>
+          </div>
+          {registrationData?.ticket_code && selectedTicketTier && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#444" }}>Ticket-Typ</p>
+              <p className="text-sm text-white">{selectedTicketTier.name}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <p className="text-xs mb-8" style={{ color: "#444" }}>Bestätigung wurde per E-Mail gesendet.</p>
+
+      <a
+        href={createPageUrl(`EventDetails?event_id=${eventId}`)}
+        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all"
+        style={{ background: "#beff00", color: "#070707" }}
+        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 0 24px rgba(190,255,0,0.4)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+      >
+        Zur Veranstaltungsseite
+      </a>
+    </div>
+  );
+
+  // ── NO TICKET TIERS (guest-only flow) ─────────────────────────────────
   if (!hasTickets) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="bg-white border-b border-slate-200">
-          <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">{event.name}</h1>
-              <p className="text-sm text-slate-500 mt-1">{step === "success" ? "Registrierung abgeschlossen" : "Registrierung"}</p>
-            </div>
-            <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} className="text-slate-500 hover:text-slate-700">
-              <ChevronLeft className="w-6 h-6" />
-            </a>
-          </div>
-        </div>
-
-        <div className="max-w-2xl mx-auto px-6 py-12">
+      <div className="min-h-screen" style={{ background: "#070707" }}>
+        <PageHeader subtitle={step === "success" ? "Registrierung abgeschlossen" : "Gästeliste"} />
+        <div className="max-w-xl mx-auto px-4 py-10">
           {step !== "success" ? (
             <TicketRegistration
               event={event}
@@ -135,127 +193,42 @@ export default function EventTicketing() {
               onBack={() => window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`)}
             />
           ) : (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
-                <CheckCircle className="w-8 h-8 text-emerald-600" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-2">Registrierung eingegangen!</h2>
-              <p className="text-slate-600 mb-6">Deine Registrierung wird aktuell geprüft. Du erhältst dein Ticket zeitnah per E-Mail.</p>
-              <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 text-left">
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-slate-500">Name</p>
-                    <p className="font-medium text-slate-900 mt-1">{registrationData?.first_name} {registrationData?.last_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">E-Mail</p>
-                    <p className="font-medium text-slate-900 mt-1">{registrationData?.email}</p>
-                  </div>
-                </div>
-              </div>
-              <Button
-                className="bg-slate-900 hover:bg-slate-800"
-                onClick={() => {
-                  window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`);
-                }}
-              >
-                Zur Veranstaltungsseite
-              </Button>
-            </div>
+            <SuccessScreen
+              title="Registrierung eingegangen!"
+              subtitle="Deine Registrierung wird geprüft. Du erhältst dein Ticket per E-Mail."
+            />
           )}
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">{event.name}</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              {step === "tickets" ? "Schritt 1: Ticket auswählen" : "Schritt 2: Registrierung"}
-            </p>
-          </div>
-          <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} className="text-slate-500 hover:text-slate-700">
-            <ChevronLeft className="w-6 h-6" />
-          </a>
-        </div>
-      </div>
+  // ── FULL TICKETING FLOW ────────────────────────────────────────────────
+  const stepLabel = step === "tickets" ? "Schritt 1: Ticket auswählen" : step === "registration" ? "Schritt 2: Registrierung" : "Abgeschlossen";
 
-      {/* Content */}
-      <div className="max-w-2xl mx-auto px-6 py-12">
+  return (
+    <div className="min-h-screen" style={{ background: "#070707" }}>
+      <PageHeader subtitle={stepLabel} />
+      <div className="max-w-xl mx-auto px-4 py-10">
         {step === "tickets" && (
-          <TicketSelector
+          <TicketSelector event={event} tiers={visibleTiers} onSelectTier={handleTicketSelect} />
+        )}
+        {step === "registration" && selectedTicketTier && (
+          <TicketRegistration
             event={event}
-            tiers={visibleTiers}
-            onSelectTier={handleTicketSelect}
+            tier={selectedTicketTier}
+            onComplete={handleRegistrationComplete}
+            onAbandoned={handleRegistrationAbandoned}
+            onBack={handleBackToTickets}
           />
         )}
-
-        {step === "registration" && selectedTicketTier && (
-            <TicketRegistration
-              event={event}
-              tier={selectedTicketTier}
-              onComplete={handleRegistrationComplete}
-              onAbandoned={handleRegistrationAbandoned}
-              onBack={handleBackToTickets}
-            />
-          )}
-
-         {step === "success" && registrationData && (
-           <div className="text-center py-12">
-             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
-               <CheckCircle className="w-8 h-8 text-emerald-600" />
-             </div>
-             <h2 className="text-3xl font-bold text-slate-900 mb-2">{registrationData.ticket_code ? "Ticket gesichert!" : "Registrierung abgeschlossen!"}</h2>
-             <p className="text-slate-600 mb-6">{registrationData.ticket_code ? "Dein Ticket wurde erfolgreich erstellt." : "Deine Registrierung wurde erfolgreich gespeichert."}</p>
-             <div className="bg-white border border-slate-200 rounded-lg p-6 mb-6 text-left">
-               <div className="space-y-3">
-                 {registrationData.ticket_code && (
-                   <div>
-                     <p className="text-sm text-slate-500">Ticketcode</p>
-                     <div className="flex items-center gap-2 mt-1">
-                       <code className="flex-1 text-lg font-mono font-bold text-slate-900 bg-slate-50 p-3 rounded">{registrationData.ticket_code}</code>
-                       <Button
-                         size="icon"
-                         variant="outline"
-                         onClick={() => {
-                           navigator.clipboard.writeText(registrationData.ticket_code || "");
-                           toast.success("Ticketcode kopiert!");
-                         }}
-                       >
-                         <Copy className="w-4 h-4" />
-                       </Button>
-                     </div>
-                   </div>
-                 )}
-                 <div>
-                   <p className="text-sm text-slate-500">E-Mail</p>
-                   <p className="font-medium text-slate-900 mt-1">{registrationData.email}</p>
-                 </div>
-                 {registrationData.ticket_code && selectedTicketTier && (
-                   <div>
-                     <p className="text-sm text-slate-500">Ticket-Typ</p>
-                     <p className="font-medium text-slate-900 mt-1">{selectedTicketTier.name}</p>
-                   </div>
-                 )}
-               </div>
-             </div>
-             <p className="text-sm text-slate-600 mb-6">Ein Bestätigungsmail wurde an deine E-Mail-Adresse gesendet.</p>
-             <Button
-               className="bg-slate-900 hover:bg-slate-800"
-               onClick={() => {
-                 window.location.href = createPageUrl(`EventDetails?event_id=${eventId}`);
-               }}
-             >
-               Zur Veranstaltungsseite
-             </Button>
-           </div>
-           )}
-           </div>
-           </div>
-           );
-           }
+        {step === "success" && registrationData && (
+          <SuccessScreen
+            title={registrationData.ticket_code ? "Ticket gesichert!" : "Registrierung abgeschlossen!"}
+            subtitle={registrationData.ticket_code ? "Dein Ticket wurde erfolgreich erstellt." : "Deine Registrierung wurde gespeichert."}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
