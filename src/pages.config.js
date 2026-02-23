@@ -51,7 +51,6 @@ import Dashboard from './pages/Dashboard';
 import EmailSequences from './pages/EmailSequences';
 import EventDetails from './pages/EventDetails';
 import EventInfo from './pages/EventInfo';
-import EventTicketing from './pages/EventTicketing';
 import GuestData from './pages/GuestData';
 import GuestList from './pages/GuestList';
 import Home from './pages/Home';
@@ -72,7 +71,6 @@ export const PAGES = {
     "EmailSequences": EmailSequences,
     "EventDetails": EventDetails,
     "EventInfo": EventInfo,
-    "EventTicketing": EventTicketing,
     "GuestData": GuestData,
     "GuestList": GuestList,
     "Home": Home,
