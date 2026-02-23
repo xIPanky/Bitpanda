@@ -122,21 +122,9 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         status: "pending",
       });
 
-      const ticketCode = `${form.first_name[0]?.toUpperCase()}${form.last_name[0]?.toUpperCase()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-      await base44.entities.Ticket.create({
-        event_id: event.id,
-        registration_id: registration.id,
-        ticket_tier_id: tier?.id || "",
-        ticket_code: ticketCode,
-        guest_name: `${form.first_name} ${form.last_name}`,
-        guest_email: form.email,
-        category: tier?.color || "Standard",
-        status: "valid",
-        email_sent: false,
-      });
-
+      // Plus-one: create registration only (no ticket — ticket generated on approval)
       if (hasPlusOne) {
-        const plusOneReg = await base44.entities.Registration.create({
+        await base44.entities.Registration.create({
           event_id: event.id,
           ticket_tier_id: tier?.id || "",
           first_name: plusOne.first_name,
@@ -146,18 +134,6 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
           invited_by: form.invited_by || "",
           category: tier?.color || "Standard",
           status: "pending",
-        });
-        const plusOneCode = `${plusOne.first_name[0]?.toUpperCase()}${plusOne.last_name[0]?.toUpperCase()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-        await base44.entities.Ticket.create({
-          event_id: event.id,
-          registration_id: plusOneReg.id,
-          ticket_tier_id: tier?.id || "",
-          ticket_code: plusOneCode,
-          guest_name: `${plusOne.first_name} ${plusOne.last_name}`,
-          guest_email: plusOne.email,
-          category: tier?.color || "Standard",
-          status: "valid",
-          email_sent: false,
         });
       }
 
