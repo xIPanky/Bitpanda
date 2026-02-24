@@ -430,7 +430,7 @@ export default function GuestData() {
                               {statusLabels[reg.status] || reg.status}
                             </span>
                           </td>
-                          <td style={tdStyle}><span style={{ color: "#555" }}>{reg.invited_by || "—"}</span></td>
+                          <td style={tdStyle}><span style={{ color: "#555" }}>{getInvitedBy(reg) || "—"}</span></td>
                           <td style={{ ...tdStyle, maxWidth: "200px" }}><span className="truncate block" style={{ color: "#555" }}>{reg.notes || "—"}</span></td>
                           <td style={{ ...tdStyle, textAlign: "right" }}>
                             <button
