@@ -220,6 +220,7 @@ export default function Dashboard() {
       <RegistrationTable
         registrations={filteredRegistrations}
         tickets={tickets}
+        event={event}
         onApprove={handleApprove}
         onReject={handleReject}
         onResend={handleResendTicket}
