@@ -166,7 +166,7 @@ export default function RegistrationTable({
             </thead>
             <tbody>
               <AnimatePresence>
-                {registrations.length === 0 ? (
+                {sortedRegistrations.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center py-16">
                       <User2 className="w-8 h-8 mx-auto mb-3" style={{ color: "#2a2a2a" }} />
@@ -174,7 +174,7 @@ export default function RegistrationTable({
                     </td>
                   </tr>
                 ) : (
-                  registrations.map((reg) => {
+                  sortedRegistrations.map((reg) => {
                     const status = statusConfig[reg.status] || statusConfig.pending;
                     const StatusIcon = status.icon;
                     const isProcessing = processingId === reg.id;
