@@ -1,11 +1,9 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle, Clock, Mail, User2, Loader2, Pencil, RefreshCw, Download } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, User2, Loader2, Pencil, RefreshCw, Download, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import EditRegistrationDialog from "./EditRegistrationDialog";
 import { format } from "date-fns";
 
@@ -24,12 +22,33 @@ const categoryColors = {
   Sponsor:  { bg: "#1a0a12", text: "#f472b6", border: "#2e0f1e" },
 };
 
+const COLUMNS = [
+  { key: "name",      label: "Gast" },
+  { key: "contact",   label: "Kontakt",     sortable: false },
+  { key: "company",   label: "Unternehmen" },
+  { key: "source",    label: "Quelle" },
+  { key: "status",    label: "Status" },
+  { key: "ticket",    label: "Ticket",      sortable: false },
+  { key: "date",      label: "Datum" },
+  { key: "actions",   label: "Aktionen",    sortable: false },
+];
+
+function SortIcon({ col, sortKey, sortDir }) {
+  if (col.sortable === false) return null;
+  if (sortKey !== col.key) return <ChevronsUpDown className="w-3 h-3 ml-1 opacity-30" />;
+  return sortDir === "asc"
+    ? <ChevronUp className="w-3 h-3 ml-1" style={{ color: "#beff00" }} />
+    : <ChevronDown className="w-3 h-3 ml-1" style={{ color: "#beff00" }} />;
+}
+
 export default function RegistrationTable({
   registrations, tickets = [], onApprove, onReject, onResend, onCategoryChange, onEdit,
   processingId, filterStatus, filterCategory, onFilterStatusChange, onFilterCategoryChange,
   event,
 }) {
-  const [editTarget] = React.useState(null);
+  const [sortKey, setSortKey] = React.useState("date");
+  const [sortDir, setSortDir] = React.useState("desc");
+  const [editDialogTarget, setEditDialogTarget] = React.useState(null);
 
   // Parse custom questions to find the invitation source dropdown
   const parsedCustomQuestions = React.useMemo(() => {
@@ -50,7 +69,31 @@ export default function RegistrationTable({
     return "";
   };
 
-  const [editDialogTarget, setEditDialogTarget] = React.useState(null);
+  const handleSort = (col) => {
+    if (col.sortable === false) return;
+    if (sortKey === col.key) {
+      setSortDir((d) => d === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(col.key);
+      setSortDir("asc");
+    }
+  };
+
+  const sortedRegistrations = React.useMemo(() => {
+    const arr = [...registrations];
+    arr.sort((a, b) => {
+      let va, vb;
+      if (sortKey === "name")    { va = `${a.first_name} ${a.last_name}`.toLowerCase(); vb = `${b.first_name} ${b.last_name}`.toLowerCase(); }
+      else if (sortKey === "company") { va = (a.company || "").toLowerCase(); vb = (b.company || "").toLowerCase(); }
+      else if (sortKey === "source")  { va = getInvitedBy(a).toLowerCase(); vb = getInvitedBy(b).toLowerCase(); }
+      else if (sortKey === "status")  { va = a.status || ""; vb = b.status || ""; }
+      else { va = a.created_date || ""; vb = b.created_date || ""; }
+      if (va < vb) return sortDir === "asc" ? -1 : 1;
+      if (va > vb) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [registrations, sortKey, sortDir, invitationQuestionIdx]);
 
   const handleSave = async (form) => {
     await onEdit(form);
@@ -102,8 +145,22 @@ export default function RegistrationTable({
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid #1a1a1a" }}>
-                {["Gast", "Kontakt", "Unternehmen", "Quelle", "Status", "Ticket", "Datum", "Aktionen"].map((h) => (
-                  <th key={h} className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-widest" style={{ color: "#3a3a3a" }}>{h}</th>
+                {COLUMNS.map((col) => (
+                  <th
+                    key={col.key}
+                    className="px-6 py-3 text-left text-[10px] font-bold uppercase tracking-widest select-none"
+                    style={{
+                      color: sortKey === col.key ? "#beff00" : "#3a3a3a",
+                      cursor: col.sortable === false ? "default" : "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                    onClick={() => handleSort(col)}
+                  >
+                    <span className="inline-flex items-center">
+                      {col.label}
+                      <SortIcon col={col} sortKey={sortKey} sortDir={sortDir} />
+                    </span>
+                  </th>
                 ))}
               </tr>
             </thead>
