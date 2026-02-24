@@ -54,16 +54,16 @@ export default function RegistrationTable({
 
   const handleSave = async (form) => {
     await onEdit(form);
-    setEditTarget(null);
+    setEditDialogTarget(null);
   };
 
   return (
     <div className="relative">
-      {editTarget && (
+      {editDialogTarget && (
         <EditRegistrationDialog
-          registration={editTarget}
+          registration={editDialogTarget}
           onSave={handleSave}
-          onClose={() => setEditTarget(null)}
+          onClose={() => setEditDialogTarget(null)}
         />
       )}
 
