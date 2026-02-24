@@ -290,21 +290,52 @@ async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode
 
 // ── ICS Calendar File Generation ─────────────────────────────────────────
 
+// ── ICS Calendar File Generation (FIXED & STABLE) ─────────────────────────
+
 function generateICSFile(eventData) {
   const eventName = eventData?.name || 'Event';
-  const eventDate = eventData?.date || '';
+  const eventDateRaw = eventData?.date;
   const eventTime = eventData?.time || '09:00';
   const eventLocation = eventData?.location || '';
 
-  if (!eventDate) return null;
+  if (!eventDateRaw) return null;
 
-  const startDate = new Date(eventDate + `T${eventTime}`);
+  // ── SAFE DATE PARSING ───────────────────────────────────────────
+  const baseDate = new Date(eventDateRaw);
+  if (isNaN(baseDate.getTime())) {
+    console.error('ICS_ERROR: Invalid event date', eventDateRaw);
+    return null;
+  }
+
+  // Parse time safely
+  const [hours, minutes] = eventTime.split(':').map(n => Number(n));
+
+  baseDate.setHours(hours || 0);
+  baseDate.setMinutes(minutes || 0);
+  baseDate.setSeconds(0);
+  baseDate.setMilliseconds(0);
+
+  const startDate = new Date(baseDate);
+
+  // Default duration = 2 hours
   const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
+  // ── FORMAT WITHOUT UTC SHIFT (NO "Z") ───────────────────────────
   const pad = (n) => String(n).padStart(2, '0');
+
   const formatDateTime = (date) => {
-    return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}Z`;
+    return (
+      date.getFullYear() +
+      pad(date.getMonth() + 1) +
+      pad(date.getDate()) +
+      'T' +
+      pad(date.getHours()) +
+      pad(date.getMinutes()) +
+      pad(date.getSeconds())
+    );
   };
+
+  const uid = `${eventName.replace(/\s+/g, '-')}-${Date.now()}@synergy.event`;
 
   const ics = `BEGIN:VCALENDAR
 VERSION:2.0
@@ -312,7 +343,7 @@ PRODID:-//SYNERGY//Event Calendar//DE
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:${eventName.replace(/\s+/g, '-')}-${Date.now()}@synergy.event
+UID:${uid}
 DTSTAMP:${formatDateTime(new Date())}
 DTSTART:${formatDateTime(startDate)}
 DTEND:${formatDateTime(endDate)}
