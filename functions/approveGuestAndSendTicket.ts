@@ -393,41 +393,6 @@ function buildApprovalEmail(guest, eventData) {
           </p>
         </td></tr>
         
-        <!-- Event Details Card -->
-        ${eventDate || eventLocation ? `
-        <tr><td style="padding:28px 40px 0;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;border:1px solid #1e1e1e;border-radius:14px;">
-            <tr><td style="padding:24px;">
-              <p style="margin:0 0 16px;color:#666;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:3px;">Event-Details</p>
-              ${eventDate ? `<p style="margin:0 0 8px;color:#fff;font-size:15px;font-weight:600;">📅 ${eventDate}${eventTime ? ` · ${eventTime} Uhr` : ''}</p>` : ''}
-              ${eventLocation ? `<p style="margin:0;color:#fff;font-size:15px;font-weight:600;">📍 ${eventLocation}</p>` : ''}
-            </td></tr>
-          </table>
-        </td></tr>` : ''}
-        
-        <!-- Action Buttons -->
-        <tr><td style="padding:32px 40px 0;">
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="width:33.33%;padding:0 6px 12px 0;">
-                <a href="#" style="display:block;background:#1a1a1a;border:1px solid #2a2a2a;color:#beff00;text-decoration:none;padding:16px 12px;border-radius:10px;text-align:center;font-weight:700;font-size:12px;line-height:1.4;text-transform:uppercase;letter-spacing:1px;">
-                  📅<br>Kalender
-                </a>
-              </td>
-              <td style="width:33.33%;padding:0 6px 12px 6px;">
-                <a href="#" style="display:block;background:#1a1a1a;border:1px solid #2a2a2a;color:#beff00;text-decoration:none;padding:16px 12px;border-radius:10px;text-align:center;font-weight:700;font-size:12px;line-height:1.4;text-transform:uppercase;letter-spacing:1px;">
-                  📱<br>Wallet
-                </a>
-              </td>
-              <td style="width:33.33%;padding:0 0 12px 6px;">
-                <a href="#" style="display:block;background:#beff00;border:1px solid #beff00;color:#070707;text-decoration:none;padding:16px 12px;border-radius:10px;text-align:center;font-weight:800;font-size:12px;line-height:1.4;text-transform:uppercase;letter-spacing:1px;">
-                  🎟️<br>Ticket
-                </a>
-              </td>
-            </tr>
-          </table>
-        </td></tr>
-        
         <!-- Footer Message -->
         <tr><td style="padding:28px 40px;text-align:center;border-top:1px solid #141414;margin-top:8px;">
           <p style="margin:0;color:#666;font-size:12px;line-height:1.6;">
