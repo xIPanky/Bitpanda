@@ -118,7 +118,7 @@ END:VCALENDAR`;
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td align="left">
-                <a href="webcal://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event_name)}&dates=${new Date(event_date).toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${new Date(new Date(event_date).getTime() + 3600000).toISOString().replace(/[-:]/g, '').split('.')[0]}Z&location=${encodeURIComponent(event_location || '')}&details=${encodeURIComponent('Registrierungs-Status: In Prüfung')}" class="btn btn-secondary" style="display:inline-block;">📅 Google Calendar</a>
+                <a href="${(() => { const sd = event_date ? new Date(event_date) : new Date(); const [h='22',m='00'] = (event_time||'22:00').split(':'); sd.setHours(parseInt(h),parseInt(m),0); const ed = new Date(sd.getTime()+5*3600000); return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event_name)}&dates=${sd.toISOString().replace(/[-:]/g,'').split('.')[0]}Z/${ed.toISOString().replace(/[-:]/g,'').split('.')[0]}Z&location=${encodeURIComponent(event_location||'')}&details=${encodeURIComponent('Registrierungs-Status: In Prüfung')}`; })()}" class="btn btn-secondary" style="display:inline-block;">📅 Google Calendar</a>
               </td>
             </tr>
             <tr>
