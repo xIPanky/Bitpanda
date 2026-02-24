@@ -38,12 +38,6 @@ function generateICSFile(event_id, event_name, event_date, event_time, event_loc
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { email, first_name, event_id, event_name, event_date, event_time, event_location } = await req.json();
 
     if (!email || !first_name || !event_name) {
