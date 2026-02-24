@@ -399,7 +399,8 @@ function buildApprovalEmail(guest, eventData) {
         <!-- Footer Message -->
         <tr><td style="padding:28px 40px;text-align:center;border-top:1px solid #141414;margin-top:8px;">
           <p style="margin:0;color:#666;font-size:12px;line-height:1.6;">
-            Fragen? Antworte einfach auf diese E-Mail.<br>
+            Fragen?
+            Schreib uns gerne eine Nachricht an yannik@panke-management.com .<br>
             <span style="color:#444;font-size:11px;">powered by Synergy</span>
           </p>
         </td></tr>
