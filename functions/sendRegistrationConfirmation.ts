@@ -26,11 +26,11 @@ Deno.serve(async (req) => {
     // Generate calendar file (ICS format)
     const generateICSFile = () => {
       const startDate = event_date ? new Date(event_date) : new Date();
-      const [hours = '10', minutes = '00'] = (event_time || '10:00').split(':');
+      const [hours = '22', minutes = '00'] = (event_time || '22:00').split(':');
       startDate.setHours(parseInt(hours), parseInt(minutes), 0);
       
       const dtStart = startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-      const dtEnd = new Date(startDate.getTime() + 3600000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const dtEnd = new Date(startDate.getTime() + 5 * 3600000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
       
       return `BEGIN:VCALENDAR
 VERSION:2.0
