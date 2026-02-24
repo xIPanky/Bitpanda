@@ -110,17 +110,18 @@ Deno.serve(async (req) => {
 
     // Fetch PDF as attachment
     console.log(`PDF_FETCH_START url=${pdfUrl}`);
-    let pdfBuffer = null;
+    let pdfBase64 = null;
     try {
       const response = await fetch(pdfUrl);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
-      pdfBuffer = Buffer.from(arrayBuffer);
-      console.log(`PDF_FETCH_SUCCESS size=${pdfBuffer.length} bytes`);
-      
-      if (pdfBuffer.length === 0) {
-        throw new Error('PDF_EMPTY');
-      }
+      const uint8 = new Uint8Array(arrayBuffer);
+      if (uint8.length === 0) throw new Error('PDF_EMPTY');
+      // Convert to base64
+      let binary = '';
+      for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
+      pdfBase64 = btoa(binary);
+      console.log(`PDF_FETCH_SUCCESS size=${uint8.length} bytes`);
     } catch (fetchErr) {
       console.error(`PDF_FETCH_ERROR: ${fetchErr.message}`);
       return Response.json({ error: `PDF_FETCH_FAILED: ${fetchErr.message}` }, { status: 500 });
@@ -140,7 +141,7 @@ Deno.serve(async (req) => {
           attachments: [
             {
               filename: `ticket-${ticket.ticket_code}.pdf`,
-              content: pdfBuffer,
+              content: pdfBase64,
             },
           ],
         });
