@@ -204,7 +204,7 @@ export default function RegistrationTable({
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1.5">
                             <button
-                              onClick={() => setEditTarget(reg)}
+                              onClick={() => setEditDialogTarget(reg)}
                               className="p-1.5 rounded-lg transition-all"
                               style={{ color: "#444" }}
                               title="Bearbeiten"
