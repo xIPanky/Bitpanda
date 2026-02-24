@@ -152,7 +152,7 @@ export default function RegistrationTable({
                         </td>
 
                         <td className="px-6 py-4">
-                          <p className="text-xs" style={{ color: "#888" }}>{reg.invited_by || "—"}</p>
+                          <p className="text-xs" style={{ color: "#888" }}>{getInvitedBy(reg) || "—"}</p>
                         </td>
 
                         <td className="px-6 py-4">
