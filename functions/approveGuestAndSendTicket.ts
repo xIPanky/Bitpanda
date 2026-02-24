@@ -389,7 +389,10 @@ function buildApprovalEmail(guest, eventData) {
         <tr><td style="padding:32px 40px 0;">
           <p style="margin:0 0 4px;color:#cccccc;font-size:16px;line-height:1.6;">Hallo ${guest.first_name},</p>
           <p style="margin:8px 0 0;color:#999999;font-size:14px;line-height:1.8;">
-            deine Registrierung wurde geprüft und freigegeben. Mach dich bereit für eine Nacht voller Energie, Musik und besonderer Momente. Dein Ticket befindet sich im Anhang dieser E-Mail.
+            deine Registrierung wurde geprüft und freigegeben. Mach dich bereit für eine Nacht voller Energie, Musik und besonderer Momente. 
+            Dein Ticket befindet sich im Anhang dieser E-Mail.
+
+            Wir freuen uns auf die Party mit dir! 💚
           </p>
         </td></tr>
         
