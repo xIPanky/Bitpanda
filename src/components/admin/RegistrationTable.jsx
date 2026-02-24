@@ -27,8 +27,30 @@ const categoryColors = {
 export default function RegistrationTable({
   registrations, tickets = [], onApprove, onReject, onResend, onCategoryChange, onEdit,
   processingId, filterStatus, filterCategory, onFilterStatusChange, onFilterCategoryChange,
+  event,
 }) {
-  const [editTarget, setEditTarget] = React.useState(null);
+  const [editTarget] = React.useState(null);
+
+  // Parse custom questions to find the invitation source dropdown
+  const parsedCustomQuestions = React.useMemo(() => {
+    return (event?.custom_questions || []).map((q) => {
+      if (q.includes("||")) {
+        const parts = q.split("||");
+        return { text: parts[0], type: parts[1] || "text", options: parts[2] ? parts[2].split("~") : [] };
+      }
+      return { text: q, type: "text", options: [] };
+    });
+  }, [event?.custom_questions]);
+
+  const invitationQuestionIdx = parsedCustomQuestions.findIndex((q) => q.type === "dropdown" && q.options.length > 0);
+
+  const getInvitedBy = (reg) => {
+    if (reg.invited_by) return reg.invited_by;
+    if (invitationQuestionIdx >= 0) return reg.custom_answers?.[invitationQuestionIdx] || "";
+    return "";
+  };
+
+  const [editDialogTarget, setEditDialogTarget] = React.useState(null);
 
   const handleSave = async (form) => {
     await onEdit(form);
