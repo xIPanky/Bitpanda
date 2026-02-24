@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle, Clock, User2, Loader2, Pencil, RefreshCw, Download, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, User2, Loader2, Pencil, RefreshCw, Download, ChevronUp, ChevronDown, ChevronsUpDown, Mail } from "lucide-react";
 import EditRegistrationDialog from "./EditRegistrationDialog";
 import { format } from "date-fns";
 
