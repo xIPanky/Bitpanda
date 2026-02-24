@@ -62,7 +62,28 @@ export default function GuestData() {
   const ticketMap = Object.fromEntries(tickets.map((t) => [t.registration_id, t]));
   
   const currentEvent = eventId ? events.find((e) => e.id === eventId) : null;
-  const invitationOptions = currentEvent?.invitation_options || [];
+
+  // Parse custom questions to find dropdown ones (used for invitation source tracking)
+  const parsedCustomQuestions = (currentEvent?.custom_questions || []).map((q) => {
+    if (q.includes("||")) {
+      const parts = q.split("||");
+      return { text: parts[0], type: parts[1] || "text", options: parts[2] ? parts[2].split("~") : [] };
+    }
+    return { text: q, type: "text", options: [] };
+  });
+
+  // Find first dropdown question — that's the invitation source question
+  const invitationQuestionIdx = parsedCustomQuestions.findIndex((q) => q.type === "dropdown" && q.options.length > 0);
+  const invitationOptions = invitationQuestionIdx >= 0
+    ? parsedCustomQuestions[invitationQuestionIdx].options
+    : (currentEvent?.invitation_options || []);
+
+  // Helper: get the effective "invited_by" value for a registration
+  const getInvitedBy = (reg) => {
+    if (reg.invited_by) return reg.invited_by;
+    if (invitationQuestionIdx >= 0) return reg.custom_answers?.[invitationQuestionIdx] || "";
+    return "";
+  };
 
   const filtered = registrations.filter((r) => {
     const term = search.toLowerCase();
@@ -73,7 +94,8 @@ export default function GuestData() {
       r.phone?.toLowerCase().includes(term);
     const matchCat = filterCategory === "all" || r.category === filterCategory;
     const matchStatus = filterStatus === "all" || r.status === filterStatus;
-    const matchInvitedBy = filterInvitedBy === "all" || r.invited_by === filterInvitedBy;
+    const effectiveInvitedBy = getInvitedBy(r);
+    const matchInvitedBy = filterInvitedBy === "all" || effectiveInvitedBy === filterInvitedBy;
     return matchSearch && matchCat && matchStatus && matchInvitedBy;
   });
 
