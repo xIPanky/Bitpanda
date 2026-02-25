@@ -77,8 +77,14 @@ async function buildPdfFile(guest, ticket, eventData) {
 // EVENT DETAILS CARD (ULTRA MODERN STYLE)
 // ─────────────────────────────────────────────
 
-doc.setFillColor(...DARK);
-doc.roundedRect(20, 90, W - 40, 50, 4, 4, 'F');
+// Background
+doc.setFillColor(...DARKGREEN);
+doc.roundedRect(20, 144, W - 40, 80, 4, 4, 'F');
+
+// NEON FRAME
+doc.setDrawColor(...NEON);
+doc.setLineWidth(0.6);
+doc.roundedRect(20, 144, W - 40, 80, 4, 4, 'S');
 
 // Parse date
 let day = '';
