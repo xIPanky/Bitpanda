@@ -73,62 +73,60 @@ async function buildPdfFile(guest, ticket, eventData) {
   doc.setTextColor(...BLACK);
   doc.text(cat, W / 2, 73.5, { align: "center" });
 
-  // ── EVENT INFO CARD
-  doc.setFillColor(...DARK);
-  doc.roundedRect(20, 85, W - 40, 40, 5, 5, "F");
+  // ─────────────────────────────────────────────
+// EVENT DETAILS CARD (ULTRA MODERN STYLE)
+// ─────────────────────────────────────────────
 
-  let infoY = 98;
+doc.setFillColor(...DARK);
+doc.roundedRect(20, 90, W - 40, 50, 4, 4, 'F');
 
-  if (eventData?.date) {
-    const d = new Date(eventData.date).toLocaleDateString("de-DE", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+// Parse date
+let day = '';
+let month = '';
+let year = '';
+if (eventData?.date) {
+  const d = new Date(eventData.date);
+  day = d.toLocaleDateString('de-DE', { day: '2-digit' });
+  month = d.toLocaleDateString('de-DE', { month: 'short' }).toUpperCase();
+  year = d.getFullYear().toString();
+}
 
-    doc.setFontSize(8);
-    doc.setTextColor(...GRAY);
-    doc.text("DATUM", 30, infoY - 4);
+// LEFT SIDE — DATE BLOCK
+doc.setTextColor(...NEON);
+doc.setFont('helvetica', 'bold');
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(...WHITE);
-    doc.text(
-      `${d}${eventData.time ? " • " + eventData.time + " Uhr" : ""}`,
-      30,
-      infoY + 3
-    );
+doc.setFontSize(22);
+doc.text(day || '--', 30, 105);
 
-    infoY += 15;
-  }
+doc.setFontSize(11);
+doc.text(month || '---', 30, 112);
 
-  if (eventData?.location) {
-    doc.setFontSize(8);
-    doc.setTextColor(...GRAY);
-    doc.text("LOCATION", 30, infoY - 4);
+doc.setFontSize(10);
+doc.setTextColor(...GRAY);
+doc.text(year || '----', 30, 118);
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(...WHITE);
-    doc.text(eventData.location, 30, infoY + 3);
-  }
+// MIDDLE — TIME BLOCK
+doc.setTextColor(...GRAY);
+doc.setFontSize(6.5);
+doc.setFont('helvetica', 'normal');
+doc.text('DOORS OPEN', 70, 102);
 
-  // ── TICKET HERO BOX
-  doc.setFillColor(10, 18, 0);
-  doc.roundedRect(20, 138, W - 40, 95, 6, 6, "F");
+doc.setTextColor(...WHITE);
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(15);
+doc.text(eventData?.time ? `${eventData.time}` : '--:--', 70, 110);
 
-  doc.setDrawColor(...NEON);
-  doc.setLineWidth(0.6);
-  doc.roundedRect(20, 138, W - 40, 95, 6, 6, "S");
+// LOCATION
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(8);
+doc.setTextColor(...WHITE);
 
-  doc.setFontSize(8);
-  doc.setTextColor(...GRAY);
-  doc.text("TICKET CODE", W / 2, 150, { align: "center" });
+const locationLines = doc.splitTextToSize(
+  eventData?.location || 'Location TBA',
+  105
+);
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(26);
-  doc.setTextColor(...NEON);
-  doc.text(ticket.ticket_code || "", W / 2, 162, { align: "center" });
+doc.text(locationLines, 70, 120);
 
   // QR CODE (centered + bigger)
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(ticket.ticket_code)}&bgcolor=0d1a00&color=beff00`;
