@@ -119,7 +119,18 @@ async function buildPdfFile(guest, ticket, eventData) {
 
   doc.setDrawColor(...NEON);
   doc.setLineWidth(0.6);
-  doc.roundedRect(20, 138, W - 40, 95, 6, 6, "S");
+  // Glow Layers (fake shadow)
+doc.setDrawColor(120, 160, 0);
+doc.setLineWidth(0.3);
+doc.roundedRect(19, 137, W - 38, 97, 6, 6, "S");
+
+doc.setDrawColor(80, 110, 0);
+doc.roundedRect(18, 136, W - 36, 99, 6, 6, "S");
+
+// Main border
+doc.setDrawColor(...NEON);
+doc.setLineWidth(0.6);
+doc.roundedRect(20, 138, W - 40, 95, 6, 6, "S");
 
   doc.setFontSize(8);
   doc.setTextColor(...GRAY);
