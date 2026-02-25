@@ -124,13 +124,20 @@ let displayDay = "--";
 let displayMon = "---";
 let displayYear = "----";
 
-if (eventData?.date) {
-  const d = new Date(eventData.date);
-  if (!isNaN(d.getTime())) {
-    day = d.toLocaleDateString("de-DE", { day: "2-digit" });
-    mon = d.toLocaleDateString("de-DE", { month: "short" }).toUpperCase();
-    year = String(d.getFullYear());
+try {
+  if (eventData && eventData.date) {
+    const d = new Date(eventData.date);
+
+    if (!isNaN(d.getTime())) {
+      displayDay = d.toLocaleDateString("de-DE", { day: "2-digit" });
+      displayMon = d
+        .toLocaleDateString("de-DE", { month: "short" })
+        .toUpperCase();
+      displayYear = d.getFullYear().toString();
+    }
   }
+} catch (e) {
+  console.log("DATE_PARSE_FAILED", e.message);
 }
 
 // LEFT: Date big
