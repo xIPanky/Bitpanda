@@ -28,6 +28,7 @@ async function buildPdfFile(guest, ticket, eventData) {
   const WHITE = [255, 255, 255];
   const GRAY = [120, 120, 120];
   const DARK = [12, 12, 12];
+  const DARKGREEN = [13, 26, 0];
 
   const W = 210;
   const H = 297;
@@ -77,9 +78,18 @@ async function buildPdfFile(guest, ticket, eventData) {
 // EVENT DETAILS CARD (ULTRA MODERN STYLE)
 // ─────────────────────────────────────────────
 
-// Ticket code + QR card
+// ─────────────────────────────────────────────
+// QR CARD (NEON FRAME RESTORED)
+// ─────────────────────────────────────────────
+
+// Background
 doc.setFillColor(...DARKGREEN);
 doc.roundedRect(20, 144, W - 40, 80, 4, 4, 'F');
+
+// NEON FRAME (BACK LIKE BEFORE)
+doc.setDrawColor(...NEON);
+doc.setLineWidth(0.6);
+doc.roundedRect(20, 144, W - 40, 80, 4, 4, 'S');
 
 // Parse date
 let day = '';
