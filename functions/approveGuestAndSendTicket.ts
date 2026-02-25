@@ -41,9 +41,12 @@ async function buildPdfFile(guest, ticket, eventData) {
   doc.rect(0, 0, W, 3, "F");
 
   // ── EVENT TITLE
-  doc.setFontSize(7);
-doc.setTextColor(80,80,80);
-doc.text((eventData?.name || "EVENT").toUpperCase(), W/2, 48, { align:"center" });
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(34);
+  doc.setTextColor(...WHITE);
+  doc.text((eventData?.name || "EVENT").toUpperCase(), W / 2, 32, {
+    align: "center",
+  });
 
   doc.setFontSize(9);
   doc.setTextColor(...NEON);
@@ -116,18 +119,7 @@ doc.text((eventData?.name || "EVENT").toUpperCase(), W/2, 48, { align:"center" }
 
   doc.setDrawColor(...NEON);
   doc.setLineWidth(0.6);
-  // Glow Layers (fake shadow)
-doc.setDrawColor(120, 160, 0);
-doc.setLineWidth(0.3);
-doc.roundedRect(19, 137, W - 38, 97, 6, 6, "S");
-
-doc.setDrawColor(80, 110, 0);
-doc.roundedRect(18, 136, W - 36, 99, 6, 6, "S");
-
-// Main border
-doc.setDrawColor(...NEON);
-doc.setLineWidth(0.6);
-doc.roundedRect(20, 138, W - 40, 95, 6, 6, "S");
+  doc.roundedRect(20, 138, W - 40, 95, 6, 6, "S");
 
   doc.setFontSize(8);
   doc.setTextColor(...GRAY);
@@ -151,14 +143,6 @@ doc.roundedRect(20, 138, W - 40, 95, 6, 6, "S");
         binary += String.fromCharCode(qrArr[i]);
       }
       const qrBase64 = btoa(binary);
-
-// QR Background Card (Premium Style)
-doc.setFillColor(0, 0, 0);
-doc.roundedRect(W / 2 - 30, 166, 60, 60, 4, 4, "F");
-
-doc.setDrawColor(...NEON);
-doc.setLineWidth(0.4);
-doc.roundedRect(W / 2 - 30, 166, 60, 60, 4, 4, "S");
 
       doc.addImage(
         `data:image/png;base64,${qrBase64}`,
@@ -203,6 +187,7 @@ doc.roundedRect(W / 2 - 30, 166, 60, 60, 4, 4, "S");
 
   return { file, filename, bytes: bytes.length };
 }
+
 // ── Upload with retries ───────────────────────────────────────────────────────
 
 async function uploadWithRetry(base44, file, maxAttempts = 3) {
@@ -699,3 +684,4 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
+
