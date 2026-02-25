@@ -41,12 +41,9 @@ async function buildPdfFile(guest, ticket, eventData) {
   doc.rect(0, 0, W, 3, "F");
 
   // ── EVENT TITLE
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(34);
-  doc.setTextColor(...WHITE);
-  doc.text((eventData?.name || "EVENT").toUpperCase(), W / 2, 32, {
-    align: "center",
-  });
+  doc.setFontSize(7);
+doc.setTextColor(80,80,80);
+doc.text((eventData?.name || "EVENT").toUpperCase(), W/2, 48, { align:"center" });
 
   doc.setFontSize(9);
   doc.setTextColor(...NEON);
