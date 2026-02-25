@@ -102,42 +102,72 @@ if (eventData?.date) {
   year = d.getFullYear().toString();
 }
 
-// LEFT SIDE — DATE BLOCK
+// ─────────────────────────────────────────────
+// PRO EVENT DETAILS CARD (SYNERGY PREMIUM)
+// ─────────────────────────────────────────────
+const cardX = 22;
+const cardY = 88;
+const cardW = W - 44;
+const cardH = 44;
+
+// Card background
+doc.setFillColor(...DARK);
+doc.roundedRect(cardX, cardY, cardW, cardH, 4, 4, "F");
+
+// Accent line (neon)
+doc.setDrawColor(...NEON);
+doc.setLineWidth(0.35);
+doc.line(cardX + 12, cardY + 24, cardX + cardW - 12, cardY + 24);
+
+// Parse date
+let displayDay = "--";
+let displayMon = "---";
+let displayYear = "----";
+
+if (eventData?.date) {
+  const d = new Date(eventData.date);
+  if (!isNaN(d.getTime())) {
+    day = d.toLocaleDateString("de-DE", { day: "2-digit" });
+    mon = d.toLocaleDateString("de-DE", { month: "short" }).toUpperCase();
+    year = String(d.getFullYear());
+  }
+}
+
+// LEFT: Date big
+doc.setFont("helvetica", "bold");
 doc.setTextColor(...NEON);
-doc.setFont('helvetica', 'bold');
-
 doc.setFontSize(22);
-doc.text(day || '--', 30, 105);
-
-doc.setFontSize(11);
-doc.text(month || '---', 30, 112);
+doc.text(day, cardX + 10, cardY + 16);
 
 doc.setFontSize(10);
-doc.setTextColor(...GRAY);
-doc.text(year || '----', 30, 118);
+doc.text(mon, cardX + 10, cardY + 21);
 
-// MIDDLE — TIME BLOCK
-doc.setTextColor(...GRAY);
-doc.setFontSize(6.5);
-doc.setFont('helvetica', 'normal');
-doc.text('DOORS OPEN', 70, 102);
-
-doc.setTextColor(...WHITE);
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(15);
-doc.text(eventData?.time ? `${eventData.time}` : '--:--', 70, 110);
-
-// LOCATION
-doc.setFont('helvetica', 'normal');
 doc.setFontSize(8);
+doc.setTextColor(...GRAY);
+doc.text(year, cardX + 10, cardY + 27);
+
+doc.setFontSize(6);
+doc.text("DATE", cardX + 10, cardY + 34);
+
+// RIGHT: Time
+doc.setFont("helvetica", "bold");
 doc.setTextColor(...WHITE);
+doc.setFontSize(18);
+doc.text(eventData?.time || "--:--", cardX + 60, cardY + 16);
 
-const locationLines = doc.splitTextToSize(
-  eventData?.location || 'Location TBA',
-  105
-);
+doc.setFont("helvetica", "normal");
+doc.setFontSize(6);
+doc.setTextColor(...GRAY);
+doc.text("DOORS OPEN", cardX + 60, cardY + 22);
 
-doc.text(locationLines, 70, 120);
+// Bottom: Location
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+doc.setTextColor(...WHITE);
+const loc = eventData?.location || "Location TBA";
+const locLines = doc.splitTextToSize(`📍 ${loc}`, cardW - 20);
+doc.text(locLines, cardX + 10, cardY + 38);
+
 
   // QR CODE (centered + bigger)
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(ticket.ticket_code)}&bgcolor=0d1a00&color=beff00`;
