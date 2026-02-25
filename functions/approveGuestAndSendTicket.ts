@@ -155,6 +155,14 @@ doc.roundedRect(20, 138, W - 40, 95, 6, 6, "S");
       }
       const qrBase64 = btoa(binary);
 
+// QR Background Card (Premium Style)
+doc.setFillColor(0, 0, 0);
+doc.roundedRect(W / 2 - 30, 166, 60, 60, 4, 4, "F");
+
+doc.setDrawColor(...NEON);
+doc.setLineWidth(0.4);
+doc.roundedRect(W / 2 - 30, 166, 60, 60, 4, 4, "S");
+
       doc.addImage(
         `data:image/png;base64,${qrBase64}`,
         "PNG",
