@@ -21,154 +21,172 @@ async function sleep(ms) {
 // ── PDF Generation ────────────────────────────────────────────────────────────
 
 async function buildPdfFile(guest, ticket, eventData) {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  const NEON  = [190, 255, 0];
+  const NEON = [190, 255, 0];
   const BLACK = [7, 7, 7];
   const WHITE = [255, 255, 255];
-  const GRAY  = [90, 90, 90];
-  const DARK  = [17, 17, 17];
-  const DARKGREEN = [13, 26, 0];
+  const GRAY = [120, 120, 120];
+  const DARK = [12, 12, 12];
+
   const W = 210;
   const H = 297;
 
-  // Background
+  // ── BACKGROUND
   doc.setFillColor(...BLACK);
-  doc.rect(0, 0, W, H, 'F');
+  doc.rect(0, 0, W, H, "F");
 
-  // Top neon bar
+  // Neon Top Line
   doc.setFillColor(...NEON);
-  doc.rect(0, 0, W, 4, 'F');
+  doc.rect(0, 0, W, 3, "F");
 
-  // Event name
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(30);
+  // ── EVENT TITLE
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(34);
   doc.setTextColor(...WHITE);
-  doc.text((eventData?.name || 'EVENT').toUpperCase(), W / 2, 36, { align: 'center' });
+  doc.text((eventData?.name || "EVENT").toUpperCase(), W / 2, 32, {
+    align: "center",
+  });
 
-  // Subtitle
   doc.setFontSize(9);
   doc.setTextColor(...NEON);
-  doc.text('OFFICIAL TICKET  ·  INVITE ONLY', W / 2, 46, { align: 'center' });
+  doc.text("OFFICIAL EVENT TICKET", W / 2, 40, { align: "center" });
 
   // Divider
   doc.setDrawColor(...NEON);
-  doc.setLineWidth(0.3);
-  doc.line(20, 52, W - 20, 52);
+  doc.setLineWidth(0.4);
+  doc.line(25, 46, W - 25, 46);
 
-  // Guest name
-  doc.setFontSize(20);
+  // ── GUEST NAME (BIG HERO)
+  doc.setFontSize(22);
   doc.setTextColor(...WHITE);
-  doc.setFont('helvetica', 'bold');
-  doc.text((ticket.guest_name || '').toUpperCase(), W / 2, 68, { align: 'center' });
+  doc.text((ticket.guest_name || "").toUpperCase(), W / 2, 62, {
+    align: "center",
+  });
 
-  // Category badge
-  const cat = (ticket.category || 'Standard').toUpperCase();
-  doc.setFontSize(7.5);
-  const catW = doc.getTextWidth(cat) + 14;
+  // CATEGORY PILL
+  const cat = (ticket.category || "STANDARD").toUpperCase();
+  doc.setFontSize(8);
+  const cw = doc.getTextWidth(cat) + 14;
   doc.setFillColor(...NEON);
-  doc.roundedRect((W - catW) / 2, 73, catW, 8, 2, 2, 'F');
+  doc.roundedRect((W - cw) / 2, 68, cw, 8, 3, 3, "F");
   doc.setTextColor(...BLACK);
-  doc.text(cat, W / 2, 79, { align: 'center' });
+  doc.text(cat, W / 2, 73.5, { align: "center" });
 
-  // Event details card
+  // ── EVENT INFO CARD
   doc.setFillColor(...DARK);
-  doc.roundedRect(20, 90, W - 40, 44, 4, 4, 'F');
+  doc.roundedRect(20, 85, W - 40, 40, 5, 5, "F");
 
-  let detailY = 103;
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
+  let infoY = 98;
 
   if (eventData?.date) {
-    const d = new Date(eventData.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+    const d = new Date(eventData.date).toLocaleDateString("de-DE", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+    doc.setFontSize(8);
     doc.setTextColor(...GRAY);
-    doc.text('DATUM', 30, detailY - 5);
+    doc.text("DATUM", 30, infoY - 4);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
     doc.setTextColor(...WHITE);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text(d + (eventData.time ? `   ·   ${eventData.time} Uhr` : ''), 30, detailY + 3);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    detailY += 16;
+    doc.text(
+      `${d}${eventData.time ? " • " + eventData.time + " Uhr" : ""}`,
+      30,
+      infoY + 3
+    );
+
+    infoY += 15;
   }
+
   if (eventData?.location) {
+    doc.setFontSize(8);
     doc.setTextColor(...GRAY);
-    doc.text('ORT', 30, detailY - 5);
+    doc.text("LOCATION", 30, infoY - 4);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
     doc.setTextColor(...WHITE);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text(eventData.location, 30, detailY + 3);
+    doc.text(eventData.location, 30, infoY + 3);
   }
 
-  // Ticket code + QR card
-  doc.setFillColor(...DARKGREEN);
-  doc.roundedRect(20, 144, W - 40, 80, 4, 4, 'F');
+  // ── TICKET HERO BOX
+  doc.setFillColor(10, 18, 0);
+  doc.roundedRect(20, 138, W - 40, 95, 6, 6, "F");
+
   doc.setDrawColor(...NEON);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(20, 144, W - 40, 80, 4, 4, 'S');
+  doc.setLineWidth(0.6);
+  doc.roundedRect(20, 138, W - 40, 95, 6, 6, "S");
 
-  // "TICKET CODE" label
-  doc.setFontSize(7);
+  doc.setFontSize(8);
   doc.setTextColor(...GRAY);
-  doc.setFont('helvetica', 'normal');
-  doc.text('TICKET CODE', W / 2, 156, { align: 'center' });
+  doc.text("TICKET CODE", W / 2, 150, { align: "center" });
 
-  // Code value
-  doc.setFontSize(24);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(26);
   doc.setTextColor(...NEON);
-  doc.setFont('helvetica', 'bold');
-  doc.text(ticket.ticket_code || '', W / 2, 168, { align: 'center' });
+  doc.text(ticket.ticket_code || "", W / 2, 162, { align: "center" });
 
-  // QR code (hosted service, neon on dark)
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(ticket.ticket_code)}&bgcolor=0d1a00&color=beff00&format=png&margin=2`;
+  // QR CODE (centered + bigger)
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(ticket.ticket_code)}&bgcolor=0d1a00&color=beff00`;
+
   try {
     const qrResp = await fetch(qrUrl);
     if (qrResp.ok) {
       const qrBuf = await qrResp.arrayBuffer();
       const qrArr = new Uint8Array(qrBuf);
-      let binary = '';
-      for (let i = 0; i < qrArr.length; i++) binary += String.fromCharCode(qrArr[i]);
+      let binary = "";
+      for (let i = 0; i < qrArr.length; i++) {
+        binary += String.fromCharCode(qrArr[i]);
+      }
       const qrBase64 = btoa(binary);
-      doc.addImage(`data:image/png;base64,${qrBase64}`, 'PNG', W / 2 - 22, 174, 44, 44);
-    }
-  } catch (_e) {
-    // QR fetch failed — skip, ticket still valid
-  }
 
-  // "SCAN FOR ENTRY" label
+      doc.addImage(
+        `data:image/png;base64,${qrBase64}`,
+        "PNG",
+        W / 2 - 25,
+        170,
+        50,
+        50
+      );
+    }
+  } catch (_) {}
+
   doc.setFontSize(7);
   doc.setTextColor(...GRAY);
-  doc.setFont('helvetica', 'normal');
-  doc.text('SCAN FOR ENTRY', W / 2, 225, { align: 'center' });
+  doc.text("SCAN FOR ENTRY", W / 2, 227, { align: "center" });
 
-  // Divider
-  doc.setDrawColor(30, 30, 30);
-  doc.setLineWidth(0.3);
-  doc.line(20, 236, W - 20, 236);
-
-  // Footer disclaimer
-  doc.setFontSize(7.5);
-  doc.setTextColor(55, 55, 55);
-  doc.text('Dieses Ticket ist nicht übertragbar und nur mit gültigem Lichtbildausweis gültig.', W / 2, 245, { align: 'center' });
+  // Footer
   doc.setFontSize(7);
-  doc.text(`${eventData?.name || 'SYNERGY'} · powered by Synergy Guestlist Platform`, W / 2, 252, { align: 'center' });
+  doc.setTextColor(60, 60, 60);
+  doc.text(
+    "Dieses Ticket ist personalisiert und nicht übertragbar.",
+    W / 2,
+    250,
+    { align: "center" }
+  );
 
-  // Bottom neon bar
   doc.setFillColor(...NEON);
-  doc.rect(0, H - 4, W, 4, 'F');
+  doc.rect(0, H - 3, W, 3, "F");
 
-  // Convert to File
-  const dataUri = doc.output('datauristring');
-  const base64 = dataUri.split(',')[1];
+  // Export file
+  const dataUri = doc.output("datauristring");
+  const base64 = dataUri.split(",")[1];
   const binaryStr = atob(base64);
   const bytes = new Uint8Array(binaryStr.length);
-  for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
 
   const filename = `ticket-${ticket.ticket_code}.pdf`;
-  const file = new File([bytes], filename, { type: 'application/pdf' });
+  const file = new File([bytes], filename, { type: "application/pdf" });
+
   return { file, filename, bytes: bytes.length };
 }
-
 // ── Upload with retries ───────────────────────────────────────────────────────
 
 async function uploadWithRetry(base44, file, maxAttempts = 3) {
