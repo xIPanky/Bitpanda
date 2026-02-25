@@ -84,7 +84,7 @@ async function buildPdfFile(guest, ticket, eventData) {
 
 // Background
 doc.setFillColor(...DARKGREEN);
-doc.roundedRect(20, 144, W - 40, 80, 4, 4, 'F');
+doc.roundedRect(20, 144, W - 40, 110, 4, 4, 'F');
 
 // NEON FRAME (BACK LIKE BEFORE)
 doc.setDrawColor(...NEON);
