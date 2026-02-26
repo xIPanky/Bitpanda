@@ -172,7 +172,7 @@ doc.setFont("helvetica", "bold");
 doc.setFontSize(9);
 doc.setTextColor(...WHITE);
 const loc = eventData?.location || "Location TBA";
-const locLines = doc.splitTextToSize(`📍 ${loc}`, cardW - 20);
+const locLines = doc.splitTextToSize(`LOCATION: ${loc}`, cardW - 20);
 doc.text(locLines, cardX + 10, cardY + 38);
 
 
