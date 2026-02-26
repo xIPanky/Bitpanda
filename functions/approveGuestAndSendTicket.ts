@@ -173,7 +173,7 @@ doc.setFontSize(9);
 doc.setTextColor(...WHITE);
 const loc = eventData?.location || "Location TBA";
 const locLines = doc.splitTextToSize(`LOCATION: ${loc}`, cardW - 20);
-doc.text(locLines, cardX + 10, cardY + 38);
+doc.text(locLines || ["Location TBA"], cardX + 10, cardY + 38);
 
 
   // QR CODE (centered + bigger)
