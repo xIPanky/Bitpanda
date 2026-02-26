@@ -91,17 +91,6 @@ doc.setDrawColor(...NEON);
 doc.setLineWidth(0.6);
 doc.roundedRect(20, 144, W - 40, 110, 4, 4, 'S');
 
-// Parse date
-let day = '';
-let month = '';
-let year = '';
-if (eventData?.date) {
-  const d = new Date(eventData.date);
-  day = d.toLocaleDateString('de-DE', { day: '2-digit' });
-  month = d.toLocaleDateString('de-DE', { month: 'short' }).toUpperCase();
-  year = d.getFullYear().toString();
-}
-
 // ─────────────────────────────────────────────
 // PRO EVENT DETAILS CARD (SYNERGY PREMIUM)
 // ─────────────────────────────────────────────
@@ -144,14 +133,14 @@ try {
 doc.setFont("helvetica", "bold");
 doc.setTextColor(...NEON);
 doc.setFontSize(22);
-doc.text(day, cardX + 10, cardY + 16);
+doc.text(displayDay, cardX + 10, cardY + 16);
 
 doc.setFontSize(10);
-doc.text(mon, cardX + 10, cardY + 21);
+doc.text(displayMon, cardX + 10, cardY + 21);
 
 doc.setFontSize(8);
 doc.setTextColor(...GRAY);
-doc.text(year, cardX + 10, cardY + 27);
+doc.text(displayYear, cardX + 10, cardY + 27);
 
 doc.setFontSize(6);
 doc.text("DATE", cardX + 10, cardY + 34);
