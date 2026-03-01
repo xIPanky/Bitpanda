@@ -236,21 +236,6 @@ export default function EventDetails() {
         </div>
       </section>
 
-      {/* ─── VIP MESSAGE ─── */}
-      <section style={{ padding: "80px 24px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 50%, rgba(190,255,0,0.04) 0%, transparent 70%)" }} />
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} style={{ position: "relative", maxWidth: "640px", margin: "0 auto" }}>
-          <div style={{ width: "48px", height: "2px", background: NEON, margin: "0 auto 32px", boxShadow: `0 0 12px ${NEON}` }} />
-          <h2 style={{ fontSize: "clamp(1.6rem, 4vw, 2.8rem)", fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: "20px" }}>
-            Dieses Event ist<br /><span style={{ color: NEON }}>Invite Only.</span>
-          </h2>
-          <p style={{ fontSize: "16px", color: "#555", lineHeight: 1.7, margin: "0 auto", maxWidth: "440px" }}>
-            Jede Registrierung wird persönlich geprüft. Nicht jeder kommt rein — aber wenn du hier bist, bist du Teil von etwas Besonderem.
-          </p>
-          <div style={{ width: "48px", height: "2px", background: NEON, margin: "32px auto 0", boxShadow: `0 0 12px ${NEON}`, opacity: 0.4 }} />
-        </motion.div>
-      </section>
-
       {/* ─── REGISTRATION CTA ─── */}
       <section ref={ctaRef} style={{ padding: "100px 24px 140px", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
