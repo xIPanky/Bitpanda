@@ -196,7 +196,7 @@ export default function EventDetails() {
 </motion.div>
 
       {/* ─── EVENT DETAILS ─── */}
-      <section style={{ padding: "0 24px 120px", maxWidth: "1100px", margin: "0 auto" }}>
+      <section style={{ padding: "90 24px 100px", maxWidth: "1100px", margin: "0 auto" }}>
         <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "24px", padding: "48px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0" }}>
           {[
             event.date && { label: "Datum", icon: Calendar, value: formattedDate },
