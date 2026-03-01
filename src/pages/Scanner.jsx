@@ -25,95 +25,92 @@ export default function Scanner() {
 
   const inputRef = useRef(null);
 
-  const handleScan = async (scanCode) => {
-    const trimmed = (scanCode || code).trim();
-    if (!trimmed) return;
+ const handleScan = async (scanCode) => {
+  const trimmed = (scanCode || code).trim();
+  if (!trimmed) return;
 
-    setLoading(true);
-    setResult(null);
+  setLoading(true);
+  setResult(null);
 
-    try {
-      const tickets = await base44.entities.Ticket.filter({
-        ticket_code: trimmed,
-      });
+  try {
+    const tickets = await base44.entities.Ticket.filter({
+      ticket_code: trimmed,
+    });
 
-      if (!tickets || tickets.length === 0) {
-        setResult({
-          type: "error",
-          message: "Ticket nicht gefunden",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const ticket = tickets[0];
-
-      // Optional: Event Check
-      if (eventId && ticket.event_id !== eventId) {
-        setResult({
-          type: "error",
-          message: "Ticket gehört zu anderem Event",
-          ticket,
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (ticket.status === "used") {
-        setResult({
-          type: "warning",
-          message: `Bereits eingecheckt am ${new Date(
-            ticket.checked_in_at
-          ).toLocaleString("de-DE")}`,
-          ticket,
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (ticket.status === "cancelled") {
-        setResult({
-          type: "error",
-          message: "Ticket wurde storniert",
-          ticket,
-        });
-        setLoading(false);
-        return;
-      }
-
-      // VALID → CHECK IN
-      await base44.entities.Ticket.update(ticket.id, {
-        status: "used",
-        checked_in_at: new Date().toISOString(),
-      });
-
-      let registration = null;
-
-      if (ticket.registration_id) {
-        const regs = await base44.entities.Registration.filter({
-          id: ticket.registration_id,
-        });
-        registration = regs?.[0] || null;
-      }
-
-      setResult({
-        type: "success",
-        message: "Check-in erfolgreich!",
-        ticket: { ...ticket, status: "used" },
-        registration,
-      });
-
-      toast.success("Gast eingecheckt!");
-    } catch (err) {
-      console.error(err);
+    if (!tickets || tickets.length === 0) {
       setResult({
         type: "error",
-        message: "Systemfehler – bitte erneut versuchen",
+        message: "Ticket nicht gefunden",
       });
+      return;
     }
 
+    const ticket = tickets[0];
+
+    // FIX 1: Event Vergleich als String
+    if (eventId && String(ticket.event_id) !== String(eventId)) {
+      setResult({
+        type: "error",
+        message: "Ticket gehört zu anderem Event",
+        ticket,
+      });
+      return;
+    }
+
+    if (ticket.status === "used") {
+      setResult({
+        type: "warning",
+        message: `Bereits eingecheckt am ${ticket.checked_in_at
+          ? new Date(ticket.checked_in_at).toLocaleString("de-DE")
+          : "Unbekannt"}`,
+        ticket,
+      });
+      return;
+    }
+
+    if (ticket.status === "cancelled") {
+      setResult({
+        type: "error",
+        message: "Ticket wurde storniert",
+        ticket,
+      });
+      return;
+    }
+
+    // CHECK IN
+    await base44.entities.Ticket.update(ticket.id, {
+      status: "used",
+      checked_in_at: new Date().toISOString(),
+    });
+
+    let registration = null;
+
+    if (ticket.registration_id) {
+      const regs = await base44.entities.Registration.filter({
+        id: ticket.registration_id,
+      });
+      registration = regs?.[0] || null;
+    }
+
+    setResult({
+      type: "success",
+      message: "Check-in erfolgreich!",
+      ticket: { ...ticket, status: "used" },
+      registration: registration || null,
+    });
+
+    toast.success("Gast eingecheckt!");
+  } catch (err) {
+    console.error("SCAN ERROR:", err);
+
+    setResult({
+      type: "error",
+      message: "Systemfehler – bitte erneut versuchen",
+    });
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   const reset = () => {
     setResult(null);
@@ -236,12 +233,11 @@ export default function Scanner() {
                 {result.message}
               </h2>
 
-              {result.registration && (
-                <p className="text-white text-lg mb-4">
-                  {result.registration.first_name}{" "}
-                  {result.registration.last_name}
-                </p>
-              )}
+{result?.registration?.first_name && (
+  <p className="text-white text-lg mb-4">
+    {result.registration.first_name} {result.registration.last_name}
+  </p>
+)}
 
               <button
                 onClick={reset}
