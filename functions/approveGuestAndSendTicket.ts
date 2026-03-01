@@ -488,18 +488,28 @@ function buildApprovalEmail(guest, eventData) {
   </td>
 </tr>
         
-        <!-- Footer Message -->
-        <tr><td style="padding:28px 40px;text-align:center;border-top:1px solid #141414;margin-top:8px;">
-          <p style="margin:0;color:#666;font-size:12px;line-height:1.6;">
-            Fragen?
-            Schreib uns gerne eine Nachricht an yannik@panke-management.com .<br>
-            <span style="color:#444;font-size:11px;">powered by Synergy</span>
-          </p>
-        </td></tr>
-        
-        <!-- Footer Neon Bar -->
-        <tr><td style="background:#beff00;height:6px;font-size:0;">&nbsp;</td></tr>
-        
+<!-- Footer Message -->
+<tr>
+  <td style="padding:28px 40px;text-align:center;border-top:1px solid #141414;">
+    
+    <p style="margin:0 0 6px;color:#888;font-size:12px;font-weight:600;">
+      Fragen?
+    </p>
+
+    <p style="margin:0 0 12px;color:#666;font-size:12px;line-height:1.6;">
+      Schreib uns gerne eine Nachricht an 
+      <a href="mailto:yannik@panke-management.com" 
+         style="color:#beff00;text-decoration:none;font-weight:600;">
+         yannik@panke-management.com
+      </a>
+    </p>
+
+    <p style="margin:0;color:#444;font-size:11px;">
+      powered by Synergy
+    </p>
+
+  </td>
+</tr>
       </table>
     </td></tr>
   </table>
