@@ -196,7 +196,7 @@ doc.text(locLines, panelX + 74, panelY + 50);
   // ── QR CODE ────────────────────────────────────────
   doc.setFontSize(8);
   doc.setTextColor(...NEON);
-  doc.text("SCAN FOR ENTRY", W / 2, qrStageY + 8, { align: "center" });
+  doc.text("SCAN FOR ENTRY", W / 2, qrStageY + 10, { align: "center" });
 
   const qrUrl =
     `https://api.qrserver.com/v1/create-qr-code/?size=420x420` +
