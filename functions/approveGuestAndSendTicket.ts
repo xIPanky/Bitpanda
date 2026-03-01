@@ -444,80 +444,131 @@ END:VCALENDAR`;
 // ── Email template (Premium design) ───────────────────────────────────────
 
 function buildApprovalEmail(guest, eventData) {
-  const eventName = eventData?.name || 'Event';
-  const eventDate = eventData?.date
-    ? new Date(eventData.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '';
-  const eventTime = eventData?.time || '';
-  const eventLocation = eventData?.location || '';
+
   const organizerEmail =
-  (eventData?.organizer_email && eventData.organizer_email.trim()) ||
-  "Bitte wende dich an deine Ansprechperson";
+    (eventData?.organizer_email && eventData.organizer_email.trim()) ||
+    "info@event.com";
 
-  return `<!DOCTYPE html>
+  const eventName = eventData?.name || "Event";
+  const subtitle = eventData?.subtitle || "";
+  const eventDate = eventData?.date
+    ? new Date(eventData.date).toLocaleDateString("de-DE", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      })
+    : "";
+  const eventTime = eventData?.time || "";
+  const eventLocation = eventData?.location || "";
+
+  return `
+<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
 <body style="margin:0;padding:0;background:#070707;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#070707;padding:20px 16px;">
-    <tr><td align="center">
-      <table width="100%" style="max-width:600px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:20px;overflow:hidden;">
-        
-        <!-- Header Neon Bar -->
-        <tr><td style="background:#beff00;height:6px;font-size:0;">&nbsp;</td></tr>
-        
-        <!-- Hero Section -->
-        <tr><td style="padding:48px 40px 32px;text-align:center;border-bottom:1px solid #161616;">
-          <p style="margin:0 0 12px;color:#beff00;font-size:11px;font-weight:800;letter-spacing:5px;text-transform:uppercase;">Du bist dabei</p>
-          <h1 style="margin:0;color:#ffffff;font-size:32px;font-weight:900;letter-spacing:-0.02em;line-height:1.2;">${eventName}</h1>
-          <p style="margin:12px 0 0;color:#888;font-size:14px;">Deine Anmeldung wurde bestätigt</p>
-        </td></tr>
-        
-<!-- Main Copy -->
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#070707;padding:24px 16px;">
 <tr>
-  <td style="padding:32px 40px 0;">
-    <p style="margin:0 0 8px;color:#cccccc;font-size:16px;line-height:1.6;">
-      Hallo ${guest.first_name},
-    </p>
+<td align="center">
 
-    <p style="margin:0 0 14px;color:#999999;font-size:14px;line-height:1.8;">
-      Deine Registrierung wurde geprüft und freigegeben. 
-      Mach dich bereit für eine Nacht voller Energie, Musik und besonderer Momente. 
-      Dein Ticket befindet sich im Anhang dieser E-Mail.
-    </p>
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#0b0b0b;border-radius:26px;border:1px solid #1a1a1a;overflow:hidden;">
 
-    <p style="margin:0;color:#beff00;font-size:14px;line-height:1.8;font-weight:600;">
-      Wir freuen uns auf die Party mit dir! 💚
-    </p>
-  </td>
-</tr>
-        
-<!-- Footer Message -->
+<!-- TOP NEON BAR -->
 <tr>
-  <td style="padding:28px 40px;text-align:center;border-top:1px solid #141414;">
-    
-    <p style="margin:0 0 6px;color:#888;font-size:12px;font-weight:600;">
-      Fragen?
-    </p>
-
-    <p style="margin:0 0 12px;color:#666;font-size:12px;line-height:1.6;">
-      Schreib uns gerne eine Nachricht an 
-      <a href="mailto:${organizerEmail}" 
-         style="color:#beff00;text-decoration:none;font-weight:600;">
-         ${organizerEmail}
-      </a>
-    </p>
-
-    <p style="margin:0;color:#444;font-size:11px;">
-      powered by Synergy
-    </p>
-
-  </td>
+<td style="background:#beff00;height:6px;"></td>
 </tr>
-      </table>
-    </td></tr>
-  </table>
+
+<!-- HERO -->
+<tr>
+<td style="padding:52px 40px 40px;text-align:center;">
+
+<p style="margin:0 0 14px;color:#beff00;font-size:11px;font-weight:800;letter-spacing:5px;text-transform:uppercase;">
+CONFIRMED
+</p>
+
+<h1 style="margin:0;color:#ffffff;font-size:34px;font-weight:900;letter-spacing:-0.02em;">
+${eventName}
+</h1>
+
+${subtitle ? `
+<p style="margin:12px 0 0;color:#888;font-size:14px;">
+${subtitle}
+</p>
+` : ""}
+
+</td>
+</tr>
+
+<!-- EVENT DETAILS CARD -->
+<tr>
+<td style="padding:0 40px 36px;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#111;border-radius:18px;border:1px solid #1f1f1f;">
+<tr>
+<td style="padding:24px;text-align:center;color:#ccc;font-size:14px;line-height:1.7;">
+<strong style="color:#fff;">${eventDate}</strong><br>
+${eventTime} Uhr<br>
+${eventLocation}
+</td>
+</tr>
+</table>
+
+</td>
+</tr>
+
+<!-- MAIN TEXT -->
+<tr>
+<td style="padding:0 40px 40px;color:#999;font-size:15px;line-height:1.8;">
+
+Hallo ${guest.first_name},<br><br>
+
+deine Registrierung wurde erfolgreich bestätigt.<br>
+Dein personalisiertes Ticket befindet sich im Anhang dieser E-Mail.<br><br>
+
+<span style="color:#beff00;font-weight:600;">
+Wir freuen uns auf eine unvergessliche Nacht mit dir.
+</span>
+
+</td>
+</tr>
+
+<!-- FOOTER -->
+<tr>
+<td style="padding:32px 40px;border-top:1px solid #161616;text-align:center;font-size:12px;color:#666;">
+
+<p style="margin:0 0 6px;color:#888;font-weight:600;">Fragen?</p>
+
+<p style="margin:0 0 12px;">
+<a href="mailto:${organizerEmail}" style="color:#beff00;text-decoration:none;font-weight:600;">
+${organizerEmail}
+</a>
+</p>
+
+<p style="margin:0;color:#444;">
+powered by Synergy
+</p>
+
+</td>
+</tr>
+
+<!-- BOTTOM NEON BAR -->
+<tr>
+<td style="background:#beff00;height:6px;"></td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
 </body>
-</html>`;
+</html>
+`;
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
