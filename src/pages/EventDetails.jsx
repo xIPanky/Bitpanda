@@ -237,7 +237,7 @@ export default function EventDetails() {
       </section>
 
       {/* ─── REGISTRATION CTA ─── */}
-      <section ref={ctaRef} style={{ padding: "100px 24px 140px", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
+      <section ref={ctaRef} style={{ padding: "60px 24px 140px", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
           <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: NEON, marginBottom: "16px" }}>Guestlist</p>
           <h2 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.025em", lineHeight: 1.05, marginBottom: "16px" }}>
