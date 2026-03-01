@@ -124,7 +124,7 @@ export default function Layout({ children, currentPageName }) {
             <Zap className="w-4 h-4 text-black" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white tracking-widest uppercase">EventPass</p>
+            <p className="text-sm font-bold text-white tracking-widest uppercase">EventSales</p>
             <p className="text-[10px]" style={{ color: "#444" }}>Ticket & Guestlist System</p>
           </div>
         </div>
