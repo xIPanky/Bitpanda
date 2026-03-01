@@ -166,7 +166,7 @@ export default function EventDetails() {
         </motion.div>
       </section>
 
-      <motion.div
+<motion.div
   initial={{ opacity: 0, y: 20 }}
   whileInView={{ opacity: 1, y: 0 }}
   viewport={{ once: true }}
@@ -177,7 +177,10 @@ export default function EventDetails() {
     borderRadius: "24px",
     padding: "42px 36px",
     maxWidth: "900px",
+    margin: "0 auto",     // ⭐ DAS zentriert den Block
+    textAlign: "center",  // ⭐ Text mittig
   }}
+
 >
   <p
     style={{
