@@ -113,6 +113,17 @@ export default function CreateEventDialog({ onClose, onCreated }) {
             />
             {errorText("name")}
           </div>
+          {/* SUBTITLE */}
+<div>
+  <Label>Untertitel</Label>
+  <Input
+    value={form.subtitle}
+    onChange={(e) =>
+      setForm({ ...form, subtitle: e.target.value })
+    }
+    placeholder="z.B. Die Zukunft der Tech"
+  />
+</div>
 
           {/* DATUM / ZEIT */}
           <div className="grid grid-cols-3 gap-3">
