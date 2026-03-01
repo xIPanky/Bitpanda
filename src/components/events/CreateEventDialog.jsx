@@ -8,15 +8,24 @@ import { X, Loader2 } from "lucide-react";
 
 export default function CreateEventDialog({ onClose, onCreated }) {
   const [form, setForm] = useState({
-    name: "",
-    subtitle: "",
-    description: "",
-    date: "",
-    time: "",
-    location: "",
-    is_paid: false,
-    currency: "EUR",
-  });
+  name: "",
+  subtitle: "",
+  description: "",
+  date: "",
+  time: "",
+  location: "",
+  is_paid: false,
+  currency: "EUR",
+  organizer_name: "",
+  organizer_email: "",
+
+  // 🎨 CI Defaults
+  primary_color: "#111111",
+  secondary_color: "#ffffff",
+  accent_color: "#ff2e63",
+  theme_mode: "dark",
+});
+
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
