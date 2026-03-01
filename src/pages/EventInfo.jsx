@@ -102,9 +102,19 @@ setForm({
       if (!emailRegex.test(form.organizer_email)) {
         newErrors.organizer_email = "Ungültige E-Mail";
       }
-    if (form.time && form.end_time && form.end_time <= form.time) {
-  newErrors.end_time = "Endzeit muss nach Startzeit liegen";
-    }
+const eventDate = new Date(form.date);
+
+const startDateTime = new Date(eventDate);
+const [startHour, startMinute] = form.time.split(":").map(Number);
+startDateTime.setHours(startHour, startMinute, 0, 0);
+
+const endDateTime = new Date(eventDate);
+const [endHour, endMinute] = form.end_time.split(":").map(Number);
+endDateTime.setHours(endHour, endMinute, 0, 0);
+
+if (endDateTime <= startDateTime) {
+  endDateTime.setDate(endDateTime.getDate() + 1);
+}
     }
 
     setErrors(newErrors);
