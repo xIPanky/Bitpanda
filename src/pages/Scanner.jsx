@@ -48,6 +48,8 @@ export default function Scanner() {
 
   const [showCamera, setShowCamera] = useState(false);
 
+  const scanningRef = useRef(false);
+
   // the ticket we found
   const [ticket, setTicket] = useState(null);
   const [registration, setRegistration] = useState(null);
@@ -259,12 +261,44 @@ export default function Scanner() {
     }
   };
 
-  const onQRScan = (scannedCode) => {
-    const trimmed = (scannedCode || "").trim();
+ const onQRScan = async (scannedCode) => {
+  if (!scannedCode) return;
+
+  // STOP multiple scans
+  if (scanningRef.current) return;
+  scanningRef.current = true;
+
+  try {
+    let cleanCode = scannedCode.trim();
+
+    // Falls QR eine URL ist
+    if (cleanCode.startsWith("http")) {
+      try {
+        const url = new URL(cleanCode);
+        const queryCode = url.searchParams.get("code");
+        if (queryCode) {
+          cleanCode = queryCode;
+        } else {
+          const parts = url.pathname.split("/");
+          cleanCode = parts[parts.length - 1];
+        }
+      } catch {}
+    }
+
     setShowCamera(false);
-    setCode(trimmed);
-    lookupTicket(trimmed);
-  };
+    setCode(cleanCode);
+
+    await lookupTicket(cleanCode);
+
+  } catch (err) {
+    console.error("Scan error:", err);
+  } finally {
+    // unlock after small delay
+    setTimeout(() => {
+      scanningRef.current = false;
+    }, 1000);
+  }
+};
 
   const onEnter = (e) => {
     if (e.key === "Enter") lookupTicket();
