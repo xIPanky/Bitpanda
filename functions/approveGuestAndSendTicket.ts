@@ -469,16 +469,24 @@ function buildApprovalEmail(guest, eventData) {
           <p style="margin:12px 0 0;color:#888;font-size:14px;">Deine Anmeldung wurde bestätigt</p>
         </td></tr>
         
-        <!-- Main Copy -->
-        <tr><td style="padding:32px 40px 0;">
-          <p style="margin:0 0 4px;color:#cccccc;font-size:16px;line-height:1.6;">Hallo ${guest.first_name},</p>
-          <p style="margin:8px 0 0;color:#999999;font-size:14px;line-height:1.8;">
-            deine Registrierung wurde geprüft und freigegeben. Mach dich bereit für eine Nacht voller Energie, Musik und besonderer Momente. 
-            Dein Ticket befindet sich im Anhang dieser E-Mail.
+<!-- Main Copy -->
+<tr>
+  <td style="padding:32px 40px 0;">
+    <p style="margin:0 0 8px;color:#cccccc;font-size:16px;line-height:1.6;">
+      Hallo ${guest.first_name},
+    </p>
 
-            Wir freuen uns auf die Party mit dir! 💚
-          </p>
-        </td></tr>
+    <p style="margin:0 0 14px;color:#999999;font-size:14px;line-height:1.8;">
+      Deine Registrierung wurde geprüft und freigegeben. 
+      Mach dich bereit für eine Nacht voller Energie, Musik und besonderer Momente. 
+      Dein Ticket befindet sich im Anhang dieser E-Mail.
+    </p>
+
+    <p style="margin:0;color:#beff00;font-size:14px;line-height:1.8;font-weight:600;">
+      Wir freuen uns auf die Party mit dir! 💚
+    </p>
+  </td>
+</tr>
         
         <!-- Footer Message -->
         <tr><td style="padding:28px 40px;text-align:center;border-top:1px solid #141414;margin-top:8px;">
