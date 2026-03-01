@@ -13,13 +13,14 @@ export default function CreateEventDialog({ onClose, onCreated }) {
   description: "",
   date: "",
   time: "",
+  end_time: "", // 👈 NEU
   location: "",
   is_paid: false,
   currency: "EUR",
+
   organizer_name: "",
   organizer_email: "",
 
-  // 🎨 CI Defaults
   primary_color: "#111111",
   secondary_color: "#ffffff",
   accent_color: "#ff2e63",
@@ -61,16 +62,34 @@ export default function CreateEventDialog({ onClose, onCreated }) {
             <Label>Beschreibung</Label>
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Erzähle mehr über dein Event..." className="resize-none h-20" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Datum *</Label>
-              <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Uhrzeit</Label>
-              <Input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
-            </div>
-          </div>
+          <div className="grid grid-cols-3 gap-3">
+  <div className="space-y-1.5">
+    <Label>Datum *</Label>
+    <Input
+      type="date"
+      value={form.date}
+      onChange={(e) => setForm({ ...form, date: e.target.value })}
+    />
+  </div>
+
+  <div className="space-y-1.5">
+    <Label>Startzeit</Label>
+    <Input
+      type="time"
+      value={form.time}
+      onChange={(e) => setForm({ ...form, time: e.target.value })}
+    />
+  </div>
+
+  <div className="space-y-1.5">
+    <Label>Endzeit *</Label>
+    <Input
+      type="time"
+      value={form.end_time}
+      onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+    />
+  </div>
+</div>
           <div className="space-y-1.5">
             <Label>Ort</Label>
             <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="z.B. Berlin, Tempodrom" />
