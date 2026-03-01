@@ -204,7 +204,7 @@ export function TicketRegistration({ event, tier, onComplete, onAbandoned, onBac
         </div>
 
         <div>
-          <FieldLabel required>Unternehmen / Creator</FieldLabel>
+          <FieldLabel required>Unternehmen / Instagram-Tag</FieldLabel>
           <DarkInput required value={form.company} onChange={(e) => handleChange("company", e.target.value)} placeholder="Dein Unternehmen" />
         </div>
 
