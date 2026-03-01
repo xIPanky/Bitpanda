@@ -72,9 +72,16 @@ async function buildPdfFile(guest, ticket, eventData) {
   doc.setTextColor(...WHITE);
   doc.text(eventName, W / 2, 34, { align: "center" });
 
-  doc.setFontSize(9);
-  doc.setTextColor(...NEON);
-  doc.text("OFFICIAL EVENT TICKET", W / 2, 42, { align: "center" });
+  // ── SUBTITLE (Dynamic) ─────────────────────────────
+
+const subtitle = safe(
+  eventData?.subtitle || eventData?.event_subtitle,
+  "OFFICIAL EVENT TICKET"
+).toUpperCase();
+
+doc.setFontSize(9);
+doc.setTextColor(...NEON);
+doc.text(subtitle, W / 2, 42, { align: "center" });
 
   doc.setDrawColor(...NEON);
   doc.setLineWidth(0.35);
@@ -152,7 +159,7 @@ async function buildPdfFile(guest, ticket, eventData) {
   // ── QR CODE ────────────────────────────────────────
   doc.setFontSize(8);
   doc.setTextColor(...NEON);
-  doc.text("SCAN FOR ENTRY", W / 2, qrStageY + 16, { align: "center" });
+  doc.text("SCAN FOR ENTRY", W / 2, qrStageY + 8, { align: "center" });
 
   const qrUrl =
     `https://api.qrserver.com/v1/create-qr-code/?size=420x420` +
