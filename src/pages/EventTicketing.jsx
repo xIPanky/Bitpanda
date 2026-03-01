@@ -91,14 +91,24 @@ export default function EventTicketing() {
   // ── SHARED COMPONENTS ──────────────────────────────────────────────────
 
   const PageHeader = ({ subtitle }) => (
-    <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "rgba(7,7,7,0.95)", borderBottom: "1px solid #141414", backdropFilter: "blur(12px)" }}>
+    <div className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between" style={{ background: "rgba(7,7,7,0.75)", borderBottom: "1px solid rgba(190,255,0,0.08)", boxShadow: "0 8px 30px rgba(0,0,0,0.4)", backdropFilter: "blur(12px)" }}>
       <div className="flex items-center gap-3">
         <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#beff00" }}>
           <Zap className="w-3.5 h-3.5 text-black" />
         </div>
         <div>
           <p className="text-sm font-bold text-white tracking-tight">{event.name}</p>
-          {subtitle && <p className="text-xs" style={{ color: "#444" }}>{subtitle}</p>}
+          {subtitle && <p
+  className="text-xs"
+  style={{
+    color: "rgba(190,255,0,0.6)",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    fontWeight: 700,
+  }}
+>
+  {subtitle}
+</p>}
         </div>
       </div>
       <a href={createPageUrl(`EventDetails?event_id=${eventId}`)} className="p-2 rounded-xl transition-all" style={{ color: "#333" }}
@@ -183,9 +193,21 @@ export default function EventTicketing() {
   // ── NO TICKET TIERS (guest-only flow) ─────────────────────────────────
   if (!hasTickets) {
     return (
-      <div className="min-h-screen" style={{ background: "#070707" }}>
+     <div
+  className="min-h-screen"
+  style={{
+    background: "#070707",
+    backgroundImage:
+      "radial-gradient(circle at 20% 0%, rgba(190,255,0,0.05) 0%, transparent 45%)",
+  }}
+>
         <PageHeader subtitle={step === "success" ? "Registrierung abgeschlossen" : "Gästeliste"} />
-        <div className="max-w-xl mx-auto px-4 py-10">
+        <div
+  className="max-w-xl mx-auto px-4 py-12"
+  style={{
+    perspective: "1200px",
+  }}
+>
           {step !== "success" ? (
             <TicketRegistration
               event={event}
@@ -213,7 +235,16 @@ export default function EventTicketing() {
       <PageHeader subtitle={stepLabel} />
       <div className="max-w-xl mx-auto px-4 py-10">
         {step === "tickets" && (
-          <TicketSelector event={event} tiers={visibleTiers} onSelectTier={handleTicketSelect} />
+          <div
+  style={{
+    background: "#0d0d0d",
+    border: "1px solid rgba(190,255,0,0.10)",
+    borderRadius: "24px",
+    padding: "28px",
+    boxShadow: "0 20px 70px rgba(0,0,0,0.45)",
+    transform: "translateZ(0)",
+  }}
+/>
         )}
         {step === "registration" && selectedTicketTier && (
           <TicketRegistration
