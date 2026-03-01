@@ -81,24 +81,44 @@ export default function EventInfo() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = async () => {
-    if (!event) return;
-    setSaving(true);
+const handleSave = async () => {
+  if (!event) return;
 
-    try {
-      await base44.entities.Event.update(event.id, form);
+  // 🔥 Pflichtfeld-Check
+  if (
+    !form.name.trim() ||
+    !form.date ||
+    !form.location.trim() ||
+    !form.organizer_name.trim() ||
+    !form.organizer_email.trim()
+  ) {
+    toast.error("Bitte alle Pflichtfelder ausfüllen.");
+    return;
+  }
 
-      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+  // 🔥 Email Format prüfen
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(form.organizer_email)) {
+    toast.error("Bitte eine gültige E-Mail-Adresse eingeben.");
+    return;
+  }
 
-      setSavedOk(true);
-      setTimeout(() => setSavedOk(false), 2500);
-    } catch {
-      toast.error("Fehler beim Speichern");
-    }
+  setSaving(true);
 
-    setSaving(false);
-  };
+  try {
+    await base44.entities.Event.update(event.id, form);
+
+    queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+    queryClient.invalidateQueries({ queryKey: ["events"] });
+
+    setSavedOk(true);
+    setTimeout(() => setSavedOk(false), 2500);
+  } catch {
+    toast.error("Fehler beim Speichern");
+  }
+
+  setSaving(false);
+};
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
