@@ -56,11 +56,24 @@ Deno.serve(async (req) => {
 
     const icsContent = generateICSFile(event_id, event_name, event_date, event_time, event_location);
 
-    // Build Google Calendar link separately
-    const startDate = buildStartDate(event_date, event_time);
-    const endDate = new Date(startDate.getTime() + 5 * 3600000);
-    const gcalDates = `${toICSDate(startDate)}/${toICSDate(endDate)}`;
-    const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event_name)}&dates=${gcalDates}&location=${encodeURIComponent(event_location || '')}&details=${encodeURIComponent('Registrierungs-Status: In Prüfung')}`;
+// Build Google Calendar link separately
+const startDate = buildStartDate(event_date, event_time);
+
+let endDate;
+
+if (event_end_time) {
+  endDate = buildStartDate(event_date, event_end_time);
+} else {
+  endDate = new Date(startDate.getTime() + 5 * 3600000);
+}
+
+const gcalDates = `${toICSDate(startDate)}/${toICSDate(endDate)}`;
+
+const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE
+&text=${encodeURIComponent(event_name)}
+&dates=${gcalDates}
+&location=${encodeURIComponent(event_location || '')}
+&details=${encodeURIComponent('Registrierungs-Status: In Prüfung')}`;
 
     const emailHtml = `<!DOCTYPE html>
 <html>
