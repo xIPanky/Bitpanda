@@ -198,7 +198,7 @@ export default function EventDetails() {
 {/* ─── EVENT DETAILS — CINEMATIC MODE ─── */}
 <section
   style={{
-    padding: "30px 24px 30px",
+    padding: "20px 24px 20px",
     maxWidth: "900px",
     margin: "0 auto",
   }}
