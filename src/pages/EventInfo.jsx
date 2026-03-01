@@ -38,10 +38,8 @@ const [form, setForm] = useState({
   organizer_name: "",
   organizer_email: "",
 });
-
-const [initialized, setInitialized] = useState(false);
-
-  const { data: eventArr, isLoading } = useQuery({
+ 
+ const { data: eventArr, isLoading } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => base44.entities.Event.filter({ id: eventId }),
     enabled: !!eventId,
@@ -57,7 +55,7 @@ const [initialized, setInitialized] = useState(false);
   });
 
 useEffect(() => {
-  if (event && !initialized) {
+  if (event) {
     setForm({
       name: event.name || "",
       subtitle: event.subtitle || "",
@@ -74,10 +72,8 @@ useEffect(() => {
       organizer_name: event.organizer_name || "",
       organizer_email: event.organizer_email || "",
     });
-
-    setInitialized(true);
   }
-}, [event, initialized]);
+}, [event?.id]);
 
   const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
