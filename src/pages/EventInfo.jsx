@@ -33,6 +33,7 @@ export default function EventInfo() {
     description: "",
     date: "",
     time: "",
+    end_time: "", 
     location: "",
     cover_image_url: "",
     cover_video_url: "",
@@ -58,6 +59,7 @@ export default function EventInfo() {
         description: event.description || "",
         date: event.date || "",
         time: event.time || "",
+        end_time: event.end_time || "",
         location: event.location || "",
         cover_image_url: event.cover_image_url || "",
         cover_video_url: event.cover_video_url || "",
@@ -77,6 +79,7 @@ export default function EventInfo() {
     if (!form.name.trim()) newErrors.name = "Name ist erforderlich";
     if (!form.date) newErrors.date = "Datum ist erforderlich";
     if (!form.location.trim()) newErrors.location = "Ort ist erforderlich";
+    if (!form.end_time) newErrors.end_time = "Endzeit erforderlich";
     if (!form.organizer_name.trim())
       newErrors.organizer_name = "Veranstalter erforderlich";
 
@@ -87,6 +90,9 @@ export default function EventInfo() {
       if (!emailRegex.test(form.organizer_email)) {
         newErrors.organizer_email = "Ungültige E-Mail";
       }
+    if (form.time && form.end_time && form.end_time <= form.time) {
+  newErrors.end_time = "Endzeit muss nach Startzeit liegen";
+    }
     }
 
     setErrors(newErrors);
@@ -213,6 +219,30 @@ export default function EventInfo() {
               placeholder="Location *"
             />
             {errorText("location")}
+
+            {/* START & END TIME */}
+<div className="flex gap-4">
+  <div className="flex-1">
+    <label className="text-xs text-[#666]">Startzeit</label>
+    <input
+      type="time"
+      style={inputStyle("time")}
+      value={form.time}
+      onChange={(e) => handleChange("time", e.target.value)}
+    />
+  </div>
+
+  <div className="flex-1">
+    <label className="text-xs text-[#666]">Endzeit</label>
+    <input
+      type="time"
+      style={inputStyle("end_time")}
+      value={form.end_time}
+      onChange={(e) => handleChange("end_time", e.target.value)}
+    />
+    {errorText("end_time")}
+  </div>
+</div>
 
             {/* COVER IMAGE */}
             <div>
