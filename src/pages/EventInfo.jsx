@@ -28,19 +28,25 @@ export default function EventInfo() {
   const didInit = useRef(false);
 
   const [form, setForm] = useState({
-    name: "",
-    subtitle: "",
-    description: "",
-    date: "",
-    time: "",
-    end_time: "", 
-    location: "",
-    cover_image_url: "",
-    cover_video_url: "",
-    status: "draft",
-    organizer_name: "",
-    organizer_email: "",
-  });
+  name: "",
+  subtitle: "",
+  description: "",
+  date: "",
+  time: "",
+  end_time: "",
+  location: "",
+  cover_image_url: "",
+  cover_video_url: "",
+  status: "draft",
+  organizer_name: "",
+  organizer_email: "",
+
+  // 👇 HIER NEU
+  primary_color: "#111111",
+  secondary_color: "#ffffff",
+  accent_color: "#ff2e63",
+  theme_mode: "dark",
+});
 
   const { data: eventArr, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -53,20 +59,26 @@ export default function EventInfo() {
 
   useEffect(() => {
     if (event && !didInit.current) {
-      setForm({
-        name: event.name || "",
-        subtitle: event.subtitle || "",
-        description: event.description || "",
-        date: event.date || "",
-        time: event.time || "",
-        end_time: event.end_time || "",
-        location: event.location || "",
-        cover_image_url: event.cover_image_url || "",
-        cover_video_url: event.cover_video_url || "",
-        status: event.status || "draft",
-        organizer_name: event.organizer_name || "",
-        organizer_email: event.organizer_email || "",
-      });
+setForm({
+  name: event.name || "",
+  subtitle: event.subtitle || "",
+  description: event.description || "",
+  date: event.date || "",
+  time: event.time || "",
+  end_time: event.end_time || "",
+  location: event.location || "",
+  cover_image_url: event.cover_image_url || "",
+  cover_video_url: event.cover_video_url || "",
+  status: event.status || "draft",
+  organizer_name: event.organizer_name || "",
+  organizer_email: event.organizer_email || "",
+
+  // 👇 HIER NEU
+  primary_color: event.primary_color || "#111111",
+  secondary_color: event.secondary_color || "#ffffff",
+  accent_color: event.accent_color || "#ff2e63",
+  theme_mode: event.theme_mode || "dark",
+});
       didInit.current = true;
     }
   }, [event]);
