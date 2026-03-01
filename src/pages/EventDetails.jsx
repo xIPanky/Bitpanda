@@ -245,5 +245,3 @@ export default function EventDetails() {
     </div>
   );
 }
-
-6
