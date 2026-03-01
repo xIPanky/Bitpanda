@@ -42,24 +42,6 @@ function GlowButton({ children, onClick, fullWidth, large }) {
   );
 }
 
-const features = [
-  {
-    icon: Star,
-    title: "Exclusive Guestlist",
-    desc: "Jede Registrierung wird persönlich geprüft. Nur handverlesene Gäste erhalten Zugang.",
-  },
-  {
-    icon: Zap,
-    title: "Premium Atmosphere",
-    desc: "Kuratierte Musik, hochwertige Location und ein Ambiente, das du nicht vergisst.",
-  },
-  {
-    icon: Users,
-    title: "Creators & Brands",
-    desc: "Brands, Creators und Unternehmer auf Augenhöhe. Networking auf einem anderen Level.",
-  },
-];
-
 export default function EventDetails() {
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
@@ -184,35 +166,31 @@ export default function EventDetails() {
         </motion.div>
       </section>
 
-      {/* ─── EXPERIENCE ─── */}
-      <section style={{ padding: "60px 24px", maxWidth: "1100px", margin: "0 auto" }}>
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-          <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: NEON, marginBottom: "12px" }}>Was dich erwartet</p>
-          <h2 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.02em", color: "#fff", marginBottom: "60px", lineHeight: 1.05 }}>
-            Eine Nacht,<br />die bleibt.
-          </h2>
-        </motion.div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-          {features.map((f, i) => {
-            const Icon = f.icon;
-            return (
-              <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -4 }}
-                style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "20px", padding: "36px 32px", cursor: "default", transition: "border-color 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(190,255,0,0.2)"}
-                onMouseLeave={e => e.currentTarget.style.borderColor = "#1a1a1a"}
-              >
-                <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(190,255,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px", border: "1px solid rgba(190,255,0,0.12)" }}>
-                  <Icon style={{ width: "20px", height: "20px", color: NEON }} />
-                </div>
-                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "10px", letterSpacing: "-0.01em" }}>{f.title}</h3>
-                <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
+      <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.6 }}
+  style={{
+    background: "#0d0d0d",
+    border: "1px solid #1a1a1a",
+    borderRadius: "24px",
+    padding: "42px 36px",
+    maxWidth: "900px",
+  }}
+>
+  <p
+    style={{
+      fontSize: "18px",
+      lineHeight: 1.7,
+      color: "#cfcfcf",
+      margin: 0,
+      whiteSpace: "pre-line",
+    }}
+  >
+    {event.description || "Beschreibung folgt in Kürze."}
+  </p>
+</motion.div>
 
       {/* ─── EVENT DETAILS ─── */}
       <section style={{ padding: "0 24px 120px", maxWidth: "1100px", margin: "0 auto" }}>
@@ -237,7 +215,7 @@ export default function EventDetails() {
       </section>
 
       {/* ─── REGISTRATION CTA ─── */}
-      <section ref={ctaRef} style={{ padding: "60px 24px 140px", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
+      <section ref={ctaRef} style={{ padding: "100px 24px 140px", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
           <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: NEON, marginBottom: "16px" }}>Guestlist</p>
           <h2 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.025em", lineHeight: 1.05, marginBottom: "16px" }}>
@@ -264,3 +242,4 @@ export default function EventDetails() {
     </div>
   );
 }
+
