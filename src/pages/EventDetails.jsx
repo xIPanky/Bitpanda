@@ -224,10 +224,10 @@ export default function EventDetails() {
           <h2 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.025em", lineHeight: 1.05, marginBottom: "16px" }}>
             Jetzt auf die<br />Gästeliste setzen
           </h2>
-          <p style={{ fontSize: "16px", color: "#555", marginBottom: "48px", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "16px", color: "#555", marginBottom: "24px", lineHeight: 1.6 }}>
             Sichere dir deinen Platz. Limitierte Kapazität.
           </p>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
             <GlowButton large onClick={navigateToTickets}>
               Ticket sichern →
             </GlowButton>
@@ -246,3 +246,4 @@ export default function EventDetails() {
   );
 }
 
+6
