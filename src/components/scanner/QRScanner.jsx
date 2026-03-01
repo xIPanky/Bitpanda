@@ -6,40 +6,65 @@ import { Button } from "@/components/ui/button";
 export default function QRScanner({ onScan, onClose }) {
   const [error, setError] = useState(null);
   const [facingMode, setFacingMode] = useState("environment");
+
   const scannerRef = useRef(null);
+  const hasScannedRef = useRef(false);
   const containerId = "qr-scanner-container";
 
   const startScanner = async (mode) => {
-    if (scannerRef.current) {
-      try { await scannerRef.current.stop(); } catch {}
-    }
-    const html5Qrcode = new Html5Qrcode(containerId);
-    scannerRef.current = html5Qrcode;
+    try {
+      hasScannedRef.current = false;
 
-    html5Qrcode
-      .start(
+      const html5Qrcode = new Html5Qrcode(containerId);
+      scannerRef.current = html5Qrcode;
+
+      await html5Qrcode.start(
         { facingMode: mode },
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
+        async (decodedText) => {
+          if (hasScannedRef.current) return;
+          hasScannedRef.current = true;
+
+          try {
+            await html5Qrcode.stop();
+            await html5Qrcode.clear();
+          } catch {}
+
           onScan(decodedText);
-          html5Qrcode.stop().catch(() => {});
         },
         () => {}
-      )
-      .catch(() => {
-        setError("Kamera konnte nicht gestartet werden. Bitte Berechtigung prüfen.");
-      });
+      );
+    } catch (err) {
+      console.error(err);
+      setError("Kamera konnte nicht gestartet werden. Bitte Berechtigung prüfen.");
+    }
   };
 
   useEffect(() => {
     startScanner(facingMode);
+
     return () => {
-      scannerRef.current?.stop().catch(() => {});
+      const scanner = scannerRef.current;
+      if (scanner) {
+        scanner
+          .stop()
+          .then(() => scanner.clear())
+          .catch(() => {});
+      }
     };
   }, [facingMode]);
 
-  const switchCamera = () => {
-    setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
+  const switchCamera = async () => {
+    const scanner = scannerRef.current;
+    if (scanner) {
+      try {
+        await scanner.stop();
+        await scanner.clear();
+      } catch {}
+    }
+    setFacingMode((prev) =>
+      prev === "environment" ? "user" : "environment"
+    );
   };
 
   return (
@@ -63,12 +88,19 @@ export default function QRScanner({ onScan, onClose }) {
         </div>
         <div className="p-4">
           {error ? (
-            <div className="text-center py-8 text-red-500 text-sm">{error}</div>
+            <div className="text-center py-8 text-red-500 text-sm">
+              {error}
+            </div>
           ) : (
-            <div id={containerId} className="w-full rounded-xl overflow-hidden" />
+            <div
+              id={containerId}
+              className="w-full rounded-xl overflow-hidden"
+            />
           )}
           <p className="text-xs text-slate-400 text-center mt-3">
-            {facingMode === "environment" ? "Rückkamera aktiv" : "Frontkamera aktiv"} · Kamera wechseln mit <RefreshCw className="inline w-3 h-3" />
+            {facingMode === "environment"
+              ? "Rückkamera aktiv"
+              : "Frontkamera aktiv"}
           </p>
         </div>
       </div>
