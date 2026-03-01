@@ -20,19 +20,26 @@ export default function EventInfo() {
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const imageRef = React.useRef(null);
-
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
+const [form, setForm] = useState({
+  name: "",
+  subtitle: "",
+  description: "",
+  date: "",
+  time: "",
+  location: "",
+  cover_image_url: "",
+  cover_image_position: "50% 50%",
+  cover_video_url: "",
+  is_paid: false,
+  currency: "EUR",
+  status: "draft",
+  organizer_name: "",
+  organizer_email: "",
+});
 
-  const [form, setForm] = useState({
-    name: "", subtitle: "", description: "", date: "", time: "", location: "",
-    cover_image_url: "", cover_image_position: "50% 50%",
-    cover_video_url: "",
-    is_paid: false, currency: "EUR", status: "draft",
-    organizer_name: "", organizer_email: "",
-  });
-
-
+const [initialized, setInitialized] = useState(false);
 
   const { data: eventArr, isLoading } = useQuery({
     queryKey: ["event", eventId],
@@ -49,26 +56,28 @@ export default function EventInfo() {
     initialData: [],
   });
 
-  useEffect(() => {
-    if (event) {
-      setForm({
-        name: event.name || "",
-        subtitle: event.subtitle || "",
-        description: event.description || "",
-        date: event.date || "",
-        time: event.time || "",
-        location: event.location || "",
-        cover_image_url: event.cover_image_url || "",
-        cover_image_position: event.cover_image_position || "50% 50%",
-        cover_video_url: event.cover_video_url || "",
-        is_paid: event.is_paid || false,
-        currency: event.currency || "EUR",
-        status: event.status || "draft",
-        organizer_name: event.organizer_name || "",
-        organizer_email: event.organizer_email || "",
-      });
-    }
-  }, [event]);
+useEffect(() => {
+  if (event && !initialized) {
+    setForm({
+      name: event.name || "",
+      subtitle: event.subtitle || "",
+      description: event.description || "",
+      date: event.date || "",
+      time: event.time || "",
+      location: event.location || "",
+      cover_image_url: event.cover_image_url || "",
+      cover_image_position: event.cover_image_position || "50% 50%",
+      cover_video_url: event.cover_video_url || "",
+      is_paid: event.is_paid || false,
+      currency: event.currency || "EUR",
+      status: event.status || "draft",
+      organizer_name: event.organizer_name || "",
+      organizer_email: event.organizer_email || "",
+    });
+
+    setInitialized(true);
+  }
+}, [event, initialized]);
 
   const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
