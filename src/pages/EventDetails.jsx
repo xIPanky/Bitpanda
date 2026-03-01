@@ -195,27 +195,184 @@ export default function EventDetails() {
   </p>
 </motion.div>
 
-      {/* ─── EVENT DETAILS ─── */}
-      <section style={{ padding: "90 24px 100px", maxWidth: "900px", margin: "0 auto" }}>
-        <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "24px", padding: "48px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0" }}>
-          {[
-            event.date && { label: "Datum", icon: Calendar, value: formattedDate },
-            event.time && { label: "Einlass", icon: Clock, value: `Ab ${event.time} Uhr` },
-            event.location && { label: "Location", icon: MapPin, value: event.location },
-          ].filter(Boolean).map((item, i, arr) => {
-            const Icon = item.icon;
-            return (
-              <div key={i} style={{ padding: "24px 32px", borderRight: i < arr.length - 1 ? "1px solid #1a1a1a" : "none" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-                  <Icon style={{ width: "14px", height: "14px", color: NEON }} />
-                  <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "#444" }}>{item.label}</span>
+{/* ─── EVENT DETAILS — CINEMATIC MODE ─── */}
+<section
+  style={{
+    padding: "30px 24px 110px",
+    maxWidth: "900px",
+    margin: "0 auto",
+  }}
+>
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6 }}
+    style={{
+      position: "relative",
+      borderRadius: "30px",
+      padding: "32px",
+      overflow: "hidden",
+      background: "rgba(12,12,12,0.75)",
+      border: "1px solid rgba(190,255,0,0.15)",
+      backdropFilter: "blur(14px)",
+      boxShadow:
+        "0 0 60px rgba(190,255,0,0.08), inset 0 0 50px rgba(255,255,255,0.02)",
+    }}
+  >
+    {/* animated neon gradient */}
+    <motion.div
+      animate={{
+        backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+      }}
+      transition={{
+        duration: 10,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+      style={{
+        position: "absolute",
+        inset: 0,
+        background:
+          "radial-gradient(circle at 20% 0%, rgba(190,255,0,0.12), transparent 60%)",
+        backgroundSize: "200% 200%",
+        pointerEvents: "none",
+      }}
+    />
+
+    {/* GRID */}
+    <div
+      style={{
+        position: "relative",
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: "18px",
+      }}
+    >
+      {[
+        event.date && {
+          label: "Datum",
+          icon: Calendar,
+          value: formattedDate,
+        },
+        event.time && {
+          label: "Einlass",
+          icon: Clock,
+          value: `Ab ${event.time} Uhr`,
+        },
+        event.location && {
+          label: "Location",
+          icon: MapPin,
+          value: event.location,
+        },
+      ]
+        .filter(Boolean)
+        .map((item, i) => {
+          const Icon = item.icon;
+
+          return (
+            <motion.div
+              key={i}
+              whileHover={{
+                y: -6,
+                scale: 1.02,
+              }}
+              transition={{ duration: 0.25 }}
+              style={{
+                position: "relative",
+                borderRadius: "18px",
+                padding: "22px 20px",
+                background:
+                  "linear-gradient(180deg,#141414 0%, #0d0d0d 100%)",
+                border: "1px solid #1f1f1f",
+                boxShadow: "0 0 20px rgba(0,0,0,0.35)",
+                overflow: "hidden",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor =
+                  "rgba(190,255,0,0.35)";
+                e.currentTarget.style.boxShadow =
+                  "0 0 40px rgba(190,255,0,0.16)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "#1f1f1f";
+                e.currentTarget.style.boxShadow =
+                  "0 0 20px rgba(0,0,0,0.35)";
+              }}
+            >
+              {/* moving glow */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "radial-gradient(circle at top left, rgba(190,255,0,0.08), transparent 70%)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              {/* HEADER */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "14px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    borderRadius: "10px",
+                    background: "rgba(190,255,0,0.1)",
+                    border: "1px solid rgba(190,255,0,0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 0 14px rgba(190,255,0,0.2)",
+                  }}
+                >
+                  <Icon
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      color: NEON,
+                    }}
+                  />
                 </div>
-                <p style={{ fontSize: "16px", fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.3 }}>{item.value}</p>
+
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: "#666",
+                  }}
+                >
+                  {item.label}
+                </span>
               </div>
-            );
-          })}
-        </div>
-      </section>
+
+              {/* VALUE */}
+              <p
+                style={{
+                  fontSize: "17px",
+                  fontWeight: 700,
+                  color: "#fff",
+                  margin: 0,
+                  lineHeight: 1.4,
+                }}
+              >
+                {item.value}
+              </p>
+            </motion.div>
+          );
+        })}
+    </div>
+  </motion.div>
+</section>
 
       {/* ─── REGISTRATION CTA ─── */}
       <section ref={ctaRef} style={{ padding: "100px 24px 140px", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
