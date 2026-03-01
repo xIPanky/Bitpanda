@@ -95,6 +95,28 @@ export default function CreateEventDialog({ onClose, onCreated }) {
             <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="z.B. Berlin, Tempodrom" />
           </div>
           <div className="space-y-1.5">
+  <Label>Veranstalter *</Label>
+  <Input
+    value={form.organizer_name}
+    onChange={(e) =>
+      setForm({ ...form, organizer_name: e.target.value })
+    }
+    placeholder="z.B. Fun-Parc"
+  />
+</div>
+
+<div className="space-y-1.5">
+  <Label>E-Mail *</Label>
+  <Input
+    type="email"
+    value={form.organizer_email}
+    onChange={(e) =>
+      setForm({ ...form, organizer_email: e.target.value })
+    }
+    placeholder="info@event.de"
+  />
+</div>
+          <div className="space-y-1.5">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={form.is_paid} onChange={(e) => setForm({ ...form, is_paid: e.target.checked })} className="rounded" />
               <span className="text-sm font-medium text-slate-900">Kostenpflichtiges Event</span>
@@ -113,7 +135,17 @@ export default function CreateEventDialog({ onClose, onCreated }) {
         </div>
         <div className="flex gap-3 mt-8">
           <Button variant="outline" onClick={onClose} className="flex-1">Abbrechen</Button>
-          <Button onClick={handleCreate} disabled={saving || !form.name.trim() || !form.date} className="flex-1 bg-slate-900 hover:bg-slate-800">
+          <Button onClick={handleCreate}
+          disabled={
+  saving ||
+  !form.name.trim() ||
+  !form.date ||
+  !form.location.trim() ||
+  !form.organizer_name.trim() ||
+  !form.organizer_email.trim() ||
+  !form.end_time
+}
+          className="flex-1 bg-slate-900 hover:bg-slate-800">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Event erstellen"}
           </Button>
         </div>
