@@ -18,155 +18,181 @@ async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ── PDF Generation ────────────────────────────────────────────────────────────
-
 async function buildPdfFile(guest, ticket, eventData) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
+  // ── COLORS ─────────────────────────────────────────
   const NEON = [190, 255, 0];
   const BLACK = [7, 7, 7];
   const WHITE = [255, 255, 255];
-  const GRAY = [120, 120, 120];
+  const GRAY = [140, 140, 140];
   const DARK = [12, 12, 12];
-  const DARKGREEN = [13, 26, 0];
+  const PANEL = [13, 13, 13];
+  const GREEN_DARK = [13, 26, 0];
 
   const W = 210;
   const H = 297;
 
-  // ── BACKGROUND
+  const safe = (v, f = "") => (typeof v === "string" && v.trim() ? v.trim() : f);
+
+  const parseDate = (raw) => {
+    let day = "--", mon = "---", year = "----";
+    try {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        day = d.toLocaleDateString("de-DE", { day: "2-digit" });
+        mon = d.toLocaleDateString("de-DE", { month: "short" }).toUpperCase();
+        year = String(d.getFullYear());
+      }
+    } catch (_) {}
+    return { day, mon, year };
+  };
+
+  // ── BACKGROUND ─────────────────────────────────────
   doc.setFillColor(...BLACK);
   doc.rect(0, 0, W, H, "F");
 
-  // Neon Top Line
   doc.setFillColor(...NEON);
   doc.rect(0, 0, W, 3, "F");
 
-  // ── EVENT TITLE
+  // Subtle vignette effect
+  for (let i = 0; i < 14; i++) {
+    const inset = i * 2.2;
+    const shade = 7 + i * 2;
+    doc.setDrawColor(shade, shade, shade);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(inset, inset + 8, W - inset * 2, H - (inset * 2) - 16, 6, 6, "S");
+  }
+
+  // ── HEADER ─────────────────────────────────────────
+  const eventName = safe(eventData?.name, "EVENT").toUpperCase();
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(34);
+  doc.setFontSize(30);
   doc.setTextColor(...WHITE);
-  doc.text((eventData?.name || "EVENT").toUpperCase(), W / 2, 32, {
-    align: "center",
-  });
+  doc.text(eventName, W / 2, 34, { align: "center" });
 
   doc.setFontSize(9);
   doc.setTextColor(...NEON);
-  doc.text("OFFICIAL EVENT TICKET", W / 2, 40, { align: "center" });
+  doc.text("OFFICIAL EVENT TICKET", W / 2, 42, { align: "center" });
 
-  // Divider
   doc.setDrawColor(...NEON);
-  doc.setLineWidth(0.4);
-  doc.line(25, 46, W - 25, 46);
+  doc.setLineWidth(0.35);
+  doc.line(28, 48, W - 28, 48);
 
-  // ── GUEST NAME (BIG HERO)
+  // ── GUEST HERO ─────────────────────────────────────
+  const guestName = safe(ticket.guest_name, "GUEST").toUpperCase();
+
   doc.setFontSize(22);
   doc.setTextColor(...WHITE);
-  doc.text((ticket.guest_name || "").toUpperCase(), W / 2, 62, {
-    align: "center",
-  });
+  doc.text(guestName, W / 2, 66, { align: "center" });
 
-  // CATEGORY PILL
-  const cat = (ticket.category || "STANDARD").toUpperCase();
+  const category = safe(ticket.category, "STANDARD").toUpperCase();
   doc.setFontSize(8);
-  const cw = doc.getTextWidth(cat) + 14;
+  const badgeW = doc.getTextWidth(category) + 16;
+
   doc.setFillColor(...NEON);
-  doc.roundedRect((W - cw) / 2, 68, cw, 8, 3, 3, "F");
+  doc.roundedRect((W - badgeW) / 2, 72, badgeW, 9, 4, 4, "F");
+
   doc.setTextColor(...BLACK);
-  doc.text(cat, W / 2, 73.5, { align: "center" });
+  doc.text(category, W / 2, 78, { align: "center" });
 
-  // ─────────────────────────────────────────────
-// EVENT DETAILS CARD (ULTRA MODERN STYLE)
-// ─────────────────────────────────────────────
+  // ── EVENT DETAILS PANEL ────────────────────────────
+  const panelX = 18;
+  const panelY = 88;
+  const panelW = W - 36;
+  const panelH = 52;
 
-// ─────────────────────────────────────────────
-// QR CARD (NEON FRAME RESTORED)
-// ─────────────────────────────────────────────
+  doc.setFillColor(...PANEL);
+  doc.roundedRect(panelX, panelY, panelW, panelH, 8, 8, "F");
 
-// Background
-doc.setFillColor(...DARKGREEN);
-doc.roundedRect(20, 144, W - 40, 110, 4, 4, 'F');
+  doc.setDrawColor(26, 26, 26);
+  doc.roundedRect(panelX, panelY, panelW, panelH, 8, 8, "S");
 
-// NEON FRAME (BACK LIKE BEFORE)
-doc.setDrawColor(...NEON);
-doc.setLineWidth(0.6);
-doc.roundedRect(20, 144, W - 40, 110, 4, 4, 'S');
+  doc.setDrawColor(...NEON);
+  doc.line(panelX + 14, panelY + 26, panelX + panelW - 14, panelY + 26);
 
-// ─────────────────────────────────────────────
-// PRO EVENT DETAILS CARD (SYNERGY PREMIUM)
-// ─────────────────────────────────────────────
-const cardX = 22;
-const cardY = 88;
-const cardW = W - 44;
-const cardH = 44;
+  const { day, mon, year } = parseDate(eventData?.date);
+  const time = safe(eventData?.time, "--:--");
+  const location = safe(eventData?.location, "Location TBA");
 
-// Card background
-doc.setFillColor(...DARK);
-doc.roundedRect(cardX, cardY, cardW, cardH, 4, 4, "F");
+  doc.setFontSize(24);
+  doc.setTextColor(...NEON);
+  doc.text(day, panelX + 14, panelY + 18);
 
-// Accent line (neon)
-doc.setDrawColor(...NEON);
-doc.setLineWidth(0.35);
-doc.line(cardX + 12, cardY + 24, cardX + cardW - 12, cardY + 24);
+  doc.setFontSize(10);
+  doc.text(mon, panelX + 14, panelY + 24);
 
-// Parse date
-let displayDay = "--";
-let displayMon = "---";
-let displayYear = "----";
+  doc.setFontSize(8);
+  doc.setTextColor(...GRAY);
+  doc.text(year, panelX + 14, panelY + 31);
 
-try {
-  if (eventData && eventData.date) {
-    const d = new Date(eventData.date);
+  doc.setFontSize(16);
+  doc.setTextColor(...WHITE);
+  doc.text(time, panelX + 72, panelY + 18);
 
-    if (!isNaN(d.getTime())) {
-      displayDay = d.toLocaleDateString("de-DE", { day: "2-digit" });
-      displayMon = d
-        .toLocaleDateString("de-DE", { month: "short" })
-        .toUpperCase();
-      displayYear = d.getFullYear().toString();
-    }
+  doc.setFontSize(8);
+  doc.setTextColor(...WHITE);
+  const locLines = doc.splitTextToSize(location, panelW - 28);
+  doc.text(locLines, panelX + 14, panelY + 46);
+
+  // ── QR STAGE ───────────────────────────────────────
+  const qrStageX = 18;
+  const qrStageY = 152;
+  const qrStageW = W - 36;
+  const qrStageH = 108;
+
+  doc.setFillColor(...GREEN_DARK);
+  doc.roundedRect(qrStageX, qrStageY, qrStageW, qrStageH, 10, 10, "F");
+
+  doc.setDrawColor(...NEON);
+  doc.setLineWidth(0.7);
+  doc.roundedRect(qrStageX, qrStageY, qrStageW, qrStageH, 10, 10, "S");
+
+  // ── MICRO GRID ─────────────────────────────────────
+  doc.setDrawColor(25, 35, 10);
+  doc.setLineWidth(0.2);
+
+  for (let x = qrStageX + 4; x < qrStageX + qrStageW - 4; x += 6) {
+    doc.line(x, qrStageY + 4, x, qrStageY + qrStageH - 4);
   }
-} catch (e) {
-  console.log("DATE_PARSE_FAILED", e.message);
-}
 
-// LEFT: Date big
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...NEON);
-doc.setFontSize(22);
-doc.text(displayDay, cardX + 10, cardY + 16);
+  for (let y = qrStageY + 4; y < qrStageY + qrStageH - 4; y += 6) {
+    doc.line(qrStageX + 4, y, qrStageX + qrStageW - 4, y);
+  }
 
-doc.setFontSize(10);
-doc.text(displayMon, cardX + 10, cardY + 21);
+  // ── HOLOGRAPHIC STRIPE ─────────────────────────────
+  const stripeHeight = 18;
+  const stripeY = qrStageY + 36;
 
-doc.setFontSize(8);
-doc.setTextColor(...GRAY);
-doc.text(displayYear, cardX + 10, cardY + 27);
+  for (let i = 0; i < stripeHeight; i++) {
+    const r = 150 + i * 3;
+    const g = 255 - i * 4;
+    const b = 180 + i * 2;
+    doc.setDrawColor(r % 255, g % 255, b % 255);
+    doc.setLineWidth(0.4);
+    doc.line(qrStageX + 6, stripeY + i, qrStageX + qrStageW - 6, stripeY + i);
+  }
 
-doc.setFontSize(6);
-doc.text("DATE", cardX + 10, cardY + 34);
+  // ── QR CODE ────────────────────────────────────────
+  doc.setFontSize(8);
+  doc.setTextColor(...NEON);
+  doc.text("SCAN FOR ENTRY", W / 2, qrStageY + 16, { align: "center" });
 
-// RIGHT: Time
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...WHITE);
-doc.setFontSize(18);
-doc.text(eventData?.time || "--:--", cardX + 60, cardY + 16);
+  const qrUrl =
+    `https://api.qrserver.com/v1/create-qr-code/?size=420x420` +
+    `&data=${encodeURIComponent(ticket.ticket_code)}` +
+    `&bgcolor=0d1a00&color=beff00`;
 
-doc.setFont("helvetica", "normal");
-doc.setFontSize(6);
-doc.setTextColor(...GRAY);
-doc.text("DOORS OPEN", cardX + 60, cardY + 22);
+  const qrSize = 62;
+  const qrX = W / 2 - qrSize / 2;
+  const qrY = qrStageY + 24;
 
-// Bottom: Location
-doc.setFont("helvetica", "bold");
-doc.setFontSize(9);
-doc.setTextColor(...WHITE);
-const loc = eventData?.location || "Location TBA";
-const locLines = doc.splitTextToSize(`LOCATION: ${loc}`, cardW - 20);
-doc.text(locLines || ["Location TBA"], cardX + 10, cardY + 38);
+  doc.setFillColor(10, 10, 10);
+  doc.roundedRect(qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 12, 12, "F");
 
-
-  // QR CODE (centered + bigger)
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(ticket.ticket_code)}&bgcolor=0d1a00&color=beff00`;
+  doc.setDrawColor(35, 50, 15);
+  doc.roundedRect(qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 12, 12, "S");
 
   try {
     const qrResp = await fetch(qrUrl);
@@ -174,40 +200,25 @@ doc.text(locLines || ["Location TBA"], cardX + 10, cardY + 38);
       const qrBuf = await qrResp.arrayBuffer();
       const qrArr = new Uint8Array(qrBuf);
       let binary = "";
-      for (let i = 0; i < qrArr.length; i++) {
-        binary += String.fromCharCode(qrArr[i]);
-      }
+      for (let i = 0; i < qrArr.length; i++) binary += String.fromCharCode(qrArr[i]);
       const qrBase64 = btoa(binary);
-
-      doc.addImage(
-        `data:image/png;base64,${qrBase64}`,
-        "PNG",
-        W / 2 - 25,
-        170,
-        50,
-        50
-      );
+      doc.addImage(`data:image/png;base64,${qrBase64}`, "PNG", qrX, qrY, qrSize, qrSize);
     }
   } catch (_) {}
 
-  doc.setFontSize(7);
-  doc.setTextColor(...GRAY);
-  doc.text("SCAN FOR ENTRY", W / 2, 227, { align: "center" });
+  doc.setFontSize(10);
+  doc.setTextColor(...WHITE);
+  doc.text(guestName, W / 2, qrY + qrSize + 18, { align: "center" });
 
-  // Footer
+  // ── FOOTER ─────────────────────────────────────────
   doc.setFontSize(7);
-  doc.setTextColor(60, 60, 60);
-  doc.text(
-    "Dieses Ticket ist personalisiert und nicht übertragbar.",
-    W / 2,
-    250,
-    { align: "center" }
-  );
+  doc.setTextColor(70, 70, 70);
+  doc.text("Dieses Ticket ist personalisiert und nicht übertragbar.", W / 2, 276, { align: "center" });
 
   doc.setFillColor(...NEON);
   doc.rect(0, H - 3, W, 3, "F");
 
-  // Export file
+  // ── EXPORT ─────────────────────────────────────────
   const dataUri = doc.output("datauristring");
   const base64 = dataUri.split(",")[1];
   const binaryStr = atob(base64);
@@ -719,4 +730,5 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
+
 
