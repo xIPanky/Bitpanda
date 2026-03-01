@@ -2,7 +2,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Save, Loader2, ArrowLeft, CheckCircle, Link2 } from "lucide-react";
+import {
+  Save,
+  Loader2,
+  ArrowLeft,
+  CheckCircle,
+  Link2,
+  ImageIcon,
+  Video,
+  X
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -12,6 +21,8 @@ export default function EventInfo() {
 
   const [saving, setSaving] = useState(false);
   const [savedOk, setSavedOk] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const eventId = urlParams.get("event_id");
@@ -24,7 +35,6 @@ export default function EventInfo() {
     time: "",
     location: "",
     cover_image_url: "",
-    cover_image_position: "50% 50%",
     cover_video_url: "",
     is_paid: false,
     currency: "EUR",
@@ -42,7 +52,7 @@ export default function EventInfo() {
 
   const event = eventArr?.[0];
 
-  // 🔥 IMPORTANT FIX
+  // 🔥 WICHTIG: verhindert Überschreiben beim Tippen
   const didInit = useRef(false);
 
   useEffect(() => {
@@ -55,7 +65,6 @@ export default function EventInfo() {
         time: event.time || "",
         location: event.location || "",
         cover_image_url: event.cover_image_url || "",
-        cover_image_position: event.cover_image_position || "50% 50%",
         cover_video_url: event.cover_video_url || "",
         is_paid: event.is_paid || false,
         currency: event.currency || "EUR",
@@ -74,7 +83,6 @@ export default function EventInfo() {
 
   const handleSave = async () => {
     if (!event) return;
-
     setSaving(true);
 
     try {
@@ -85,11 +93,47 @@ export default function EventInfo() {
 
       setSavedOk(true);
       setTimeout(() => setSavedOk(false), 2500);
-    } catch (error) {
+    } catch {
       toast.error("Fehler beim Speichern");
     }
 
     setSaving(false);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      handleChange("cover_image_url", file_url);
+      handleChange("cover_video_url", "");
+      toast.success("Bild hochgeladen");
+    } catch {
+      toast.error("Upload fehlgeschlagen");
+    }
+
+    setUploadingImage(false);
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingVideo(true);
+
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      handleChange("cover_video_url", file_url);
+      handleChange("cover_image_url", "");
+      toast.success("Video hochgeladen");
+    } catch {
+      toast.error("Upload fehlgeschlagen");
+    }
+
+    setUploadingVideo(false);
   };
 
   const darkInput = {
@@ -106,30 +150,27 @@ export default function EventInfo() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#070707" }}>
-        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#beff00" }} />
+        <Loader2 className="w-6 h-6 animate-spin text-[#beff00]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 md:p-10" style={{ background: "#070707" }}>
+    <div className="min-h-screen p-6 md:p-10 bg-[#070707]">
       <div className="max-w-2xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           
           <div className="mb-8">
             <Link
               to={createPageUrl(`Dashboard?event_id=${eventId}`)}
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-4 transition-colors"
-              style={{ color: "#444" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#beff00")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-4 text-[#444] hover:text-[#beff00]"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Dashboard
             </Link>
 
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-white tracking-tight">
+              <h1 className="text-2xl font-bold text-white">
                 {event?.name || "Veranstaltungsinfos"}
               </h1>
 
@@ -137,8 +178,7 @@ export default function EventInfo() {
                 href={createPageUrl(`EventDetails?event_id=${eventId}`)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold"
-                style={{ background: "#0d1a00", color: "#beff00", border: "1px solid #1a2e00" }}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-[#0d1a00] text-[#beff00] border border-[#1a2e00]"
               >
                 <Link2 className="w-3.5 h-3.5" />
                 Zur Veranstaltung
@@ -146,8 +186,8 @@ export default function EventInfo() {
             </div>
           </div>
 
-          <div className="rounded-2xl p-6 space-y-5" style={{ background: "#0d0d0d", border: "1px solid #1a1a1a" }}>
-            
+          <div className="rounded-2xl p-6 space-y-5 bg-[#0d0d0d] border border-[#1a1a1a]">
+
             <input style={darkInput} value={form.name} onChange={(e) => handleChange("name", e.target.value)} placeholder="Event Name" />
             <input style={darkInput} value={form.subtitle} onChange={(e) => handleChange("subtitle", e.target.value)} placeholder="Untertitel" />
             <textarea style={{ ...darkInput, resize: "vertical" }} rows={4} value={form.description} onChange={(e) => handleChange("description", e.target.value)} placeholder="Beschreibung" />
@@ -159,30 +199,49 @@ export default function EventInfo() {
 
             <input style={darkInput} value={form.location} onChange={(e) => handleChange("location", e.target.value)} placeholder="Location" />
 
+            {/* Cover Media */}
+            <div className="space-y-4 pt-4 border-t border-[#141414]">
+
+              {form.cover_image_url && (
+                <div className="relative h-48 rounded-xl overflow-hidden border border-[#1e1e1e]">
+                  <img src={form.cover_image_url} className="w-full h-full object-cover" />
+                  <button onClick={() => handleChange("cover_image_url", "")} className="absolute top-2 right-2 bg-black/60 p-1 rounded-full">
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              )}
+
+              {form.cover_video_url && (
+                <div className="relative h-48 rounded-xl overflow-hidden border border-[#1e1e1e]">
+                  <video src={form.cover_video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
+                  <button onClick={() => handleChange("cover_video_url", "")} className="absolute top-2 right-2 bg-black/60 p-1 rounded-full">
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              )}
+
+              {!form.cover_image_url && !form.cover_video_url && (
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#1e1e1e] rounded-xl cursor-pointer hover:border-[#beff00] transition">
+                    {uploadingImage ? <Loader2 className="animate-spin w-5 h-5 text-[#beff00]" /> : <><ImageIcon className="w-6 h-6 text-[#444]" /><span className="text-xs text-[#555] mt-1">Bild</span></>}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  </label>
+
+                  <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[#1e1e1e] rounded-xl cursor-pointer hover:border-[#beff00] transition">
+                    {uploadingVideo ? <Loader2 className="animate-spin w-5 h-5 text-[#beff00]" /> : <><Video className="w-6 h-6 text-[#444]" /><span className="text-xs text-[#555] mt-1">Video</span></>}
+                    <input type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+                  </label>
+                </div>
+              )}
+            </div>
+
             <div className="pt-6 border-t border-[#141414] space-y-4">
               <input style={darkInput} value={form.organizer_name} onChange={(e) => handleChange("organizer_name", e.target.value)} placeholder="Veranstalter Name" />
               <input type="email" style={darkInput} value={form.organizer_email} onChange={(e) => handleChange("organizer_email", e.target.value)} placeholder="Veranstalter E-Mail" />
             </div>
 
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-50"
-              style={savedOk ? { background: "#0d1a00", color: "#beff00" } : { background: "#beff00", color: "#070707" }}
-            >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : savedOk ? (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  Gespeichert!
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  Speichern
-                </>
-              )}
+            <button onClick={handleSave} disabled={saving} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold uppercase transition disabled:opacity-50 bg-[#beff00] text-black">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : savedOk ? <><CheckCircle className="w-4 h-4" />Gespeichert!</> : <><Save className="w-4 h-4" />Speichern</>}
             </button>
 
           </div>
