@@ -372,27 +372,26 @@ async function sendEmailWithRetry(_base44, to, subject, body, pdfUrl, ticketCode
   }
 }
 
-// ── ICS Calendar File Generation ─────────────────────────────────────────
-
-// ── ICS Calendar File Generation (FIXED & STABLE) ─────────────────────────
+// ── ICS Calendar File Generation (ENDTIME FIXED) ─────────────────────────
 
 function generateICSFile(eventData) {
-  const eventName = eventData?.name || 'Event';
+  const eventName = eventData?.name || "Event";
   const eventDateRaw = eventData?.date;
-  const eventTime = eventData?.time || '09:00';
-  const eventLocation = eventData?.location || '';
+  const eventTime = eventData?.time || "09:00";
+  const eventEndTime = eventData?.end_time || null;
+  const eventLocation = eventData?.location || "";
 
   if (!eventDateRaw) return null;
 
   // ── SAFE DATE PARSING ───────────────────────────────────────────
   const baseDate = new Date(eventDateRaw);
   if (isNaN(baseDate.getTime())) {
-    console.error('ICS_ERROR: Invalid event date', eventDateRaw);
+    console.error("ICS_ERROR: Invalid event date", eventDateRaw);
     return null;
   }
 
-  // Parse time safely
-  const [hours, minutes] = eventTime.split(':').map(n => Number(n));
+  // ── START TIME ───────────────────────────────────────────
+  const [hours, minutes] = String(eventTime).split(":").map((n) => Number(n));
 
   baseDate.setHours(hours || 0);
   baseDate.setMinutes(minutes || 0);
@@ -401,25 +400,45 @@ function generateICSFile(eventData) {
 
   const startDate = new Date(baseDate);
 
-  // Default duration = 2 hours
-  const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+  // ── END TIME ───────────────────────────────────────────
+  let endDate;
 
-  // ── FORMAT WITHOUT UTC SHIFT (NO "Z") ───────────────────────────
-  const pad = (n) => String(n).padStart(2, '0');
+  if (eventEndTime) {
+    const [endHours, endMinutes] = String(eventEndTime).split(":").map((n) => Number(n));
+
+    const endBase = new Date(startDate);
+    endBase.setHours(endHours || 0);
+    endBase.setMinutes(endMinutes || 0);
+    endBase.setSeconds(0);
+    endBase.setMilliseconds(0);
+
+    endDate = new Date(endBase);
+
+    // Falls Endzeit vor oder gleich Startzeit liegt → Event geht über Mitternacht
+    if (endDate.getTime() <= startDate.getTime()) {
+      endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+  } else {
+    // Fallback = 2 Stunden
+    endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+  }
+
+  // ── FORMAT (LOCAL TIME WITHOUT Z) ─────────────────────────────────
+  const pad = (n) => String(n).padStart(2, "0");
 
   const formatDateTime = (date) => {
     return (
       date.getFullYear() +
       pad(date.getMonth() + 1) +
       pad(date.getDate()) +
-      'T' +
+      "T" +
       pad(date.getHours()) +
       pad(date.getMinutes()) +
       pad(date.getSeconds())
     );
   };
 
-  const uid = `${eventName.replace(/\s+/g, '-')}-${Date.now()}@synergy.event`;
+  const uid = `${eventName.replace(/\s+/g, "-")}-${Date.now()}@synergy.event`;
 
   const ics = `BEGIN:VCALENDAR
 VERSION:2.0
