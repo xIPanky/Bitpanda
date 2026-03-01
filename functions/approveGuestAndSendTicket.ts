@@ -450,6 +450,9 @@ function buildApprovalEmail(guest, eventData) {
     : '';
   const eventTime = eventData?.time || '';
   const eventLocation = eventData?.location || '';
+  const organizerEmail =
+  (eventData?.organizer_email && eventData.organizer_email.trim()) ||
+  "Bitte wende dich an deine Ansprechperson";
 
   return `<!DOCTYPE html>
 <html>
@@ -498,9 +501,9 @@ function buildApprovalEmail(guest, eventData) {
 
     <p style="margin:0 0 12px;color:#666;font-size:12px;line-height:1.6;">
       Schreib uns gerne eine Nachricht an 
-      <a href="mailto:yannik@panke-management.com" 
+      <a href="mailto:${organizerEmail}" 
          style="color:#beff00;text-decoration:none;font-weight:600;">
-         yannik@panke-management.com
+         ${organizerEmail}
       </a>
     </p>
 
