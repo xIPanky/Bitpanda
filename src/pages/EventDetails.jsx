@@ -177,7 +177,7 @@ export default function EventDetails() {
     borderRadius: "24px",
     padding: "42px 36px",
     maxWidth: "900px",
-    margin: "0 auto",     // ⭐ DAS zentriert den Block
+    margin: "70px auto 80px", // ⭐ DAS zentriert den Block
     textAlign: "center",  // ⭐ Text mittig
   }}
 
