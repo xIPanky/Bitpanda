@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
             <tr><td style="padding:20px;text-align:center;">
               <p style="margin:0 0 6px;color:#666;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;">Registrierungs-Status</p>
               <p style="margin:0;color:#beff00;font-weight:700;font-size:16px;">⏳ In Prüfung</p>
-              <p style="margin:8px 0 0;color:#888;font-size:12px;">Genehmigung in ca. 24 Stunden</p>
+              <p style="margin:8px 0 0;color:#888;font-size:12px;">Genehmigung in ca. 48 Stunden</p>
             </td></tr>
           </table>
         </td></tr>
