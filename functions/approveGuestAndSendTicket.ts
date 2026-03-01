@@ -104,44 +104,81 @@ doc.text(subtitle, W / 2, 42, { align: "center" });
   doc.setTextColor(...BLACK);
   doc.text(category, W / 2, 78, { align: "center" });
 
-  // ── EVENT DETAILS PANEL ────────────────────────────
-  const panelX = 18;
-  const panelY = 88;
-  const panelW = W - 36;
-  const panelH = 52;
+// ── EVENT DETAILS PANEL (LUXURY REWORK) ────────────────────────────
 
-  doc.setFillColor(...PANEL);
-  doc.roundedRect(panelX, panelY, panelW, panelH, 8, 8, "F");
+const panelX = 18;
+const panelY = 88;
+const panelW = W - 36;
+const panelH = 58;
 
-  doc.setDrawColor(26, 26, 26);
-  doc.roundedRect(panelX, panelY, panelW, panelH, 8, 8, "S");
+// Background
+doc.setFillColor(14, 14, 14);
+doc.roundedRect(panelX, panelY, panelW, panelH, 10, 10, "F");
 
-  doc.setDrawColor(...NEON);
-  doc.line(panelX + 14, panelY + 26, panelX + panelW - 14, panelY + 26);
+// Soft border
+doc.setDrawColor(30, 30, 30);
+doc.setLineWidth(0.4);
+doc.roundedRect(panelX, panelY, panelW, panelH, 10, 10, "S");
 
-  const { day, mon, year } = parseDate(eventData?.date);
-  const time = safe(eventData?.time, "--:--");
-  const location = safe(eventData?.location, "Location TBA");
+// Subtle top neon accent
+doc.setFillColor(...NEON);
+doc.rect(panelX + 20, panelY, panelW - 40, 2, "F");
 
-  doc.setFontSize(24);
-  doc.setTextColor(...NEON);
-  doc.text(day, panelX + 14, panelY + 18);
+// Vertical divider
+doc.setDrawColor(35, 35, 35);
+doc.setLineWidth(0.3);
+doc.line(panelX + 60, panelY + 14, panelX + 60, panelY + panelH - 14);
 
-  doc.setFontSize(10);
-  doc.text(mon, panelX + 14, panelY + 24);
+// Parse data
+const { day, mon, year } = parseDate(eventData?.date);
+const time = safe(eventData?.time, "--:--");
+const location = safe(eventData?.location, "Location TBA");
 
-  doc.setFontSize(8);
-  doc.setTextColor(...GRAY);
-  doc.text(year, panelX + 14, panelY + 31);
+// ── DATE BLOCK (LEFT) ───────────────────────────────
 
-  doc.setFontSize(16);
-  doc.setTextColor(...WHITE);
-  doc.text(time, panelX + 72, panelY + 18);
+// Day (large)
+doc.setFont("helvetica", "bold");
+doc.setFontSize(28);
+doc.setTextColor(...WHITE);
+doc.text(day, panelX + 18, panelY + 28);
 
-  doc.setFontSize(8);
-  doc.setTextColor(...WHITE);
-  const locLines = doc.splitTextToSize(location, panelW - 28);
-  doc.text(locLines, panelX + 14, panelY + 46);
+// Month
+doc.setFontSize(10);
+doc.setTextColor(...NEON);
+doc.text(mon, panelX + 18, panelY + 36);
+
+// Year
+doc.setFontSize(8);
+doc.setTextColor(120, 120, 120);
+doc.text(year, panelX + 18, panelY + 42);
+
+// ── INFO STACK (RIGHT) ─────────────────────────────
+
+// TIME LABEL
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
+doc.setTextColor(120, 120, 120);
+doc.text("DOORS OPEN", panelX + 74, panelY + 22);
+
+// TIME VALUE
+doc.setFont("helvetica", "bold");
+doc.setFontSize(16);
+doc.setTextColor(...WHITE);
+doc.text(time, panelX + 74, panelY + 30);
+
+// LOCATION LABEL
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
+doc.setTextColor(120, 120, 120);
+doc.text("LOCATION", panelX + 74, panelY + 42);
+
+// LOCATION VALUE
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+doc.setTextColor(...WHITE);
+
+const locLines = doc.splitTextToSize(location, panelW - 90);
+doc.text(locLines, panelX + 74, panelY + 50);
 
   // ── QR STAGE ───────────────────────────────────────
   const qrStageX = 18;
