@@ -185,7 +185,7 @@ export default function EventDetails() {
       </section>
 
       {/* ─── EXPERIENCE ─── */}
-      <section style={{ padding: "120px 24px", maxWidth: "1100px", margin: "0 auto" }}>
+      <section style={{ padding: "60px 24px", maxWidth: "1100px", margin: "0 auto" }}>
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
           <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: NEON, marginBottom: "12px" }}>Was dich erwartet</p>
           <h2 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.02em", color: "#fff", marginBottom: "60px", lineHeight: 1.05 }}>
