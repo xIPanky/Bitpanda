@@ -227,7 +227,7 @@ export default function EventDetails() {
           <p style={{ fontSize: "16px", color: "#555", marginBottom: "48px", lineHeight: 1.6 }}>
             Sichere dir deinen Platz. Limitierte Kapazität.
           </p>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
             <GlowButton large onClick={navigateToTickets}>
               Ticket sichern →
             </GlowButton>
