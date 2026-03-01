@@ -124,8 +124,8 @@ export default function Layout({ children, currentPageName }) {
             <Zap className="w-4 h-4 text-black" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white tracking-widest uppercase">Synergy</p>
-            <p className="text-[10px]" style={{ color: "#444" }}>Guestlist Platform</p>
+            <p className="text-sm font-bold text-white tracking-widest uppercase">EventPas</p>
+            <p className="text-[10px]" style={{ color: "#444" }}>Ticket & Guestlist System</p>
           </div>
         </div>
 
