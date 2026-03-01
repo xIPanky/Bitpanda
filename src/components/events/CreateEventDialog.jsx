@@ -100,7 +100,7 @@ export default function CreateEventDialog({ onClose, onCreated }) {
           </button>
         </div>
 
-        <div className="space-y-4 max-h-96 overflow-y-auto px-1">
+        <div className="space-y-4 max-h-96 overflow-y-auto pl-1 pr-3">
 
           {/* NAME */}
           <div>
