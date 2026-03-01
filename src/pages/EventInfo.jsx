@@ -337,11 +337,63 @@ setForm({
               }
               placeholder="E-Mail *"
             />
-            {errorText("organizer_email")}
+           {errorText("organizer_email")}
 
-            {/* SAVE */}
-            <button
-              onClick={handleSave}
+{/* EVENT DESIGN */}
+<div className="pt-6 border-t border-[#1a1a1a] space-y-4">
+
+  <h3 className="text-sm text-[#666] uppercase tracking-wider">
+    Event Design
+  </h3>
+
+  <div className="flex gap-6">
+
+    <div className="flex flex-col">
+      <label className="text-xs text-[#666] mb-1">Primary</label>
+      <input
+        type="color"
+        value={form.primary_color}
+        onChange={(e) => handleChange("primary_color", e.target.value)}
+        className="w-14 h-10 cursor-pointer"
+      />
+    </div>
+
+    <div className="flex flex-col">
+      <label className="text-xs text-[#666] mb-1">Secondary</label>
+      <input
+        type="color"
+        value={form.secondary_color}
+        onChange={(e) => handleChange("secondary_color", e.target.value)}
+        className="w-14 h-10 cursor-pointer"
+      />
+    </div>
+
+    <div className="flex flex-col">
+      <label className="text-xs text-[#666] mb-1">Accent</label>
+      <input
+        type="color"
+        value={form.accent_color}
+        onChange={(e) => handleChange("accent_color", e.target.value)}
+        className="w-14 h-10 cursor-pointer"
+      />
+    </div>
+
+  </div>
+
+  <select
+    value={form.theme_mode}
+    onChange={(e) => handleChange("theme_mode", e.target.value)}
+    style={inputStyle("theme_mode")}
+  >
+    <option value="dark">Dark</option>
+    <option value="light">Light</option>
+  </select>
+
+</div>
+
+{/* SAVE */}
+<button
+  onClick={handleSave}
               disabled={saving}
               className="w-full py-3 rounded-xl font-bold uppercase text-black bg-[#beff00]"
             >
