@@ -338,7 +338,7 @@ export default function Dashboard() {
 
   {eventId && (
     <Link
-      to={createPageUrl(`Event?event_id=${eventId}`)}
+      to={`${createPageUrl("EventDetails")}?event_id=${encodeURIComponent(eventId)}`}
       target="_blank"
       className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest px-4 py-2 rounded-xl transition-all hover:opacity-80"
       style={{
