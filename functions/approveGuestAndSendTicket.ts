@@ -149,18 +149,6 @@ async function buildPdfFile(guest, ticket, eventData) {
   doc.setLineWidth(0.7);
   doc.roundedRect(qrStageX, qrStageY, qrStageW, qrStageH, 10, 10, "S");
 
-  // ── MICRO GRID ─────────────────────────────────────
-  doc.setDrawColor(25, 35, 10);
-  doc.setLineWidth(0.2);
-
-  for (let x = qrStageX + 4; x < qrStageX + qrStageW - 4; x += 6) {
-    doc.line(x, qrStageY + 4, x, qrStageY + qrStageH - 4);
-  }
-
-  for (let y = qrStageY + 4; y < qrStageY + qrStageH - 4; y += 6) {
-    doc.line(qrStageX + 4, y, qrStageX + qrStageW - 4, y);
-  }
-
   // ── QR CODE ────────────────────────────────────────
   doc.setFontSize(8);
   doc.setTextColor(...NEON);
