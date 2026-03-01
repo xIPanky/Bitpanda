@@ -7,7 +7,7 @@ import RegistrationTable from "../components/admin/RegistrationTable";
 import ApprovalSuccessOverlay from "../components/admin/ApprovalSuccessOverlay";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, ExternalLink } from "lucide-react";
 
 export default function Dashboard() {
   const [filterStatus, setFilterStatus] = useState("all");
@@ -304,38 +304,54 @@ export default function Dashboard() {
         message={successMessage}
       />
 
-      <div>
-        <Link
-          to={createPageUrl("Home")}
-          className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest mb-4 transition-colors"
-          style={{ color: "#444" }}
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Alle Events
-        </Link>
+<div className="flex items-start justify-between gap-4">
+  <div>
+    <Link
+      to={createPageUrl("Home")}
+      className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest mb-4 transition-colors"
+      style={{ color: "#444" }}
+    >
+      <ArrowLeft className="w-3.5 h-3.5" />
+      Alle Events
+    </Link>
 
-        <h1 className="text-2xl font-bold text-white tracking-tight">
-          {event?.name || "Dashboard"}
-        </h1>
+    <h1 className="text-2xl font-bold text-white tracking-tight">
+      {event?.name || "Dashboard"}
+    </h1>
 
-        {event?.date && (
-          <div className="flex items-center gap-4 mt-1.5">
-            <span className="flex items-center gap-1.5 text-sm text-gray-500">
-              <Calendar className="w-3.5 h-3.5" />
-              {new Date(event.date).toLocaleDateString(
-                "de-DE"
-              )}
-            </span>
+    {event?.date && (
+      <div className="flex items-center gap-4 mt-1.5">
+        <span className="flex items-center gap-1.5 text-sm text-gray-500">
+          <Calendar className="w-3.5 h-3.5" />
+          {new Date(event.date).toLocaleDateString("de-DE")}
+        </span>
 
-            {event.location && (
-              <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                <MapPin className="w-3.5 h-3.5" />
-                {event.location}
-              </span>
-            )}
-          </div>
+        {event.location && (
+          <span className="flex items-center gap-1.5 text-sm text-gray-500">
+            <MapPin className="w-3.5 h-3.5" />
+            {event.location}
+          </span>
         )}
       </div>
+    )}
+  </div>
+
+  {eventId && (
+    <Link
+      to={createPageUrl(`Event?event_id=${eventId}`)}
+      target="_blank"
+      className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest px-4 py-2 rounded-xl transition-all hover:opacity-80"
+      style={{
+        background: "#111",
+        border: "1px solid #1f1f1f",
+        color: "white",
+      }}
+    >
+      Event ansehen
+      <ExternalLink className="w-3.5 h-3.5" />
+    </Link>
+  )}
+</div>
 
       <StatsOverview stats={stats} />
 
