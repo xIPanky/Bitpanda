@@ -530,7 +530,7 @@ deine Registrierung wurde erfolgreich bestätigt.<br>
 Dein personalisiertes Ticket befindet sich im Anhang dieser E-Mail.<br><br>
 
 <span style="color:#beff00;font-weight:600;">
-Wir freuen uns auf eine unvergessliche Nacht mit dir.
+Wir freuen uns auf die Veranstaltung mit dir!.
 </span>
 
 </td>
