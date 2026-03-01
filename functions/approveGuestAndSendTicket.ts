@@ -161,19 +161,6 @@ async function buildPdfFile(guest, ticket, eventData) {
     doc.line(qrStageX + 4, y, qrStageX + qrStageW - 4, y);
   }
 
-  // ── HOLOGRAPHIC STRIPE ─────────────────────────────
-  const stripeHeight = 18;
-  const stripeY = qrStageY + 36;
-
-  for (let i = 0; i < stripeHeight; i++) {
-    const r = 150 + i * 3;
-    const g = 255 - i * 4;
-    const b = 180 + i * 2;
-    doc.setDrawColor(r % 255, g % 255, b % 255);
-    doc.setLineWidth(0.4);
-    doc.line(qrStageX + 6, stripeY + i, qrStageX + qrStageW - 6, stripeY + i);
-  }
-
   // ── QR CODE ────────────────────────────────────────
   doc.setFontSize(8);
   doc.setTextColor(...NEON);
