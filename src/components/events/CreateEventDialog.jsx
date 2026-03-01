@@ -29,16 +29,40 @@ export default function CreateEventDialog({ onClose, onCreated }) {
 
   const [saving, setSaving] = useState(false);
 
-  const handleCreate = async () => {
-    if (!form.name.trim() || !form.date) return;
+const handleCreate = async () => {
+  if (
+    !form.name.trim() ||
+    !form.date ||
+    !form.location.trim() ||
+    !form.organizer_name.trim() ||
+    !form.organizer_email.trim() ||
+    !form.end_time
+  ) {
+    return;
+  }
+
+  if (form.time && form.end_time && form.end_time <= form.time) {
+    alert("Endzeit muss nach der Startzeit liegen.");
+    return;
+  }
+
+  try {
     setSaving(true);
+
     const newEvent = await base44.entities.Event.create({
       ...form,
       status: "published",
       registration_open: true,
     });
+
     onCreated(newEvent);
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Fehler beim Erstellen");
+  } finally {
+    setSaving(false);
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
