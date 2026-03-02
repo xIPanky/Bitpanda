@@ -80,10 +80,12 @@ export default function Layout({ children, currentPageName }) {
     { name: "Scanner", page: `Scanner?event_id=${eventId}`, icon: ScanLine },
   ] : [];
 
-  const topNavItems = [
-    { name: "Meine Events", page: "Home", icon: CalendarDays },
-    { name: "Gästedaten", page: "GuestData", icon: ClipboardList },
-  ];
+const topNavItems = [
+  { name: "Meine Events", page: "Home", icon: CalendarDays },
+  ...(user?.role === "admin"
+    ? [{ name: "Gästedaten", page: "GuestData", icon: ClipboardList }]
+    : []),
+];
 
   if (publicPages.includes(currentPageName)) {
     return <div style={{ background: "#070707", minHeight: "100vh" }}>{children}</div>;
