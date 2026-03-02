@@ -38,7 +38,16 @@ function generateICSFile(event_id, event_name, event_date, event_time, event_loc
 
 Deno.serve(async (req) => {
   try {
-    const { email, first_name, event_id, event_name, event_date, event_time, event_location } = await req.json();
+  const { 
+  email, 
+  first_name, 
+  event_id, 
+  event_name, 
+  event_date, 
+  event_time, 
+  event_end_time,   // ← HINZUFÜGEN
+  event_location 
+} = await req.json();
 
     if (!email || !first_name || !event_name) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -69,11 +78,12 @@ if (event_end_time) {
 
 const gcalDates = `${toICSDate(startDate)}/${toICSDate(endDate)}`;
 
-const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE
-&text=${encodeURIComponent(event_name)}
-&dates=${gcalDates}
-&location=${encodeURIComponent(event_location || '')}
-&details=${encodeURIComponent('Registrierungs-Status: In Prüfung')}`;
+const gcalUrl =
+  `https://www.google.com/calendar/render?action=TEMPLATE` +
+  `&text=${encodeURIComponent(event_name)}` +
+  `&dates=${gcalDates}` +
+  `&location=${encodeURIComponent(event_location || '')}` +
+  `&details=${encodeURIComponent('Registrierungs-Status: In Prüfung')}`;
 
     const emailHtml = `<!DOCTYPE html>
 <html>
