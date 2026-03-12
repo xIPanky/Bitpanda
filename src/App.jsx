@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 const WALLET_MASK = "BP-7X9A-__Q4-__K8";
 const DISPLAY_ADDRESS = "0xB17P...4NDA";
-const DISPLAY_BALANCE = "€50.000 in BTC";
+const DISPLAY_BALANCE = "€100 in BTC";
 const MAX_ATTEMPTS_PER_PLAYER = 1;
 
 const BITPANDA_GREEN = "#2CEC9A";
@@ -13,7 +13,7 @@ const TEXT = "#b6ffd8";
 const DIM = "#72d9a7";
 
 function formatCode(value) {
-  const clean = value.replace(/[^A-Z0-9]/gi, "").toUpperCase();
+  const clean = value.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 14);
 
   const part1 = clean.slice(0, 2);
   const part2 = clean.slice(2, 6);
@@ -21,7 +21,6 @@ function formatCode(value) {
   const part4 = clean.slice(10, 14);
 
   let formatted = part1;
-
   if (part2) formatted += "-" + part2;
   if (part3) formatted += "-" + part3;
   if (part4) formatted += "-" + part4;
@@ -33,7 +32,9 @@ function App() {
   const [name, setName] = useState("");
   const [guess, setGuess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isHacking, setIsHacking] = useState(false);
   const [message, setMessage] = useState(">> SYSTEM READY");
+  const [displayMessage, setDisplayMessage] = useState(">> SYSTEM READY");
   const [matchedChars, setMatchedChars] = useState(null);
   const [bestPossibleDisplay, setBestPossibleDisplay] = useState(WALLET_MASK);
   const [leaderboard, setLeaderboard] = useState([]);
@@ -58,7 +59,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (name) localStorage.setItem("bitpanda_challenge_name", name);
+    if (name) {
+      localStorage.setItem("bitpanda_challenge_name", name);
+    }
   }, [name]);
 
   useEffect(() => {
@@ -67,6 +70,20 @@ function App() {
       JSON.stringify(leaderboard)
     );
   }, [leaderboard]);
+
+  useEffect(() => {
+    let i = 0;
+    setDisplayMessage("");
+
+    const text = message;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayMessage(text.slice(0, i));
+      if (i >= text.length) clearInterval(interval);
+    }, 18);
+
+    return () => clearInterval(interval);
+  }, [message]);
 
   const attemptsLeft = useMemo(() => {
     return Math.max(0, MAX_ATTEMPTS_PER_PLAYER - attemptsUsed);
@@ -92,6 +109,7 @@ function App() {
 
     try {
       setIsSubmitting(true);
+      setIsHacking(true);
       setMessage(">> VERIFYING INPUT ...");
 
       const res = await fetch("/functions/submit-attempt", {
@@ -128,7 +146,12 @@ function App() {
       }
 
       setGuess("");
+
+      setTimeout(() => {
+        setIsHacking(false);
+      }, 700);
     } catch (error) {
+      setIsHacking(false);
       setMessage(">> ERROR: " + (error.message || "UNKNOWN ERROR"));
     } finally {
       setIsSubmitting(false);
@@ -162,17 +185,45 @@ function App() {
           50% { opacity: 1; }
           100% { opacity: .98; }
         }
+
+        @keyframes terminalFlash {
+          0% { opacity: 0; }
+          30% { opacity: .08; }
+          100% { opacity: 0; }
+        }
+
+        @media (max-width: 1100px) {
+          .hero-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
 
       <div style={styles.page}>
+        {isHacking && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "#2CEC9A",
+              opacity: 0.06,
+              pointerEvents: "none",
+              animation: "terminalFlash .5s ease-out",
+              zIndex: 5,
+            }}
+          />
+        )}
+
         <div style={styles.scanlines} />
+
         <div style={styles.wrapper}>
           <header style={styles.header}>
             <div>
               <div style={styles.kicker}>BITPANDA PRESENTS</div>
               <h1 style={styles.title}>CRACK THE WALLET</h1>
               <p style={styles.subtitle}>
-                Enter your name. You get one shot. Guess the code. Climb the leaderboard.
+                Enter your name. You get one shot. Guess the code. Climb the
+                leaderboard.
               </p>
             </div>
 
@@ -184,13 +235,23 @@ function App() {
             </div>
           </header>
 
-          <section style={styles.heroGrid}>
+          <section className="hero-grid" style={styles.heroGrid}>
             <div style={styles.leftCol}>
               <div style={styles.card}>
                 <div style={styles.cardLabel}>LIVE WALLET</div>
                 <div style={styles.balance}>{DISPLAY_BALANCE}</div>
                 <div style={styles.monoLine}>ADDRESS: {DISPLAY_ADDRESS}</div>
-                <div style={styles.walletMask}>KEY: {WALLET_MASK}</div>
+
+                <div
+                  style={{
+                    ...styles.walletMask,
+                    textShadow: isHacking
+                      ? "0 0 14px rgba(44,236,154,.7), 0 0 24px rgba(44,236,154,.3)"
+                      : styles.walletMask.textShadow,
+                  }}
+                >
+                  KEY: {guess || WALLET_MASK}
+                </div>
 
                 <div style={styles.divider} />
 
@@ -206,10 +267,12 @@ function App() {
               <div style={styles.card}>
                 <div style={styles.cardLabel}>YOUR BEST MATCH</div>
                 <div style={styles.bestMatch}>{bestPossibleDisplay}</div>
+
                 <div style={styles.metaRow}>
                   <span>MATCHED CHARS:</span>
                   <strong>{matchedChars ?? 0}</strong>
                 </div>
+
                 <div style={styles.metaRow}>
                   <span>ATTEMPTS LEFT:</span>
                   <strong>{attemptsLeft}</strong>
@@ -226,10 +289,10 @@ function App() {
 
                 <form onSubmit={handleSubmit} style={styles.form}>
                   <label style={styles.label}>NAME</label>
-              <input
-  style={styles.input}
-  value={guess}
-  onChange={(e) => setGuess(formatCode(e.target.value))}
+                  <input
+                    style={styles.input}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     placeholder="YOUR NAME"
                     maxLength={24}
                     disabled={attemptsLeft <= 0 || isSubmitting}
@@ -237,11 +300,16 @@ function App() {
 
                   <label style={styles.label}>YOUR CODE</label>
                   <input
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      boxShadow: isHacking
+                        ? "0 0 18px rgba(44,236,154,.45), 0 0 30px rgba(44,236,154,.15)"
+                        : "none",
+                    }}
                     value={guess}
-                    onChange={(e) => setGuess(e.target.value.toUpperCase())}
+                    onChange={(e) => setGuess(formatCode(e.target.value))}
                     placeholder="BP-XXXX-XXXX-XXXX"
-                    maxLength={16}
+                    maxLength={17}
                     disabled={attemptsLeft <= 0 || isSubmitting}
                   />
 
@@ -251,7 +319,9 @@ function App() {
                       ...styles.button,
                       opacity: isSubmitting || attemptsLeft <= 0 ? 0.65 : 1,
                       cursor:
-                        isSubmitting || attemptsLeft <= 0 ? "not-allowed" : "pointer",
+                        isSubmitting || attemptsLeft <= 0
+                          ? "not-allowed"
+                          : "pointer",
                     }}
                     disabled={isSubmitting || attemptsLeft <= 0}
                   >
@@ -261,7 +331,10 @@ function App() {
 
                 <div style={styles.console}>
                   <div style={styles.consoleTitle}>SYSTEM LOG</div>
-                  <div>{message}</div>
+                  <div>
+                    {displayMessage}
+                    <span style={styles.consoleCursor}>█</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -269,6 +342,7 @@ function App() {
             <aside style={styles.rightCol}>
               <div style={styles.card}>
                 <div style={styles.cardLabel}>LEADERBOARD</div>
+
                 <div style={styles.lbHeader}>
                   <span>RANK</span>
                   <span>NAME</span>
@@ -292,7 +366,8 @@ function App() {
                 <div style={styles.divider} />
 
                 <div style={styles.smallInfo}>
-                  Ranking by highest number of correct characters in the correct position.
+                  Ranking by highest number of correct characters in the correct
+                  position.
                 </div>
               </div>
             </aside>
@@ -395,7 +470,8 @@ const styles = {
     padding: 18,
     boxShadow: `0 0 18px rgba(44,236,154,.12)`,
     animation: "fadeUp .8s ease-out",
-    transition: "transform .18s ease, box-shadow .18s ease, border-color .18s ease",
+    transition:
+      "transform .18s ease, box-shadow .18s ease, border-color .18s ease",
   },
   formCard: {
     background: "rgba(0,0,0,0.55)",
@@ -506,12 +582,19 @@ const styles = {
     minHeight: 90,
     color: BITPANDA_GREEN,
     boxShadow: `0 0 10px rgba(44,236,154,.08) inset`,
+    letterSpacing: 0.4,
+    lineHeight: 1.5,
   },
   consoleTitle: {
     color: DIM,
     marginBottom: 8,
     fontSize: 12,
     letterSpacing: 1.2,
+  },
+  consoleCursor: {
+    display: "inline-block",
+    marginLeft: 4,
+    animation: "blinkCursor 1s steps(1) infinite",
   },
   lbHeader: {
     display: "grid",
