@@ -12,6 +12,23 @@ const BG = "#030504";
 const TEXT = "#b6ffd8";
 const DIM = "#72d9a7";
 
+function formatCode(value) {
+  const clean = value.replace(/[^A-Z0-9]/gi, "").toUpperCase();
+
+  const part1 = clean.slice(0, 2);
+  const part2 = clean.slice(2, 6);
+  const part3 = clean.slice(6, 10);
+  const part4 = clean.slice(10, 14);
+
+  let formatted = part1;
+
+  if (part2) formatted += "-" + part2;
+  if (part3) formatted += "-" + part3;
+  if (part4) formatted += "-" + part4;
+
+  return formatted;
+}
+
 function App() {
   const [name, setName] = useState("");
   const [guess, setGuess] = useState("");
