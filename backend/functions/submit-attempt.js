@@ -75,14 +75,18 @@ Deno.serve(async (req) => {
 
     const name = body.name.trim().slice(0, 24);
     const guess = normalize(body.guess);
+
     const leaderboard = globalAny.__bitpandaLeaderboard;
     const attemptsMap = globalAny.__bitpandaAttempts;
 
     const usedAttempts = attemptsMap[name] ?? 0;
 
     if (usedAttempts >= MAX_ATTEMPTS_PER_PLAYER) {
-      const entry = [...leaderboard]
-        .sort((a, b) => b.bestScore - a.bestScore || a.attempts - b.attempts)
+      const topTen = [...leaderboard]
+        .sort((a, b) => {
+          if (b.bestScore !== a.bestScore) return b.bestScore - a.bestScore;
+          return new Date(a.lastAt).getTime() - new Date(b.lastAt).getTime();
+        })
         .slice(0, 10);
 
       return new Response(
@@ -92,7 +96,7 @@ Deno.serve(async (req) => {
           message: ">> ONE ATTEMPT ALREADY USED // REGISTER AGAIN",
           matchedChars: 0,
           bestPossibleDisplay: "BP-____-____-____",
-          leaderboard: entry,
+          leaderboard: topTen,
           attemptsLeft: 0,
         }),
         {
@@ -108,7 +112,7 @@ Deno.serve(async (req) => {
     const bestPossibleDisplay = revealMatchedCharacters(guess, SECRET_CODE);
     const isWinner = guess === SECRET_CODE;
 
-    const existingIndex = leaderboard.findIndex((x) => x.name === name);
+    const existingIndex = leaderboard.findIndex((entry) => entry.name === name);
 
     if (existingIndex >= 0) {
       leaderboard[existingIndex] = {
