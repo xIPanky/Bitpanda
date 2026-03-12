@@ -226,10 +226,10 @@ function App() {
 
                 <form onSubmit={handleSubmit} style={styles.form}>
                   <label style={styles.label}>NAME</label>
-                  <input
-                    style={styles.input}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+              <input
+  style={styles.input}
+  value={guess}
+  onChange={(e) => setGuess(formatCode(e.target.value))}
                     placeholder="YOUR NAME"
                     maxLength={24}
                     disabled={attemptsLeft <= 0 || isSubmitting}
