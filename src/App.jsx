@@ -46,17 +46,14 @@ function App() {
     return () => clearInterval(t);
   }, []);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("bitpanda_challenge_name");
-    if (saved) setName(saved);
-
-    const lb = localStorage.getItem("bitpanda_challenge_leaderboard");
-    if (lb) {
-      try {
-        setLeaderboard(JSON.parse(lb));
-      } catch (e) {}
-    }
-  }, []);
+useEffect(() => {
+  const lb = localStorage.getItem("bitpanda_challenge_leaderboard");
+  if (lb) {
+    try {
+      setLeaderboard(JSON.parse(lb));
+    } catch (e) {}
+  }
+}, []);
 
   useEffect(() => {
     if (name) {
