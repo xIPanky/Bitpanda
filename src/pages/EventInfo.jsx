@@ -227,6 +227,26 @@ if (endDateTime <= startDateTime) {
             {errorText("name")}
 
             <input
+  style={inputStyle("subtitle")}
+  value={form.subtitle}
+  onChange={(e) => handleChange("subtitle", e.target.value)}
+  placeholder="Untertitel"
+/>
+
+<textarea
+  style={{
+    ...inputStyle("description"),
+    minHeight: "140px",
+    resize: "vertical",
+    lineHeight: "1.5",
+  }}
+  value={form.description}
+  onChange={(e) => handleChange("description", e.target.value)}
+  placeholder="Veranstaltungstext / Beschreibung"
+/>
+{errorText("description")}
+
+            <input
               type="date"
               style={inputStyle("date")}
               value={form.date}
