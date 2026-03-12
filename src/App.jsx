@@ -77,7 +77,7 @@ function App() {
       setIsSubmitting(true);
       setMessage(">> VERIFYING INPUT ...");
 
-      const res = await fetch("/api/submit-attempt", {
+      const res = await fetch("/functions/submit-attempt", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
