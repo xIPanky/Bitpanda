@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 const WALLET_MASK = "BP-7X9A-__Q4-__K8";
 const DISPLAY_ADDRESS = "0xB17P...4NDA";
-const DISPLAY_BALANCE = "€100 in BTC";
+const DISPLAY_BALANCE = "€50.000 in BTC";
 const MAX_ATTEMPTS_PER_PLAYER = 1;
 
 const BITPANDA_GREEN = "#2CEC9A";
