@@ -1,0 +1,17 @@
+bitpanda-wallet-challenge
+│
+README.md
+│
+frontend/
+│   index.html
+│   app.js
+│   styles.css
+│
+backend/
+│   submit-attempt.js
+│
+docs/
+│   concept.md
+│
+assets/
+│   logo.png
