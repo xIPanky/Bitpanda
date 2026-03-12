@@ -241,7 +241,7 @@ function App() {
                     value={guess}
                     onChange={(e) => setGuess(e.target.value.toUpperCase())}
                     placeholder="BP-XXXX-XXXX-XXXX"
-                    maxLength={19}
+                    maxLength={16}
                     disabled={attemptsLeft <= 0 || isSubmitting}
                   />
 
