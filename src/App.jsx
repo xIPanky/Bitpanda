@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const WALLET_MASK = "BP-7X9A-__Q4-__K8";
 const DISPLAY_BALANCE = "50.000€";
+
 const BITPANDA_GREEN = "#2CEC9A";
 const DARK_GREEN = "#10352d";
 const BG = "#030504";
@@ -17,6 +18,7 @@ function formatCode(value) {
   const part4 = clean.slice(10, 14);
 
   let formatted = part1;
+
   if (part2) formatted += "-" + part2;
   if (part3) formatted += "-" + part3;
   if (part4) formatted += "-" + part4;
@@ -32,6 +34,24 @@ function App() {
   const [displayMessage, setDisplayMessage] = useState(">> ENTER THE CODE TO UNLOCK THE PRIZE");
   const [clock, setClock] = useState(new Date());
 
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const refocus = () => inputRef.current?.focus();
+
+    window.addEventListener("click", refocus);
+    window.addEventListener("keydown", refocus);
+
+    return () => {
+      window.removeEventListener("click", refocus);
+      window.removeEventListener("keydown", refocus);
+    };
+  }, []);
+
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
     return () => clearInterval(t);
@@ -42,6 +62,7 @@ function App() {
     setDisplayMessage("");
 
     const text = message;
+
     const interval = setInterval(() => {
       i++;
       setDisplayMessage(text.slice(0, i));
@@ -75,11 +96,6 @@ function App() {
         }),
       });
 
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || "Request failed");
-      }
-
       const data = await res.json();
 
       setMessage(
@@ -92,11 +108,13 @@ function App() {
 
       setTimeout(() => {
         setIsHacking(false);
-      }, 700);
+        inputRef.current?.focus();
+      }, 500);
     } catch (error) {
       setIsHacking(false);
-      setMessage(">> ERROR: " + (error.message || "UNKNOWN ERROR"));
+      setMessage(">> ERROR");
       setGuess("");
+      inputRef.current?.focus();
     } finally {
       setIsSubmitting(false);
     }
@@ -105,57 +123,35 @@ function App() {
   return (
     <>
       <style>{`
-        * { box-sizing: border-box; }
-        body { margin: 0; background: ${BG}; }
 
-        @keyframes pulseGlow {
-          0% { text-shadow: 0 0 8px rgba(44,236,154,.25), 0 0 18px rgba(44,236,154,.12); }
-          50% { text-shadow: 0 0 18px rgba(44,236,154,.65), 0 0 32px rgba(44,236,154,.22); }
-          100% { text-shadow: 0 0 8px rgba(44,236,154,.25), 0 0 18px rgba(44,236,154,.12); }
-        }
+* { box-sizing: border-box; }
 
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(14px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+body {
+  margin: 0;
+  background: ${BG};
+}
 
-        @keyframes blinkCursor {
-          0%, 49% { opacity: 1; }
-          50%, 100% { opacity: 0; }
-        }
+@keyframes pulseGlow {
+  0% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
+  50% { text-shadow: 0 0 25px rgba(44,236,154,.9); }
+  100% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
+}
 
-        @keyframes softFlicker {
-          0% { opacity: .97; }
-          50% { opacity: 1; }
-          100% { opacity: .98; }
-        }
+@keyframes blink {
+  0%,49% {opacity:1;}
+  50%,100% {opacity:0;}
+}
 
-        @keyframes terminalFlash {
-          0% { opacity: 0; }
-          30% { opacity: .08; }
-          100% { opacity: 0; }
-        }
+@keyframes flash {
+  0%{opacity:0}
+  30%{opacity:.08}
+  100%{opacity:0}
+}
 
-        @media (max-width: 900px) {
-          .main-wrap {
-            padding: 28px 16px !important;
-          }
-
-          .prize {
-            font-size: 64px !important;
-          }
-
-          .headline {
-            font-size: 34px !important;
-          }
-
-          .wallet-line {
-            font-size: 24px !important;
-          }
-        }
-      `}</style>
+`}</style>
 
       <div style={styles.page}>
+
         {isHacking && (
           <div
             style={{
@@ -164,89 +160,60 @@ function App() {
               background: BITPANDA_GREEN,
               opacity: 0.06,
               pointerEvents: "none",
-              animation: "terminalFlash .5s ease-out",
-              zIndex: 5,
+              animation: "flash .4s ease-out",
             }}
           />
         )}
 
-        <div style={styles.scanlines} />
+        <div style={styles.wrapper}>
 
-        <div className="main-wrap" style={styles.wrapper}>
-          <div style={styles.topBar}>
-            <div style={styles.brand}>BITPANDA PRESENTS</div>
-            <div style={styles.clock}>{clock.toLocaleTimeString("de-DE")}</div>
+          <div style={styles.header}>
+            BITPANDA PRESENTS
           </div>
 
-          <main style={styles.centerStage}>
-            <div className="prize" style={styles.prize}>
-              WIN {DISPLAY_BALANCE}
-            </div>
+          <div style={styles.prize}>
+            WIN {DISPLAY_BALANCE}
+          </div>
 
-            <div className="headline" style={styles.headline}>
-              CRACK THE WALLET
-            </div>
+          <div style={styles.title}>
+            CRACK THE WALLET
+          </div>
 
-            <div style={styles.subline}>
-              Enter the hidden code and unlock the prize.
-            </div>
+          <div style={styles.wallet}>
+            {guess || WALLET_MASK}
+          </div>
 
-            <div
-              className="wallet-line"
-              style={{
-                ...styles.walletLine,
-                textShadow: isHacking
-                  ? "0 0 14px rgba(44,236,154,.7), 0 0 24px rgba(44,236,154,.3)"
-                  : styles.walletLine.textShadow,
-              }}
+          <form onSubmit={handleSubmit} style={styles.form}>
+
+            <input
+              ref={inputRef}
+              autoFocus
+              value={guess}
+              onChange={(e) => setGuess(formatCode(e.target.value))}
+              placeholder="BP-XXXX-XXXX-XXXX"
+              maxLength={17}
+              disabled={isSubmitting}
+              style={styles.input}
+            />
+
+            <button
+              disabled={isSubmitting}
+              style={styles.button}
             >
-              {guess || WALLET_MASK}
-            </div>
+              {isSubmitting ? "VERIFYING..." : "UNLOCK WALLET"}
+            </button>
 
-            <div style={styles.hintBox}>
-              Type the code without dashes — they appear automatically.
-            </div>
+          </form>
 
-            <form onSubmit={handleSubmit} style={styles.form}>
-              <input
-                style={{
-                  ...styles.input,
-                  boxShadow: isHacking
-                    ? "0 0 18px rgba(44,236,154,.45), 0 0 30px rgba(44,236,154,.15)"
-                    : "none",
-                }}
-                value={guess}
-                onChange={(e) => setGuess(formatCode(e.target.value))}
-                placeholder="BP-XXXX-XXXX-XXXX"
-                maxLength={17}
-                disabled={isSubmitting}
-              />
+          <div style={styles.console}>
+            {displayMessage}
+            <span style={styles.cursor}>█</span>
+          </div>
 
-              <button
-                type="submit"
-                style={{
-                  ...styles.button,
-                  opacity: isSubmitting ? 0.7 : 1,
-                  cursor: isSubmitting ? "not-allowed" : "pointer",
-                }}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "VERIFYING..." : "UNLOCK WALLET"}
-              </button>
-            </form>
+          <div style={styles.footer}>
+            SPONSORED BY BITPANDA
+          </div>
 
-            <div style={styles.console}>
-              <div style={styles.consoleTitle}>SYSTEM LOG</div>
-              <div>
-                {displayMessage}
-                <span style={styles.consoleCursor}>█</span>
-              </div>
-            </div>
-
-            <div style={styles.footer}>
-              <span>SPONSORED BY BITPANDA</span>
-            </div>
-          </main>
         </div>
       </div>
     </>
@@ -254,156 +221,91 @@ function App() {
 }
 
 const styles = {
-  page: {
-    minHeight: "100vh",
-    background: `radial-gradient(circle at top, ${DARK_GREEN} 0%, ${BG} 42%)`,
-    color: TEXT,
-    fontFamily: "'Courier New', 'Lucida Console', Monaco, monospace",
-    position: "relative",
-    overflow: "hidden",
-    animation: "softFlicker 4.2s ease-in-out infinite",
-  },
-  scanlines: {
-    position: "fixed",
-    inset: 0,
-    pointerEvents: "none",
-    background:
-      "repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 2px, transparent 4px)",
-    opacity: 0.08,
-    mixBlendMode: "screen",
-  },
-  wrapper: {
-    minHeight: "100vh",
-    padding: "28px 24px",
-    position: "relative",
-    zIndex: 2,
-    display: "flex",
-    flexDirection: "column",
-  },
-  topBar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 12,
-    animation: "fadeUp .45s ease-out",
-  },
-  brand: {
-    color: BITPANDA_GREEN,
-    fontSize: 14,
-    letterSpacing: 2,
-    textShadow: `0 0 8px ${BITPANDA_GREEN}`,
-  },
-  clock: {
-    color: DIM,
-    fontSize: 13,
-  },
-  centerStage: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    maxWidth: 1000,
-    margin: "0 auto",
-    width: "100%",
-    animation: "fadeUp .7s ease-out",
-  },
-  prize: {
-    fontSize: 96,
-    fontWeight: 800,
-    lineHeight: 0.95,
-    color: BITPANDA_GREEN,
-    textShadow: `0 0 20px rgba(44,236,154,.45)`,
-    animation: "pulseGlow 2.8s ease-in-out infinite",
-    marginBottom: 18,
-  },
-  headline: {
-    fontSize: 52,
-    fontWeight: 700,
-    lineHeight: 1,
-    color: "#eafff5",
-    marginBottom: 16,
-    letterSpacing: 2,
-  },
-  subline: {
-    color: DIM,
-    fontSize: 18,
-    marginBottom: 30,
-    maxWidth: 700,
-  },
-  walletLine: {
-    fontSize: 38,
-    color: BITPANDA_GREEN,
-    marginBottom: 20,
-    textShadow: `0 0 8px rgba(44,236,154,.35)`,
-    wordBreak: "break-word",
-  },
-  hintBox: {
-    color: DIM,
-    fontSize: 14,
-    marginBottom: 26,
-  },
-  form: {
-    width: "100%",
-    maxWidth: 720,
-    display: "grid",
-    gap: 16,
-  },
-  input: {
-    width: "100%",
-    padding: "24px 24px",
-    borderRadius: 0,
-    border: `2px solid ${BITPANDA_GREEN}`,
-    background: "#010302",
-    color: BITPANDA_GREEN,
-    outline: "none",
-    fontSize: 30,
-    textAlign: "center",
-    fontFamily: "'Courier New', monospace",
-  },
-  button: {
-    width: "100%",
-    padding: "24px 24px",
-    border: `2px solid ${BITPANDA_GREEN}`,
-    background: BITPANDA_GREEN,
-    color: "#04110b",
-    fontWeight: 900,
-    fontSize: 26,
-    letterSpacing: 1.4,
-    boxShadow: `0 0 18px rgba(44,236,154,.22)`,
-  },
-  console: {
-    marginTop: 28,
-    width: "100%",
-    maxWidth: 720,
-    padding: 16,
-    border: `1px solid rgba(44,236,154,.35)`,
-    background: "#020403",
-    minHeight: 96,
-    color: BITPANDA_GREEN,
-    boxShadow: `0 0 10px rgba(44,236,154,.08) inset`,
-    letterSpacing: 0.4,
-    lineHeight: 1.5,
-    textAlign: "left",
-  },
-  consoleTitle: {
-    color: DIM,
-    marginBottom: 8,
-    fontSize: 12,
-    letterSpacing: 1.2,
-  },
-  consoleCursor: {
-    display: "inline-block",
-    marginLeft: 4,
-    animation: "blinkCursor 1s steps(1) infinite",
-  },
-  footer: {
-    marginTop: 28,
-    color: "rgba(114,217,167,.8)",
-    fontSize: 12,
-    letterSpacing: 1.2,
-  },
+
+page:{
+minHeight:"100vh",
+background:`radial-gradient(circle at top, ${DARK_GREEN} 0%, ${BG} 45%)`,
+color:TEXT,
+fontFamily:"Courier New, monospace",
+display:"flex",
+alignItems:"center",
+justifyContent:"center"
+},
+
+wrapper:{
+textAlign:"center",
+maxWidth:900,
+width:"100%",
+padding:40
+},
+
+header:{
+color:BITPANDA_GREEN,
+letterSpacing:2,
+fontSize:14,
+marginBottom:20
+},
+
+prize:{
+fontSize:90,
+fontWeight:900,
+color:BITPANDA_GREEN,
+animation:"pulseGlow 3s infinite",
+marginBottom:10
+},
+
+title:{
+fontSize:42,
+marginBottom:30
+},
+
+wallet:{
+fontSize:36,
+color:BITPANDA_GREEN,
+marginBottom:30
+},
+
+form:{
+display:"grid",
+gap:20,
+maxWidth:600,
+margin:"0 auto"
+},
+
+input:{
+padding:"22px",
+fontSize:28,
+textAlign:"center",
+border:`2px solid ${BITPANDA_GREEN}`,
+background:"#010302",
+color:BITPANDA_GREEN
+},
+
+button:{
+padding:"22px",
+fontSize:24,
+background:BITPANDA_GREEN,
+border:`2px solid ${BITPANDA_GREEN}`,
+fontWeight:800,
+cursor:"pointer"
+},
+
+console:{
+marginTop:30,
+color:BITPANDA_GREEN,
+fontSize:16
+},
+
+cursor:{
+animation:"blink 1s infinite"
+},
+
+footer:{
+marginTop:40,
+fontSize:12,
+color:DIM
+}
+
 };
 
 export default App;
