@@ -709,8 +709,8 @@ const styles = {
   },
 
   logo: {
-    width: 110,
-    height: 110,
+    width: 220,
+    height: 220,
     objectFit: "contain",
     display: "block",
     margin: "0 auto",
