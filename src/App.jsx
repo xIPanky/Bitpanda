@@ -1,12 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const DISPLAY_BALANCE = "50.000€";
-
 const GREEN = "#2CEC9A";
 const RED = "#ff2d2d";
-const DARK_GREEN = "#10352d";
+const WHITE = "#eafff5";
+const DIM = "#7fbf9f";
 const BG = "#030504";
-const TEXT = "#b6ffd8";
+const DARK_GREEN = "#10352d";
+
+const EMPTY_FORMAT = "BP-____-____-____";
 
 function formatCode(value) {
   const clean = value.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 14);
@@ -24,18 +26,51 @@ function formatCode(value) {
   return formatted;
 }
 
-function randomMatrixLine(length = 18) {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let out = "";
-  for (let i = 0; i < length; i++) {
-    out += chars[Math.floor(Math.random() * chars.length)];
-    if (i === 1 || i === 5 || i === 9) out += "-";
-  }
-  return out.slice(0, 17);
+function buildFormattedFromRaw(raw) {
+  return formatCode(raw || "");
+}
+
+function getRawChars(formatted) {
+  return (formatted || "").replace(/-/g, "").split("");
 }
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function randomChar() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  return chars[Math.floor(Math.random() * chars.length)];
+}
+
+function buildMatrixFrames(formattedGuess, resultStatuses) {
+  const slots = [];
+  const rawChars = getRawChars(formattedGuess);
+  let rawIndex = 0;
+
+  for (let i = 0; i < EMPTY_FORMAT.length; i++) {
+    const maskChar = EMPTY_FORMAT[i];
+    if (maskChar === "-") {
+      slots.push({
+        type: "separator",
+        value: "-",
+        finalValue: "-",
+        status: "separator",
+      });
+    } else {
+      const finalValue = rawChars[rawIndex] || "_";
+      const status = resultStatuses?.[rawIndex] || "empty";
+      slots.push({
+        type: "char",
+        value: "_",
+        finalValue,
+        status,
+      });
+      rawIndex++;
+    }
+  }
+
+  return slots;
 }
 
 function App() {
@@ -44,13 +79,13 @@ function App() {
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [errorFlash, setErrorFlash] = useState(false);
   const [successFlash, setSuccessFlash] = useState(false);
-  const [message, setMessage] = useState(">> ENTER CODE");
-  const [matrixLine1, setMatrixLine1] = useState(randomMatrixLine());
-  const [matrixLine2, setMatrixLine2] = useState(randomMatrixLine());
-  const [matrixLine3, setMatrixLine3] = useState(randomMatrixLine());
-  const [clock, setClock] = useState(new Date());
-
+  const [message, setMessage] = useState(">> ENTER ACCESS CODE");
+  const [displaySlots, setDisplaySlots] = useState(() =>
+    buildMatrixFrames("", [])
+  );
   const inputRef = useRef(null);
+
+  const rawLength = useMemo(() => guess.replace(/-/g, "").length, [guess]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -71,76 +106,122 @@ function App() {
   }, [isSubmitting]);
 
   useEffect(() => {
-    const t = setInterval(() => setClock(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
     if (!isDecrypting) return;
 
     const interval = setInterval(() => {
-      setMatrixLine1(randomMatrixLine());
-      setMatrixLine2(randomMatrixLine());
-      setMatrixLine3(randomMatrixLine());
-    }, 70);
+      setDisplaySlots((prev) =>
+        prev.map((slot) => {
+          if (slot.type === "separator") return slot;
+          return {
+            ...slot,
+            value: randomChar(),
+          };
+        })
+      );
+    }, 65);
 
     return () => clearInterval(interval);
   }, [isDecrypting]);
 
+  async function animateVerification(formattedGuess, resultStatuses) {
+    const baseSlots = buildMatrixFrames(formattedGuess, resultStatuses);
+
+    setDisplaySlots(
+      baseSlots.map((slot) =>
+        slot.type === "separator" ? slot : { ...slot, value: randomChar() }
+      )
+    );
+
+    await sleep(900);
+
+    for (let i = 0; i < baseSlots.length; i++) {
+      const slot = baseSlots[i];
+
+      if (slot.type === "separator") {
+        setDisplaySlots((prev) => {
+          const next = [...prev];
+          next[i] = slot;
+          return next;
+        });
+        continue;
+      }
+
+      for (let j = 0; j < 7; j++) {
+        setDisplaySlots((prev) => {
+          const next = [...prev];
+          next[i] = { ...next[i], value: randomChar() };
+          return next;
+        });
+        await sleep(55);
+      }
+
+      setDisplaySlots((prev) => {
+        const next = [...prev];
+        next[i] = {
+          ...slot,
+          value: slot.finalValue,
+        };
+        return next;
+      });
+
+      await sleep(170);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
-
     if (!guess.trim() || isSubmitting) return;
+
+    const submittedGuess = guess.trim().toUpperCase();
 
     try {
       setIsSubmitting(true);
       setIsDecrypting(true);
       setMessage(">> DECRYPTING ACCESS KEY");
 
-      const fetchPromise = fetch("/functions/submit-attempt", {
+      const request = fetch("/functions/submit-attempt", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: "guest",
-          guess: guess.trim().toUpperCase(),
+          guess: submittedGuess,
         }),
       });
 
-      const minimumSuspense = sleep(5000);
-
-      const [res] = await Promise.all([fetchPromise, minimumSuspense]);
-
+      const suspense = sleep(1800);
+      const [res] = await Promise.all([request, suspense]);
       const data = await res.json();
+
+      await animateVerification(submittedGuess, data.charResults || []);
 
       setIsDecrypting(false);
 
       if (data.isWinner) {
         setSuccessFlash(true);
         setMessage(">> ACCESS GRANTED // JACKPOT UNLOCKED");
-        setTimeout(() => setSuccessFlash(false), 900);
+        setTimeout(() => setSuccessFlash(false), 1000);
       } else {
-        setMessage(">> ACCESS DENIED");
         setErrorFlash(true);
-        setTimeout(() => setErrorFlash(false), 900);
+        setMessage(">> ACCESS DENIED");
+        setTimeout(() => setErrorFlash(false), 1000);
       }
 
-      setGuess("");
-
       setTimeout(() => {
+        setGuess("");
+        setDisplaySlots(buildMatrixFrames("", []));
         inputRef.current?.focus();
-      }, 80);
+      }, 700);
     } catch {
       setIsDecrypting(false);
-      setMessage(">> ACCESS DENIED");
       setErrorFlash(true);
-      setGuess("");
-
+      setMessage(">> ACCESS DENIED");
+      setTimeout(() => setErrorFlash(false), 1000);
       setTimeout(() => {
-        setErrorFlash(false);
+        setGuess("");
+        setDisplaySlots(buildMatrixFrames("", []));
         inputRef.current?.focus();
-      }, 900);
+      }, 700);
     } finally {
       setIsSubmitting(false);
     }
@@ -150,11 +231,7 @@ function App() {
     <>
       <style>{`
         * { box-sizing: border-box; }
-
-        body {
-          margin: 0;
-          background: ${BG};
-        }
+        body { margin: 0; background: ${BG}; }
 
         @keyframes glow {
           0% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
@@ -196,18 +273,10 @@ function App() {
           100% { transform: translateX(0) scale(1); }
         }
 
-        @keyframes glitchRed {
-          0% { text-shadow: 0 0 0 transparent; }
-          20% { text-shadow: -3px 0 ${RED}, 3px 0 rgba(255,255,255,.15); }
-          40% { text-shadow: 3px 0 ${RED}, -3px 0 rgba(255,255,255,.12); }
-          60% { text-shadow: -2px 0 ${RED}, 2px 0 rgba(255,255,255,.12); }
-          100% { text-shadow: 0 0 0 transparent; }
-        }
-
         @keyframes matrixPulse {
-          0% { opacity: .65; }
+          0% { opacity: .7; }
           50% { opacity: 1; }
-          100% { opacity: .65; }
+          100% { opacity: .7; }
         }
 
         @media (max-width: 900px) {
@@ -227,6 +296,17 @@ function App() {
           .button-main {
             font-size: 22px !important;
             padding: 20px !important;
+          }
+
+          .slot-char {
+            width: 38px !important;
+            height: 50px !important;
+            font-size: 24px !important;
+          }
+
+          .slot-sep {
+            width: 16px !important;
+            font-size: 24px !important;
           }
         }
       `}</style>
@@ -260,18 +340,6 @@ function App() {
           />
         )}
 
-        {isDecrypting && (
-          <div style={styles.decryptOverlay}>
-            <div style={styles.decryptBox}>
-              <div style={styles.decryptTitle}>DECRYPTING WALLET ACCESS</div>
-              <div style={styles.decryptLine}>{matrixLine1}</div>
-              <div style={styles.decryptLine}>{matrixLine2}</div>
-              <div style={styles.decryptLine}>{matrixLine3}</div>
-              <div style={styles.decryptSub}>MATRIX SCAN IN PROGRESS...</div>
-            </div>
-          </div>
-        )}
-
         <div
           style={{
             ...styles.wrapper,
@@ -286,6 +354,49 @@ function App() {
 
           <div className="title" style={styles.title}>
             CRACK THE WALLET
+          </div>
+
+          <div style={styles.lengthInfo}>14 CHARACTERS REQUIRED</div>
+
+          <div style={styles.slotRow}>
+            {displaySlots.map((slot, index) => {
+              if (slot.type === "separator") {
+                return (
+                  <div key={index} className="slot-sep" style={styles.slotSep}>
+                    -
+                  </div>
+                );
+              }
+
+              const borderColor =
+                slot.status === "correct"
+                  ? GREEN
+                  : slot.status === "wrong"
+                  ? RED
+                  : "rgba(44,236,154,.25)";
+
+              const textColor =
+                slot.status === "correct"
+                  ? GREEN
+                  : slot.status === "wrong"
+                  ? RED
+                  : WHITE;
+
+              return (
+                <div
+                  key={index}
+                  className="slot-char"
+                  style={{
+                    ...styles.slotChar,
+                    borderColor,
+                    color: textColor,
+                    animation: isDecrypting ? "matrixPulse .7s infinite" : "none",
+                  }}
+                >
+                  {slot.value}
+                </div>
+              );
+            })}
           </div>
 
           <form onSubmit={handleSubmit} style={styles.form}>
@@ -304,9 +415,12 @@ function App() {
                 boxShadow: errorFlash
                   ? `0 0 20px ${RED}, 0 0 45px rgba(255,45,45,.35)`
                   : `0 0 14px rgba(44,236,154,.28)`,
-                animation: errorFlash ? "glitchRed .45s linear" : "none",
               }}
             />
+
+            <div style={styles.counter}>
+              {rawLength}/14 CHARACTERS
+            </div>
 
             <button
               className="button-main"
@@ -352,7 +466,7 @@ const styles = {
 
   wrapper: {
     textAlign: "center",
-    maxWidth: 980,
+    maxWidth: 1080,
     width: "100%",
     padding: 40,
     position: "relative",
@@ -377,14 +491,51 @@ const styles = {
 
   title: {
     fontSize: 44,
-    marginBottom: 40,
-    color: "#eafff5",
+    marginBottom: 20,
+    color: WHITE,
     letterSpacing: 1.4,
+  },
+
+  lengthInfo: {
+    color: DIM,
+    fontSize: 16,
+    letterSpacing: 1.3,
+    marginBottom: 18,
+  },
+
+  slotRow: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 30,
+    flexWrap: "wrap",
+  },
+
+  slotChar: {
+    width: 48,
+    height: 62,
+    border: "2px solid rgba(44,236,154,.25)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 30,
+    fontWeight: 700,
+    background: "rgba(255,255,255,.02)",
+  },
+
+  slotSep: {
+    width: 20,
+    fontSize: 30,
+    color: GREEN,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   form: {
     display: "grid",
-    gap: 20,
+    gap: 14,
     maxWidth: 680,
     margin: "0 auto",
   },
@@ -398,6 +549,12 @@ const styles = {
     color: GREEN,
     outline: "none",
     fontFamily: "Courier New, monospace",
+  },
+
+  counter: {
+    color: DIM,
+    fontSize: 14,
+    letterSpacing: 1.2,
   },
 
   button: {
@@ -426,49 +583,6 @@ const styles = {
     fontSize: 12,
     opacity: 0.72,
     color: GREEN,
-    letterSpacing: 1.2,
-  },
-
-  decryptOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,.86)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 15,
-    padding: 20,
-  },
-
-  decryptBox: {
-    width: "100%",
-    maxWidth: 820,
-    border: `1px solid rgba(44,236,154,.35)`,
-    background: "#020403",
-    padding: 28,
-    boxShadow: `0 0 30px rgba(44,236,154,.14) inset, 0 0 30px rgba(44,236,154,.08)`,
-    textAlign: "left",
-  },
-
-  decryptTitle: {
-    color: GREEN,
-    fontSize: 16,
-    marginBottom: 18,
-    letterSpacing: 1.8,
-  },
-
-  decryptLine: {
-    color: GREEN,
-    fontSize: 30,
-    lineHeight: 1.5,
-    animation: "matrixPulse .8s infinite",
-    wordBreak: "break-all",
-  },
-
-  decryptSub: {
-    marginTop: 22,
-    color: "#cffff0",
-    fontSize: 14,
     letterSpacing: 1.2,
   },
 };
