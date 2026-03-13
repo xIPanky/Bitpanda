@@ -311,7 +311,7 @@ export default function App() {
 
       setErrorFlash(true);
       setMessage(">> ACCESS DENIED");
-      setTimeout(() => setErrorFlash(false), 1100);
+      setTimeout(() => setErrorFlash(false), 2500);
 
       setTimeout(() => {
         setGuess("");
@@ -322,7 +322,7 @@ export default function App() {
       setIsDecrypting(false);
       setErrorFlash(true);
       setMessage(">> ACCESS DENIED");
-      setTimeout(() => setErrorFlash(false), 1100);
+      setTimeout(() => setErrorFlash(false), 2500);
 
       setTimeout(() => {
         setGuess("");
