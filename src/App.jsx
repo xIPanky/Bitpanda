@@ -56,12 +56,6 @@ useEffect(() => {
 }, []);
 
   useEffect(() => {
-    if (name) {
-      localStorage.setItem("bitpanda_challenge_name", name);
-    }
-  }, [name]);
-
-  useEffect(() => {
     localStorage.setItem(
       "bitpanda_challenge_leaderboard",
       JSON.stringify(leaderboard)
@@ -143,6 +137,7 @@ useEffect(() => {
       }
 
       setGuess("");
+setName("");
 
       setTimeout(() => {
         setIsHacking(false);
