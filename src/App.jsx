@@ -7,35 +7,28 @@ const WHITE = "#eafff5";
 const DIM = "#7fbf9f";
 const BG = "#030504";
 const DARK_GREEN = "#10352d";
-
-const EMPTY_FORMAT = "BP-____-____-____";
+const SLOT_MASK = "BP-____-____-____";
 
 function formatCode(value) {
-  const clean = value.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 14);
+  const clean = String(value || "")
+    .replace(/[^A-Z0-9]/gi, "")
+    .toUpperCase()
+    .slice(0, 14);
 
-  const part1 = clean.slice(0, 2);
-  const part2 = clean.slice(2, 6);
-  const part3 = clean.slice(6, 10);
-  const part4 = clean.slice(10, 14);
+  const p1 = clean.slice(0, 2);
+  const p2 = clean.slice(2, 6);
+  const p3 = clean.slice(6, 10);
+  const p4 = clean.slice(10, 14);
 
-  let formatted = part1;
-  if (part2) formatted += "-" + part2;
-  if (part3) formatted += "-" + part3;
-  if (part4) formatted += "-" + part4;
-
-  return formatted;
+  let out = p1;
+  if (p2) out += "-" + p2;
+  if (p3) out += "-" + p3;
+  if (p4) out += "-" + p4;
+  return out;
 }
 
-function buildFormattedFromRaw(raw) {
-  return formatCode(raw || "");
-}
-
-function getRawChars(formatted) {
-  return (formatted || "").replace(/-/g, "").split("");
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function rawFromFormatted(value) {
+  return String(value || "").replace(/-/g, "");
 }
 
 function randomChar() {
@@ -43,28 +36,29 @@ function randomChar() {
   return chars[Math.floor(Math.random() * chars.length)];
 }
 
-function buildMatrixFrames(formattedGuess, resultStatuses) {
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function buildSlots(guess, statuses) {
+  const raw = rawFromFormatted(guess).split("");
   const slots = [];
-  const rawChars = getRawChars(formattedGuess);
   let rawIndex = 0;
 
-  for (let i = 0; i < EMPTY_FORMAT.length; i++) {
-    const maskChar = EMPTY_FORMAT[i];
-    if (maskChar === "-") {
+  for (let i = 0; i < SLOT_MASK.length; i++) {
+    const c = SLOT_MASK[i];
+
+    if (c === "-") {
       slots.push({
-        type: "separator",
+        kind: "separator",
         value: "-",
-        finalValue: "-",
         status: "separator",
       });
     } else {
-      const finalValue = rawChars[rawIndex] || "_";
-      const status = resultStatuses?.[rawIndex] || "empty";
       slots.push({
-        type: "char",
-        value: "_",
-        finalValue,
-        status,
+        kind: "char",
+        value: raw[rawIndex] || "_",
+        status: statuses && statuses[rawIndex] ? statuses[rawIndex] : "idle",
       });
       rawIndex++;
     }
@@ -73,19 +67,17 @@ function buildMatrixFrames(formattedGuess, resultStatuses) {
   return slots;
 }
 
-function App() {
+export default function App() {
   const [guess, setGuess] = useState("");
+  const [message, setMessage] = useState(">> ENTER ACCESS CODE");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [errorFlash, setErrorFlash] = useState(false);
   const [successFlash, setSuccessFlash] = useState(false);
-  const [message, setMessage] = useState(">> ENTER ACCESS CODE");
-  const [displaySlots, setDisplaySlots] = useState(() =>
-    buildMatrixFrames("", [])
-  );
+  const [slots, setSlots] = useState(buildSlots("", []));
   const inputRef = useRef(null);
 
-  const rawLength = useMemo(() => guess.replace(/-/g, "").length, [guess]);
+  const rawLength = useMemo(() => rawFromFormatted(guess).length, [guess]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -109,67 +101,46 @@ function App() {
     if (!isDecrypting) return;
 
     const interval = setInterval(() => {
-      setDisplaySlots((prev) =>
-        prev.map((slot) => {
-          if (slot.type === "separator") return slot;
-          return {
-            ...slot,
-            value: randomChar(),
-          };
-        })
+      setSlots((prev) =>
+        prev.map((slot) =>
+          slot.kind === "separator"
+            ? slot
+            : { ...slot, value: randomChar(), status: "scanning" }
+        )
       );
-    }, 65);
+    }, 70);
 
     return () => clearInterval(interval);
   }, [isDecrypting]);
 
-  async function animateVerification(formattedGuess, resultStatuses) {
-    const baseSlots = buildMatrixFrames(formattedGuess, resultStatuses);
+  async function animateReveal(submittedGuess, charResults) {
+    const finalSlots = buildSlots(submittedGuess, charResults);
 
-    setDisplaySlots(
-      baseSlots.map((slot) =>
-        slot.type === "separator" ? slot : { ...slot, value: randomChar() }
-      )
-    );
+    for (let i = 0; i < finalSlots.length; i++) {
+      if (finalSlots[i].kind === "separator") continue;
 
-    await sleep(900);
-
-    for (let i = 0; i < baseSlots.length; i++) {
-      const slot = baseSlots[i];
-
-      if (slot.type === "separator") {
-        setDisplaySlots((prev) => {
+      for (let j = 0; j < 5; j++) {
+        setSlots((prev) => {
           const next = [...prev];
-          next[i] = slot;
-          return next;
-        });
-        continue;
-      }
-
-      for (let j = 0; j < 7; j++) {
-        setDisplaySlots((prev) => {
-          const next = [...prev];
-          next[i] = { ...next[i], value: randomChar() };
+          next[i] = { ...next[i], value: randomChar(), status: "scanning" };
           return next;
         });
         await sleep(55);
       }
 
-      setDisplaySlots((prev) => {
+      setSlots((prev) => {
         const next = [...prev];
-        next[i] = {
-          ...slot,
-          value: slot.finalValue,
-        };
+        next[i] = finalSlots[i];
         return next;
       });
 
-      await sleep(170);
+      await sleep(120);
     }
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+
     if (!guess.trim() || isSubmitting) return;
 
     const submittedGuess = guess.trim().toUpperCase();
@@ -178,6 +149,7 @@ function App() {
       setIsSubmitting(true);
       setIsDecrypting(true);
       setMessage(">> DECRYPTING ACCESS KEY");
+      setSlots(buildSlots(submittedGuess, []));
 
       const request = fetch("/functions/submit-attempt", {
         method: "POST",
@@ -189,39 +161,40 @@ function App() {
         }),
       });
 
-      const suspense = sleep(1800);
-      const [res] = await Promise.all([request, suspense]);
+      await sleep(5000);
+
+      const res = await request;
       const data = await res.json();
 
-      await animateVerification(submittedGuess, data.charResults || []);
-
       setIsDecrypting(false);
+      await animateReveal(submittedGuess, data.charResults || []);
 
       if (data.isWinner) {
         setSuccessFlash(true);
         setMessage(">> ACCESS GRANTED // JACKPOT UNLOCKED");
-        setTimeout(() => setSuccessFlash(false), 1000);
+        setTimeout(() => setSuccessFlash(false), 900);
       } else {
         setErrorFlash(true);
         setMessage(">> ACCESS DENIED");
-        setTimeout(() => setErrorFlash(false), 1000);
+        setTimeout(() => setErrorFlash(false), 900);
       }
 
       setTimeout(() => {
         setGuess("");
-        setDisplaySlots(buildMatrixFrames("", []));
+        setSlots(buildSlots("", []));
         inputRef.current?.focus();
-      }, 700);
-    } catch {
+      }, 1200);
+    } catch (err) {
       setIsDecrypting(false);
       setErrorFlash(true);
       setMessage(">> ACCESS DENIED");
-      setTimeout(() => setErrorFlash(false), 1000);
+      setTimeout(() => setErrorFlash(false), 900);
+
       setTimeout(() => {
         setGuess("");
-        setDisplaySlots(buildMatrixFrames("", []));
+        setSlots(buildSlots("", []));
         inputRef.current?.focus();
-      }, 700);
+      }, 1200);
     } finally {
       setIsSubmitting(false);
     }
@@ -313,31 +286,11 @@ function App() {
 
       <div style={styles.page}>
         {successFlash && (
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: GREEN,
-              opacity: 0.08,
-              pointerEvents: "none",
-              animation: "flashGreen .8s ease-out",
-              zIndex: 20,
-            }}
-          />
+          <div style={styles.greenFlash} />
         )}
 
         {errorFlash && (
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: RED,
-              opacity: 0.16,
-              pointerEvents: "none",
-              animation: "flashRed .9s ease-out",
-              zIndex: 20,
-            }}
-          />
+          <div style={styles.redFlash} />
         )}
 
         <div
@@ -359,8 +312,8 @@ function App() {
           <div style={styles.lengthInfo}>14 CHARACTERS REQUIRED</div>
 
           <div style={styles.slotRow}>
-            {displaySlots.map((slot, index) => {
-              if (slot.type === "separator") {
+            {slots.map((slot, index) => {
+              if (slot.kind === "separator") {
                 return (
                   <div key={index} className="slot-sep" style={styles.slotSep}>
                     -
@@ -390,7 +343,10 @@ function App() {
                     ...styles.slotChar,
                     borderColor,
                     color: textColor,
-                    animation: isDecrypting ? "matrixPulse .7s infinite" : "none",
+                    animation:
+                      slot.status === "scanning"
+                        ? "matrixPulse .7s infinite"
+                        : "none",
                   }}
                 >
                   {slot.value}
@@ -418,9 +374,7 @@ function App() {
               }}
             />
 
-            <div style={styles.counter}>
-              {rawLength}/14 CHARACTERS
-            </div>
+            <div style={styles.counter}>{rawLength}/14 CHARACTERS</div>
 
             <button
               className="button-main"
@@ -455,13 +409,33 @@ const styles = {
   page: {
     minHeight: "100vh",
     background: `radial-gradient(circle at top, ${DARK_GREEN} 0%, ${BG} 45%)`,
-    color: TEXT,
+    color: WHITE,
     fontFamily: "Courier New, monospace",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
     position: "relative",
+  },
+
+  greenFlash: {
+    position: "fixed",
+    inset: 0,
+    background: GREEN,
+    opacity: 0.08,
+    pointerEvents: "none",
+    animation: "flashGreen .8s ease-out",
+    zIndex: 20,
+  },
+
+  redFlash: {
+    position: "fixed",
+    inset: 0,
+    background: RED,
+    opacity: 0.16,
+    pointerEvents: "none",
+    animation: "flashRed .9s ease-out",
+    zIndex: 20,
   },
 
   wrapper: {
@@ -586,5 +560,3 @@ const styles = {
     letterSpacing: 1.2,
   },
 };
-
-export default App;
