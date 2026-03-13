@@ -125,7 +125,7 @@ export default function App() {
           next[i] = { ...next[i], value: randomChar(), status: "scanning" };
           return next;
         });
-        await sleep(55);
+        await sleep(35);
       }
 
       setSlots((prev) => {
@@ -134,7 +134,7 @@ export default function App() {
         return next;
       });
 
-      await sleep(120);
+      await sleep(70);
     }
   }
 
@@ -161,7 +161,7 @@ export default function App() {
         }),
       });
 
-      await sleep(5000);
+      await sleep(2000);
 
       const res = await request;
       const data = await res.json();
