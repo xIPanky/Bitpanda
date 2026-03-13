@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 const DISPLAY_BALANCE = "50.000€";
 const GREEN = "#2CEC9A";
 const RED = "#ff4d4f";
+const GOLD = "#f7d774";
 const WHITE = "#EAFEF4";
 const DIM = "#7FBF9F";
 const BG = "#030504";
@@ -67,6 +68,41 @@ function buildSlots(guess, statuses) {
   return slots;
 }
 
+function Confetti({ count = 42 }) {
+  const pieces = Array.from({ length: count }, (_, i) => i);
+
+  return (
+    <div style={styles.confettiLayer}>
+      {pieces.map((i) => {
+        const left = `${(i * 97) % 100}%`;
+        const duration = `${3.8 + (i % 7) * 0.45}s`;
+        const delay = `${(i % 9) * 0.18}s`;
+        const rotate = `${(i * 29) % 360}deg`;
+        const width = 8 + (i % 5) * 4;
+        const height = 12 + (i % 4) * 6;
+        const color =
+          i % 3 === 0 ? GREEN : i % 3 === 1 ? GOLD : "rgba(255,255,255,.85)";
+
+        return (
+          <div
+            key={i}
+            style={{
+              ...styles.confettiPiece,
+              left,
+              width,
+              height,
+              background: color,
+              animationDuration: duration,
+              animationDelay: delay,
+              transform: `rotate(${rotate})`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export default function App() {
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState(">> ENTER ACCESS CODE");
@@ -75,6 +111,8 @@ export default function App() {
   const [errorFlash, setErrorFlash] = useState(false);
   const [successFlash, setSuccessFlash] = useState(false);
   const [slots, setSlots] = useState(buildSlots("", []));
+  const [winnerLocked, setWinnerLocked] = useState(false);
+  const [winnerJustFound, setWinnerJustFound] = useState(false);
   const inputRef = useRef(null);
 
   const rawLength = useMemo(() => rawFromFormatted(guess).length, [guess]);
@@ -84,8 +122,24 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    async function loadState() {
+      try {
+        const res = await fetch("/functions/submit-attempt");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data?.winnerLocked) {
+          setWinnerLocked(true);
+          setMessage(">> JACKPOT ALREADY CLAIMED");
+        }
+      } catch {}
+    }
+
+    loadState();
+  }, []);
+
+  useEffect(() => {
     const refocus = () => {
-      if (!isSubmitting) inputRef.current?.focus();
+      if (!isSubmitting && !winnerLocked) inputRef.current?.focus();
     };
 
     window.addEventListener("click", refocus);
@@ -95,7 +149,7 @@ export default function App() {
       window.removeEventListener("click", refocus);
       window.removeEventListener("keydown", refocus);
     };
-  }, [isSubmitting]);
+  }, [isSubmitting, winnerLocked]);
 
   useEffect(() => {
     if (!isDecrypting) return;
@@ -141,7 +195,7 @@ export default function App() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!guess.trim() || isSubmitting) return;
+    if (!guess.trim() || isSubmitting || winnerLocked) return;
 
     const submittedGuess = guess.trim().toUpperCase();
 
@@ -167,17 +221,27 @@ export default function App() {
       const data = await res.json();
 
       setIsDecrypting(false);
+
+      if (data?.winnerLocked && !data?.isWinner) {
+        setWinnerLocked(true);
+        setMessage(">> JACKPOT ALREADY CLAIMED");
+        return;
+      }
+
       await animateReveal(submittedGuess, data.charResults || []);
 
       if (data.isWinner) {
         setSuccessFlash(true);
         setMessage(">> ACCESS GRANTED // JACKPOT UNLOCKED");
+        setWinnerLocked(true);
+        setWinnerJustFound(true);
         setTimeout(() => setSuccessFlash(false), 900);
-      } else {
-        setErrorFlash(true);
-        setMessage(">> ACCESS DENIED");
-        setTimeout(() => setErrorFlash(false), 1100);
+        return;
       }
+
+      setErrorFlash(true);
+      setMessage(">> ACCESS DENIED");
+      setTimeout(() => setErrorFlash(false), 1100);
 
       setTimeout(() => {
         setGuess("");
@@ -200,102 +264,51 @@ export default function App() {
     }
   }
 
+  if (winnerLocked) {
+    return (
+      <>
+        <style>{globalStyles}</style>
+        <div style={styles.winPage}>
+          <Confetti />
+          <div style={styles.winGlowA} />
+          <div style={styles.winGlowB} />
+
+          <div style={styles.winWrap}>
+            <div style={styles.winKicker}>BITPANDA JACKPOT</div>
+
+            <div style={styles.winTopLine}>
+              {winnerJustFound ? "ACCESS GRANTED" : "JACKPOT CLAIMED"}
+            </div>
+
+            <div style={styles.winAmount}>€50.000</div>
+
+            <div style={styles.bitcoinStage}>
+              <div style={styles.bitcoinHalo} />
+              <div style={styles.bitcoinCoin}>₿</div>
+              <div style={styles.bitcoinRing} />
+              <div style={styles.bitcoinRing2} />
+            </div>
+
+            <div style={styles.winHeadline}>
+              {winnerJustFound ? "WALLET UNLOCKED" : "WINNER FOUND"}
+            </div>
+
+            <div style={styles.winSub}>
+              {winnerJustFound
+                ? "THE JACKPOT HAS BEEN SECURED"
+                : "THE FINAL PRIZE HAS ALREADY BEEN CLAIMED"}
+            </div>
+
+            <div style={styles.winFooter}>SPONSORED BY BITPANDA</div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <style>{`
-        * { box-sizing: border-box; }
-        body { margin: 0; background: ${BG}; }
-
-        @keyframes glow {
-          0% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
-          50% { text-shadow: 0 0 28px rgba(44,236,154,.95), 0 0 44px rgba(44,236,154,.28); }
-          100% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
-        }
-
-        @keyframes blink {
-          0%,49% { opacity: 1; }
-          50%,100% { opacity: 0; }
-        }
-
-        @keyframes flashGreen {
-          0% { opacity: 0; }
-          20% { opacity: .16; }
-          45% { opacity: .08; }
-          100% { opacity: 0; }
-        }
-
-        @keyframes errorOverlayIn {
-          0% { opacity: 0; backdrop-filter: blur(0px); }
-          100% { opacity: 1; backdrop-filter: blur(4px); }
-        }
-
-        @keyframes errorPulse {
-          0% { transform: scale(1); opacity: .75; }
-          50% { transform: scale(1.015); opacity: 1; }
-          100% { transform: scale(1); opacity: .75; }
-        }
-
-        @keyframes errorGlitch {
-          0% { transform: translateX(0); filter: blur(0px); }
-          20% { transform: translateX(-6px); filter: blur(.4px); }
-          40% { transform: translateX(5px); filter: blur(0px); }
-          60% { transform: translateX(-3px); filter: blur(.2px); }
-          80% { transform: translateX(2px); filter: blur(0px); }
-          100% { transform: translateX(0); filter: blur(0px); }
-        }
-
-        @keyframes errorLine {
-          0% { transform: translateY(-120%); opacity: 0; }
-          20% { opacity: .6; }
-          100% { transform: translateY(120vh); opacity: 0; }
-        }
-
-        @keyframes errorTextReveal {
-          0% { opacity: 0; transform: translateY(10px) scale(.98); letter-spacing: 2px; }
-          100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 1px; }
-        }
-
-        @keyframes matrixPulse {
-          0% { opacity: .7; }
-          50% { opacity: 1; }
-          100% { opacity: .7; }
-        }
-
-        @media (max-width: 900px) {
-          .prize {
-            font-size: 64px !important;
-          }
-
-          .title {
-            font-size: 34px !important;
-          }
-
-          .input-main {
-            font-size: 22px !important;
-            padding: 20px !important;
-          }
-
-          .button-main {
-            font-size: 22px !important;
-            padding: 20px !important;
-          }
-
-          .slot-char {
-            width: 38px !important;
-            height: 50px !important;
-            font-size: 24px !important;
-          }
-
-          .slot-sep {
-            width: 16px !important;
-            font-size: 24px !important;
-          }
-
-          .error-title {
-            font-size: 32px !important;
-          }
-        }
-      `}</style>
+      <style>{globalStyles}</style>
 
       <div style={styles.page}>
         {successFlash && <div style={styles.greenFlash} />}
@@ -385,7 +398,7 @@ export default function App() {
               onChange={(e) => setGuess(formatCode(e.target.value))}
               placeholder="ENTER ACCESS CODE"
               maxLength={17}
-              disabled={isSubmitting}
+              disabled={isSubmitting || winnerLocked}
               style={{
                 ...styles.input,
                 borderColor: errorFlash ? RED : GREEN,
@@ -399,10 +412,10 @@ export default function App() {
 
             <button
               className="button-main"
-              disabled={isSubmitting}
+              disabled={isSubmitting || winnerLocked}
               style={{
                 ...styles.button,
-                opacity: isSubmitting ? 0.78 : 1,
+                opacity: isSubmitting || winnerLocked ? 0.78 : 1,
               }}
             >
               {isSubmitting ? "DECRYPTING..." : "UNLOCK WALLET"}
@@ -425,6 +438,105 @@ export default function App() {
     </>
   );
 }
+
+const globalStyles = `
+  * { box-sizing: border-box; }
+  body { margin: 0; background: ${BG}; }
+
+  @keyframes glow {
+    0% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
+    50% { text-shadow: 0 0 28px rgba(44,236,154,.95), 0 0 44px rgba(44,236,154,.28); }
+    100% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
+  }
+
+  @keyframes blink {
+    0%,49% { opacity: 1; }
+    50%,100% { opacity: 0; }
+  }
+
+  @keyframes flashGreen {
+    0% { opacity: 0; }
+    20% { opacity: .16; }
+    45% { opacity: .08; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes errorOverlayIn {
+    0% { opacity: 0; backdrop-filter: blur(0px); }
+    100% { opacity: 1; backdrop-filter: blur(4px); }
+  }
+
+  @keyframes errorPulse {
+    0% { transform: scale(1); opacity: .75; }
+    50% { transform: scale(1.015); opacity: 1; }
+    100% { transform: scale(1); opacity: .75; }
+  }
+
+  @keyframes errorGlitch {
+    0% { transform: translateX(0); filter: blur(0px); }
+    20% { transform: translateX(-6px); filter: blur(.4px); }
+    40% { transform: translateX(5px); filter: blur(0px); }
+    60% { transform: translateX(-3px); filter: blur(.2px); }
+    80% { transform: translateX(2px); filter: blur(0px); }
+    100% { transform: translateX(0); filter: blur(0px); }
+  }
+
+  @keyframes errorLine {
+    0% { transform: translateY(-120%); opacity: 0; }
+    20% { opacity: .6; }
+    100% { transform: translateY(120vh); opacity: 0; }
+  }
+
+  @keyframes errorTextReveal {
+    0% { opacity: 0; transform: translateY(10px) scale(.98); letter-spacing: 2px; }
+    100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 1px; }
+  }
+
+  @keyframes matrixPulse {
+    0% { opacity: .7; }
+    50% { opacity: 1; }
+    100% { opacity: .7; }
+  }
+
+  @keyframes goldPulse {
+    0% { transform: scale(1); box-shadow: 0 0 30px rgba(247,215,116,.18); }
+    50% { transform: scale(1.03); box-shadow: 0 0 80px rgba(247,215,116,.35), 0 0 140px rgba(247,215,116,.15); }
+    100% { transform: scale(1); box-shadow: 0 0 30px rgba(247,215,116,.18); }
+  }
+
+  @keyframes coinFloat {
+    0% { transform: translateY(0px) rotateY(0deg); }
+    50% { transform: translateY(-18px) rotateY(180deg); }
+    100% { transform: translateY(0px) rotateY(360deg); }
+  }
+
+  @keyframes ringRotate {
+    0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: .8; }
+    100% { transform: translate(-50%, -50%) rotate(360deg) scale(1.05); opacity: 1; }
+  }
+
+  @keyframes shineSweep {
+    0% { transform: translateX(-140%) rotate(18deg); opacity: 0; }
+    30% { opacity: .85; }
+    100% { transform: translateX(180%) rotate(18deg); opacity: 0; }
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-12vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translateY(115vh) rotate(720deg); opacity: .95; }
+  }
+
+  @media (max-width: 900px) {
+    .prize { font-size: 64px !important; }
+    .title { font-size: 34px !important; }
+    .input-main { font-size: 22px !important; padding: 20px !important; }
+    .button-main { font-size: 22px !important; padding: 20px !important; }
+    .slot-char { width: 38px !important; height: 50px !important; font-size: 24px !important; }
+    .slot-sep { width: 16px !important; font-size: 24px !important; }
+    .error-title { font-size: 32px !important; }
+  }
+`;
 
 const styles = {
   page: {
@@ -641,5 +753,176 @@ const styles = {
     opacity: 0.72,
     color: GREEN,
     letterSpacing: 1.2,
+  },
+
+  winPage: {
+    minHeight: "100vh",
+    width: "100%",
+    background:
+      "radial-gradient(circle at 50% 20%, rgba(247,215,116,.12) 0%, rgba(44,236,154,.08) 25%, #030504 65%)",
+    color: WHITE,
+    fontFamily: "Courier New, monospace",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    overflow: "hidden",
+  },
+
+  confettiLayer: {
+    position: "absolute",
+    inset: 0,
+    overflow: "hidden",
+    pointerEvents: "none",
+  },
+
+  confettiPiece: {
+    position: "absolute",
+    top: "-10vh",
+    borderRadius: 2,
+    animationName: "confettiFall",
+    animationTimingFunction: "linear",
+    animationIterationCount: "infinite",
+  },
+
+  winGlowA: {
+    position: "absolute",
+    width: 900,
+    height: 900,
+    borderRadius: "50%",
+    background:
+      "radial-gradient(circle, rgba(247,215,116,.18) 0%, rgba(247,215,116,.05) 35%, rgba(247,215,116,0) 70%)",
+    filter: "blur(18px)",
+    animation: "goldPulse 3.6s ease-in-out infinite",
+  },
+
+  winGlowB: {
+    position: "absolute",
+    width: 700,
+    height: 700,
+    borderRadius: "50%",
+    background:
+      "radial-gradient(circle, rgba(44,236,154,.14) 0%, rgba(44,236,154,.04) 35%, rgba(44,236,154,0) 70%)",
+    filter: "blur(18px)",
+    animation: "goldPulse 4.4s ease-in-out infinite",
+  },
+
+  winWrap: {
+    position: "relative",
+    zIndex: 2,
+    textAlign: "center",
+    padding: "40px 24px",
+    maxWidth: 980,
+    width: "100%",
+  },
+
+  winKicker: {
+    color: GREEN,
+    letterSpacing: 3,
+    fontSize: 14,
+    marginBottom: 20,
+  },
+
+  winTopLine: {
+    color: GOLD,
+    fontSize: 22,
+    letterSpacing: 2,
+    marginBottom: 16,
+  },
+
+  winAmount: {
+    fontSize: "clamp(72px, 10vw, 150px)",
+    lineHeight: 0.9,
+    fontWeight: 900,
+    color: GOLD,
+    textShadow:
+      "0 0 18px rgba(247,215,116,.28), 0 0 60px rgba(247,215,116,.18)",
+    marginBottom: 28,
+  },
+
+  bitcoinStage: {
+    position: "relative",
+    width: 260,
+    height: 260,
+    margin: "0 auto 34px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  bitcoinHalo: {
+    position: "absolute",
+    width: 250,
+    height: 250,
+    borderRadius: "50%",
+    background:
+      "radial-gradient(circle, rgba(247,215,116,.28) 0%, rgba(247,215,116,.08) 40%, rgba(247,215,116,0) 72%)",
+    filter: "blur(10px)",
+    animation: "goldPulse 3s ease-in-out infinite",
+  },
+
+  bitcoinCoin: {
+    position: "relative",
+    width: 150,
+    height: 150,
+    borderRadius: "50%",
+    background:
+      "linear-gradient(145deg, #fff0b3 0%, #f7d774 30%, #d79f18 100%)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 74,
+    fontWeight: 900,
+    color: "#3a2500",
+    boxShadow:
+      "0 20px 60px rgba(0,0,0,.35), inset 0 2px 12px rgba(255,255,255,.35), inset 0 -6px 14px rgba(0,0,0,.18)",
+    animation: "coinFloat 4s ease-in-out infinite",
+    overflow: "hidden",
+  },
+
+  bitcoinRing: {
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    width: 210,
+    height: 210,
+    borderRadius: "50%",
+    border: "1px solid rgba(247,215,116,.35)",
+    transform: "translate(-50%, -50%)",
+    animation: "ringRotate 8s linear infinite",
+  },
+
+  bitcoinRing2: {
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    width: 250,
+    height: 250,
+    borderRadius: "50%",
+    border: "1px solid rgba(44,236,154,.22)",
+    transform: "translate(-50%, -50%)",
+    animation: "ringRotate 12s linear infinite reverse",
+  },
+
+  winHeadline: {
+    fontSize: "clamp(34px, 5vw, 62px)",
+    fontWeight: 800,
+    color: WHITE,
+    letterSpacing: 2,
+    marginBottom: 14,
+  },
+
+  winSub: {
+    color: "rgba(255,255,255,.78)",
+    fontSize: 18,
+    letterSpacing: 1.4,
+  },
+
+  winFooter: {
+    marginTop: 36,
+    color: GREEN,
+    opacity: 0.78,
+    fontSize: 12,
+    letterSpacing: 2,
   },
 };
