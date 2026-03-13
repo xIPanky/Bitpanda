@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 const WALLET_MASK = "BP-7X9A-__Q4-__K8";
 const DISPLAY_BALANCE = "50.000€";
 
-const BITPANDA_GREEN = "#2CEC9A";
+const GREEN = "#2CEC9A";
+const RED = "#ff3b3b";
 const DARK_GREEN = "#10352d";
 const BG = "#030504";
 const TEXT = "#b6ffd8";
-const DIM = "#72d9a7";
 
 function formatCode(value) {
   const clean = value.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 14);
@@ -27,12 +27,12 @@ function formatCode(value) {
 }
 
 function App() {
+
   const [guess, setGuess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isHacking, setIsHacking] = useState(false);
-  const [message, setMessage] = useState(">> ENTER THE CODE TO UNLOCK THE PRIZE");
-  const [displayMessage, setDisplayMessage] = useState(">> ENTER THE CODE TO UNLOCK THE PRIZE");
-  const [clock, setClock] = useState(new Date());
+  const [errorFlash, setErrorFlash] = useState(false);
+  const [message, setMessage] = useState(">> ENTER CODE");
 
   const inputRef = useRef(null);
 
@@ -41,6 +41,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+
     const refocus = () => inputRef.current?.focus();
 
     window.addEventListener("click", refocus);
@@ -50,102 +51,117 @@ function App() {
       window.removeEventListener("click", refocus);
       window.removeEventListener("keydown", refocus);
     };
+
   }, []);
-
-  useEffect(() => {
-    const t = setInterval(() => setClock(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    let i = 0;
-    setDisplayMessage("");
-
-    const text = message;
-
-    const interval = setInterval(() => {
-      i++;
-      setDisplayMessage(text.slice(0, i));
-      if (i >= text.length) clearInterval(interval);
-    }, 18);
-
-    return () => clearInterval(interval);
-  }, [message]);
 
   async function handleSubmit(e) {
+
     e.preventDefault();
 
-    if (!guess.trim()) {
-      setMessage(">> PLEASE ENTER A CODE");
-      return;
-    }
+    if (!guess.trim()) return;
 
     try {
+
       setIsSubmitting(true);
       setIsHacking(true);
-      setMessage(">> VERIFYING INPUT ...");
+      setMessage(">> VERIFYING");
 
       const res = await fetch("/functions/submit-attempt", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           name: "guest",
-          guess: guess.trim().toUpperCase(),
-        }),
+          guess: guess.trim().toUpperCase()
+        })
       });
 
       const data = await res.json();
 
-      setMessage(
-        data.isWinner
-          ? ">> ACCESS GRANTED // JACKPOT UNLOCKED"
-          : data.message || ">> ACCESS DENIED"
-      );
+      if (data.isWinner) {
+
+        setMessage(">> ACCESS GRANTED");
+
+      } else {
+
+        setMessage(">> ACCESS DENIED");
+
+        setErrorFlash(true);
+
+        setTimeout(() => {
+          setErrorFlash(false);
+        }, 400);
+
+      }
 
       setGuess("");
 
       setTimeout(() => {
         setIsHacking(false);
         inputRef.current?.focus();
-      }, 500);
-    } catch (error) {
-      setIsHacking(false);
-      setMessage(">> ERROR");
+      }, 400);
+
+    } catch {
+
+      setErrorFlash(true);
+
+      setTimeout(() => {
+        setErrorFlash(false);
+      }, 400);
+
       setGuess("");
       inputRef.current?.focus();
+
     } finally {
+
       setIsSubmitting(false);
+
     }
+
   }
 
   return (
+
     <>
       <style>{`
 
-* { box-sizing: border-box; }
+*{box-sizing:border-box}
 
-body {
-  margin: 0;
-  background: ${BG};
+body{
+margin:0;
+background:${BG};
 }
 
-@keyframes pulseGlow {
-  0% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
-  50% { text-shadow: 0 0 25px rgba(44,236,154,.9); }
-  100% { text-shadow: 0 0 10px rgba(44,236,154,.3); }
+@keyframes glow{
+0%{text-shadow:0 0 10px rgba(44,236,154,.3)}
+50%{text-shadow:0 0 28px rgba(44,236,154,.9)}
+100%{text-shadow:0 0 10px rgba(44,236,154,.3)}
 }
 
-@keyframes blink {
-  0%,49% {opacity:1;}
-  50%,100% {opacity:0;}
+@keyframes blink{
+0%,49%{opacity:1}
+50%,100%{opacity:0}
 }
 
-@keyframes flash {
-  0%{opacity:0}
-  30%{opacity:.08}
-  100%{opacity:0}
+@keyframes flashGreen{
+0%{opacity:0}
+30%{opacity:.08}
+100%{opacity:0}
+}
+
+@keyframes flashRed{
+0%{opacity:0}
+30%{opacity:.18}
+100%{opacity:0}
+}
+
+@keyframes shake{
+0%{transform:translateX(0)}
+25%{transform:translateX(-6px)}
+50%{transform:translateX(6px)}
+75%{transform:translateX(-4px)}
+100%{transform:translateX(0)}
 }
 
 `}</style>
@@ -153,16 +169,25 @@ body {
       <div style={styles.page}>
 
         {isHacking && (
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: BITPANDA_GREEN,
-              opacity: 0.06,
-              pointerEvents: "none",
-              animation: "flash .4s ease-out",
-            }}
-          />
+          <div style={{
+            position:"fixed",
+            inset:0,
+            background:GREEN,
+            opacity:.06,
+            pointerEvents:"none",
+            animation:"flashGreen .4s"
+          }}/>
+        )}
+
+        {errorFlash && (
+          <div style={{
+            position:"fixed",
+            inset:0,
+            background:RED,
+            opacity:.12,
+            pointerEvents:"none",
+            animation:"flashRed .35s"
+          }}/>
         )}
 
         <div style={styles.wrapper}>
@@ -179,7 +204,10 @@ body {
             CRACK THE WALLET
           </div>
 
-          <div style={styles.wallet}>
+          <div style={{
+            ...styles.wallet,
+            animation:errorFlash ? "shake .3s" : "none"
+          }}>
             {guess || WALLET_MASK}
           </div>
 
@@ -189,11 +217,17 @@ body {
               ref={inputRef}
               autoFocus
               value={guess}
-              onChange={(e) => setGuess(formatCode(e.target.value))}
+              onChange={(e)=>setGuess(formatCode(e.target.value))}
               placeholder="BP-XXXX-XXXX-XXXX"
               maxLength={17}
               disabled={isSubmitting}
-              style={styles.input}
+              style={{
+                ...styles.input,
+                borderColor:errorFlash ? RED : GREEN,
+                boxShadow:errorFlash
+                ? `0 0 14px ${RED}`
+                : `0 0 10px ${GREEN}`
+              }}
             />
 
             <button
@@ -206,7 +240,7 @@ body {
           </form>
 
           <div style={styles.console}>
-            {displayMessage}
+            {message}
             <span style={styles.cursor}>█</span>
           </div>
 
@@ -215,12 +249,14 @@ body {
           </div>
 
         </div>
+
       </div>
     </>
   );
+
 }
 
-const styles = {
+const styles={
 
 page:{
 minHeight:"100vh",
@@ -240,7 +276,7 @@ padding:40
 },
 
 header:{
-color:BITPANDA_GREEN,
+color:GREEN,
 letterSpacing:2,
 fontSize:14,
 marginBottom:20
@@ -249,8 +285,8 @@ marginBottom:20
 prize:{
 fontSize:90,
 fontWeight:900,
-color:BITPANDA_GREEN,
-animation:"pulseGlow 3s infinite",
+color:GREEN,
+animation:"glow 3s infinite",
 marginBottom:10
 },
 
@@ -261,7 +297,7 @@ marginBottom:30
 
 wallet:{
 fontSize:36,
-color:BITPANDA_GREEN,
+color:GREEN,
 marginBottom:30
 },
 
@@ -276,23 +312,23 @@ input:{
 padding:"22px",
 fontSize:28,
 textAlign:"center",
-border:`2px solid ${BITPANDA_GREEN}`,
+border:`2px solid ${GREEN}`,
 background:"#010302",
-color:BITPANDA_GREEN
+color:GREEN
 },
 
 button:{
 padding:"22px",
 fontSize:24,
-background:BITPANDA_GREEN,
-border:`2px solid ${BITPANDA_GREEN}`,
+background:GREEN,
+border:`2px solid ${GREEN}`,
 fontWeight:800,
 cursor:"pointer"
 },
 
 console:{
 marginTop:30,
-color:BITPANDA_GREEN,
+color:GREEN,
 fontSize:16
 },
 
@@ -303,7 +339,7 @@ animation:"blink 1s infinite"
 footer:{
 marginTop:40,
 fontSize:12,
-color:DIM
+opacity:.7
 }
 
 };
