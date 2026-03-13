@@ -103,6 +103,75 @@ function Confetti({ count = 42 }) {
   );
 }
 
+function MatrixRain() {
+  const [columns, setColumns] = useState([]);
+
+  useEffect(() => {
+    function buildColumns() {
+      const amount = Math.floor(window.innerWidth / 28);
+      const cols = [];
+
+      for (let i = 0; i < amount; i++) {
+        cols.push({
+          x: i * 28,
+          y: Math.random() * window.innerHeight,
+          speed: 2 + Math.random() * 4,
+          value: randomChar(),
+          opacity: 0.25 + Math.random() * 0.45,
+        });
+      }
+
+      setColumns(cols);
+    }
+
+    buildColumns();
+    window.addEventListener("resize", buildColumns);
+
+    return () => {
+      window.removeEventListener("resize", buildColumns);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!columns.length) return;
+
+    const interval = setInterval(() => {
+      setColumns((prev) =>
+        prev.map((col) => ({
+          ...col,
+          y: col.y > window.innerHeight + 40 ? -80 : col.y + col.speed,
+          value: randomChar(),
+        }))
+      );
+    }, 55);
+
+    return () => clearInterval(interval);
+  }, [columns.length]);
+
+  return (
+    <div style={styles.matrixLayer}>
+      {columns.map((col, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: col.x,
+            top: col.y,
+            color: GREEN,
+            fontSize: 20,
+            opacity: col.opacity,
+            fontFamily: "Courier New, monospace",
+            textShadow: "0 0 10px rgba(44,236,154,.6)",
+            pointerEvents: "none",
+          }}
+        >
+          {col.value}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
   const [guess, setGuess] = useState("");
   const [message, setMessage] = useState(">> ENTER ACCESS CODE");
@@ -269,6 +338,7 @@ export default function App() {
       <>
         <style>{globalStyles}</style>
         <div style={styles.winPage}>
+          <MatrixRain />
           <Confetti />
           <div style={styles.winGlowA} />
           <div style={styles.winGlowB} />
@@ -513,12 +583,6 @@ const globalStyles = `
   @keyframes ringRotate {
     0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: .8; }
     100% { transform: translate(-50%, -50%) rotate(360deg) scale(1.05); opacity: 1; }
-  }
-
-  @keyframes shineSweep {
-    0% { transform: translateX(-140%) rotate(18deg); opacity: 0; }
-    30% { opacity: .85; }
-    100% { transform: translateX(180%) rotate(18deg); opacity: 0; }
   }
 
   @keyframes confettiFall {
@@ -769,11 +833,20 @@ const styles = {
     overflow: "hidden",
   },
 
+  matrixLayer: {
+    position: "absolute",
+    inset: 0,
+    overflow: "hidden",
+    pointerEvents: "none",
+    zIndex: 0,
+  },
+
   confettiLayer: {
     position: "absolute",
     inset: 0,
     overflow: "hidden",
     pointerEvents: "none",
+    zIndex: 3,
   },
 
   confettiPiece: {
@@ -794,6 +867,7 @@ const styles = {
       "radial-gradient(circle, rgba(247,215,116,.18) 0%, rgba(247,215,116,.05) 35%, rgba(247,215,116,0) 70%)",
     filter: "blur(18px)",
     animation: "goldPulse 3.6s ease-in-out infinite",
+    zIndex: 1,
   },
 
   winGlowB: {
@@ -805,11 +879,12 @@ const styles = {
       "radial-gradient(circle, rgba(44,236,154,.14) 0%, rgba(44,236,154,.04) 35%, rgba(44,236,154,0) 70%)",
     filter: "blur(18px)",
     animation: "goldPulse 4.4s ease-in-out infinite",
+    zIndex: 1,
   },
 
   winWrap: {
     position: "relative",
-    zIndex: 2,
+    zIndex: 4,
     textAlign: "center",
     padding: "40px 24px",
     maxWidth: 980,
