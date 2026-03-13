@@ -68,7 +68,7 @@ function buildSlots(guess, statuses) {
   return slots;
 }
 
-function Confetti({ count = 42 }) {
+function Confetti({ count = 48 }) {
   const pieces = Array.from({ length: count }, (_, i) => i);
 
   return (
@@ -317,7 +317,7 @@ export default function App() {
         setSlots(buildSlots("", []));
         inputRef.current?.focus();
       }, 1200);
-    } catch (err) {
+    } catch {
       setIsDecrypting(false);
       setErrorFlash(true);
       setMessage(">> ACCESS DENIED");
