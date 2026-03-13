@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const DISPLAY_BALANCE = "50.000€";
 const GREEN = "#2CEC9A";
-const RED = "#ff2d2d";
-const WHITE = "#eafff5";
-const DIM = "#7fbf9f";
+const RED = "#ff4d4f";
+const WHITE = "#EAFEF4";
+const DIM = "#7FBF9F";
 const BG = "#030504";
 const DARK_GREEN = "#10352d";
 const SLOT_MASK = "BP-____-____-____";
@@ -176,7 +176,7 @@ export default function App() {
       } else {
         setErrorFlash(true);
         setMessage(">> ACCESS DENIED");
-        setTimeout(() => setErrorFlash(false), 900);
+        setTimeout(() => setErrorFlash(false), 1100);
       }
 
       setTimeout(() => {
@@ -188,7 +188,7 @@ export default function App() {
       setIsDecrypting(false);
       setErrorFlash(true);
       setMessage(">> ACCESS DENIED");
-      setTimeout(() => setErrorFlash(false), 900);
+      setTimeout(() => setErrorFlash(false), 1100);
 
       setTimeout(() => {
         setGuess("");
@@ -224,26 +224,35 @@ export default function App() {
           100% { opacity: 0; }
         }
 
-        @keyframes flashRed {
-          0% { opacity: 0; }
-          10% { opacity: .12; }
-          25% { opacity: .28; }
-          40% { opacity: .14; }
-          60% { opacity: .26; }
-          100% { opacity: 0; }
+        @keyframes errorOverlayIn {
+          0% { opacity: 0; backdrop-filter: blur(0px); }
+          100% { opacity: 1; backdrop-filter: blur(4px); }
         }
 
-        @keyframes violentShake {
-          0% { transform: translateX(0) scale(1); }
-          10% { transform: translateX(-16px) rotate(-1deg) scale(1.01); }
-          20% { transform: translateX(14px) rotate(1deg) scale(1.01); }
-          30% { transform: translateX(-12px) rotate(-1deg); }
-          40% { transform: translateX(12px) rotate(1deg); }
-          50% { transform: translateX(-10px); }
-          60% { transform: translateX(10px); }
-          70% { transform: translateX(-6px); }
-          80% { transform: translateX(6px); }
-          100% { transform: translateX(0) scale(1); }
+        @keyframes errorPulse {
+          0% { transform: scale(1); opacity: .75; }
+          50% { transform: scale(1.015); opacity: 1; }
+          100% { transform: scale(1); opacity: .75; }
+        }
+
+        @keyframes errorGlitch {
+          0% { transform: translateX(0); filter: blur(0px); }
+          20% { transform: translateX(-6px); filter: blur(.4px); }
+          40% { transform: translateX(5px); filter: blur(0px); }
+          60% { transform: translateX(-3px); filter: blur(.2px); }
+          80% { transform: translateX(2px); filter: blur(0px); }
+          100% { transform: translateX(0); filter: blur(0px); }
+        }
+
+        @keyframes errorLine {
+          0% { transform: translateY(-120%); opacity: 0; }
+          20% { opacity: .6; }
+          100% { transform: translateY(120vh); opacity: 0; }
+        }
+
+        @keyframes errorTextReveal {
+          0% { opacity: 0; transform: translateY(10px) scale(.98); letter-spacing: 2px; }
+          100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 1px; }
         }
 
         @keyframes matrixPulse {
@@ -281,22 +290,34 @@ export default function App() {
             width: 16px !important;
             font-size: 24px !important;
           }
+
+          .error-title {
+            font-size: 32px !important;
+          }
         }
       `}</style>
 
       <div style={styles.page}>
-        {successFlash && (
-          <div style={styles.greenFlash} />
-        )}
+        {successFlash && <div style={styles.greenFlash} />}
 
         {errorFlash && (
-          <div style={styles.redFlash} />
+          <div style={styles.errorOverlay}>
+            <div style={styles.errorGlow} />
+            <div style={styles.errorScanline} />
+            <div style={styles.errorModal}>
+              <div style={styles.errorLabel}>SECURITY RESPONSE</div>
+              <div className="error-title" style={styles.errorTitle}>
+                ACCESS DENIED
+              </div>
+              <div style={styles.errorSub}>INVALID CODE</div>
+            </div>
+          </div>
         )}
 
         <div
           style={{
             ...styles.wrapper,
-            animation: errorFlash ? "violentShake .55s ease-out" : "none",
+            animation: errorFlash ? "errorGlitch .45s ease-out" : "none",
           }}
         >
           <div style={styles.header}>BITPANDA PRESENTS</div>
@@ -369,7 +390,7 @@ export default function App() {
                 ...styles.input,
                 borderColor: errorFlash ? RED : GREEN,
                 boxShadow: errorFlash
-                  ? `0 0 20px ${RED}, 0 0 45px rgba(255,45,45,.35)`
+                  ? `0 0 0 1px rgba(255,77,79,.35), 0 0 18px rgba(255,77,79,.18), 0 0 36px rgba(255,77,79,.08)`
                   : `0 0 14px rgba(44,236,154,.28)`,
               }}
             />
@@ -428,14 +449,76 @@ const styles = {
     zIndex: 20,
   },
 
-  redFlash: {
+  errorOverlay: {
     position: "fixed",
     inset: 0,
-    background: RED,
-    opacity: 0.16,
+    background: "rgba(8, 8, 10, 0.58)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 30,
     pointerEvents: "none",
-    animation: "flashRed .9s ease-out",
-    zIndex: 20,
+    animation: "errorOverlayIn .18s ease-out forwards",
+  },
+
+  errorGlow: {
+    position: "absolute",
+    width: "55vw",
+    height: "55vw",
+    maxWidth: 700,
+    maxHeight: 700,
+    borderRadius: "50%",
+    background:
+      "radial-gradient(circle, rgba(255,77,79,.18) 0%, rgba(255,77,79,.08) 30%, rgba(255,77,79,0) 70%)",
+    animation: "errorPulse .8s ease-in-out infinite",
+    filter: "blur(10px)",
+  },
+
+  errorScanline: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    height: 120,
+    background:
+      "linear-gradient(to bottom, rgba(255,77,79,0), rgba(255,77,79,.18), rgba(255,77,79,0))",
+    animation: "errorLine .65s ease-out",
+  },
+
+  errorModal: {
+    position: "relative",
+    padding: "28px 34px",
+    minWidth: 320,
+    maxWidth: "80vw",
+    border: "1px solid rgba(255,77,79,.25)",
+    background: "rgba(12,12,14,.72)",
+    boxShadow:
+      "0 20px 60px rgba(0,0,0,.35), 0 0 30px rgba(255,77,79,.08) inset",
+    backdropFilter: "blur(10px)",
+    textAlign: "center",
+    animation: "errorTextReveal .22s ease-out forwards",
+  },
+
+  errorLabel: {
+    color: "rgba(255,255,255,.58)",
+    fontSize: 12,
+    letterSpacing: 2,
+    marginBottom: 10,
+  },
+
+  errorTitle: {
+    color: RED,
+    fontSize: 42,
+    fontWeight: 800,
+    lineHeight: 1,
+    letterSpacing: 1,
+    textShadow: "0 0 22px rgba(255,77,79,.18)",
+  },
+
+  errorSub: {
+    marginTop: 12,
+    color: "rgba(255,255,255,.72)",
+    fontSize: 14,
+    letterSpacing: 1.4,
   },
 
   wrapper: {
