@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import bitpandaLogo from "./assets/bitpanda-logo.webp";
 
 const DISPLAY_BALANCE = "50.000€";
 const GREEN = "#2CEC9A";
@@ -344,7 +345,7 @@ export default function App() {
           <div style={styles.winGlowB} />
 
           <div style={styles.winWrap}>
-            <div style={styles.winKicker}>BITPANDA JACKPOT</div>
+            <img src={bitpandaLogo} alt="Bitpanda" style={styles.winLogo} />
 
             <div style={styles.winTopLine}>
               {winnerJustFound ? "ACCESS GRANTED" : "JACKPOT CLAIMED"}
@@ -403,7 +404,9 @@ export default function App() {
             animation: errorFlash ? "errorGlitch .45s ease-out" : "none",
           }}
         >
-          <div style={styles.header}>BITPANDA PRESENTS</div>
+          <div style={styles.header}>
+            <img src={bitpandaLogo} alt="Bitpanda" style={styles.logo} />
+          </div>
 
           <div className="prize" style={styles.prize}>
             WIN {DISPLAY_BALANCE}
@@ -492,17 +495,10 @@ export default function App() {
             </button>
           </form>
 
-          <div
-            style={{
-              ...styles.console,
-              color: errorFlash ? RED : GREEN,
-            }}
-          >
-            {message}
+          <div style={{ ...styles.console, color: GREEN }}>
+            SPONSORED BY BITPANDA
             <span style={styles.cursor}>█</span>
           </div>
-
-          <div style={styles.footer}>SPONSORED BY BITPANDA</div>
         </div>
       </div>
     </>
@@ -707,10 +703,18 @@ const styles = {
   },
 
   header: {
-    color: GREEN,
-    letterSpacing: 2,
-    fontSize: 14,
     marginBottom: 20,
+    display: "flex",
+    justifyContent: "center",
+  },
+
+  logo: {
+    width: 110,
+    height: 110,
+    objectFit: "contain",
+    display: "block",
+    margin: "0 auto",
+    filter: "drop-shadow(0 0 10px rgba(44,236,154,.18))",
   },
 
   prize: {
@@ -811,14 +815,6 @@ const styles = {
     animation: "blink 1s infinite",
   },
 
-  footer: {
-    marginTop: 44,
-    fontSize: 12,
-    opacity: 0.72,
-    color: GREEN,
-    letterSpacing: 1.2,
-  },
-
   winPage: {
     minHeight: "100vh",
     width: "100%",
@@ -891,11 +887,13 @@ const styles = {
     width: "100%",
   },
 
-  winKicker: {
-    color: GREEN,
-    letterSpacing: 3,
-    fontSize: 14,
-    marginBottom: 20,
+  winLogo: {
+    width: 120,
+    height: 120,
+    objectFit: "contain",
+    display: "block",
+    margin: "0 auto 22px",
+    filter: "drop-shadow(0 0 12px rgba(44,236,154,.2))",
   },
 
   winTopLine: {
