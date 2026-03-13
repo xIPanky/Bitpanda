@@ -1,5 +1,11 @@
 const SECRET_CODE = "BP-7X9A-11Q4-22K8";
 
+const globalAny = globalThis;
+
+if (typeof globalAny.__winnerLocked === "undefined") {
+  globalAny.__winnerLocked = false;
+}
+
 function normalize(input) {
   return String(input || "").trim().toUpperCase().replace(/\s+/g, "");
 }
@@ -31,6 +37,19 @@ function buildCharResults(guess, secret) {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "GET") {
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        winnerLocked: globalAny.__winnerLocked,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
       status: 405,
@@ -39,6 +58,22 @@ Deno.serve(async (req) => {
   }
 
   try {
+    if (globalAny.__winnerLocked) {
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          winnerLocked: true,
+          isWinner: false,
+          matchedChars: 0,
+          charResults: [],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const body = await req.json();
     const guess = normalize(body?.guess);
 
@@ -53,9 +88,14 @@ Deno.serve(async (req) => {
     const matchedChars = countCorrectPositions(guess, SECRET_CODE);
     const charResults = buildCharResults(guess, SECRET_CODE);
 
+    if (isWinner) {
+      globalAny.__winnerLocked = true;
+    }
+
     return new Response(
       JSON.stringify({
         ok: true,
+        winnerLocked: globalAny.__winnerLocked,
         isWinner,
         matchedChars,
         charResults,
