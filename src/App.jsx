@@ -4,6 +4,7 @@ const WALLET_MASK = "BP-7X9A-__Q4-__K8";
 const DISPLAY_ADDRESS = "0xB17P...4NDA";
 const DISPLAY_BALANCE = "€100 in BTC";
 const MAX_ATTEMPTS_PER_PLAYER = 1;
+const attemptsLeft = 1;
 
 const BITPANDA_GREEN = "#2CEC9A";
 const DARK_GREEN = "#10352d";
@@ -39,7 +40,7 @@ function App() {
   const [bestPossibleDisplay, setBestPossibleDisplay] = useState(WALLET_MASK);
   const [leaderboard, setLeaderboard] = useState([]);
   const [clock, setClock] = useState(new Date());
-  const [attemptsUsed, setAttemptsUsed] = useState(0);
+  
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
@@ -76,9 +77,7 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [message]);
 
-  const attemptsLeft = useMemo(() => {
-    return Math.max(0, MAX_ATTEMPTS_PER_PLAYER - attemptsUsed);
-  }, [attemptsUsed]);
+const attemptsLeft = 1;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -126,18 +125,12 @@ useEffect(() => {
       setBestPossibleDisplay(data.bestPossibleDisplay);
       setLeaderboard(data.leaderboard || []);
 
-      if (typeof data.attemptsLeft === "number") {
-        setAttemptsUsed(MAX_ATTEMPTS_PER_PLAYER - data.attemptsLeft);
-      } else {
-        setAttemptsUsed(1);
-      }
-
       if (data.isWinner) {
         setMessage(">> ACCESS GRANTED // WIN CONFIRMED");
       }
 
       setGuess("");
-setName("");
+      setName("");
 
       setTimeout(() => {
         setIsHacking(false);
