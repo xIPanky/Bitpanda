@@ -1,10 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const WALLET_MASK = "BP-7X9A-__Q4-__K8";
 const DISPLAY_ADDRESS = "0xB17P...4NDA";
 const DISPLAY_BALANCE = "€100 in BTC";
-const MAX_ATTEMPTS_PER_PLAYER = 1;
-const attemptsLeft = 1;
 
 const BITPANDA_GREEN = "#2CEC9A";
 const DARK_GREEN = "#10352d";
@@ -29,32 +27,66 @@ function formatCode(value) {
   return formatted;
 }
 
+function mergeLeaderboard(oldBoard, newBoard) {
+  const map = new Map();
+
+  [...oldBoard, ...newBoard].forEach((entry) => {
+    if (!entry?.name) return;
+
+    const existing = map.get(entry.name);
+
+    if (!existing) {
+      map.set(entry.name, entry);
+      return;
+    }
+
+    if ((entry.bestScore || 0) > (existing.bestScore || 0)) {
+      map.set(entry.name, entry);
+      return;
+    }
+
+    if (
+      (entry.bestScore || 0) === (existing.bestScore || 0) &&
+      new Date(entry.lastAt || 0).getTime() > new Date(existing.lastAt || 0).getTime()
+    ) {
+      map.set(entry.name, entry);
+    }
+  });
+
+  return [...map.values()]
+    .sort((a, b) => {
+      if ((b.bestScore || 0) !== (a.bestScore || 0)) {
+        return (b.bestScore || 0) - (a.bestScore || 0);
+      }
+      return new Date(a.lastAt || 0).getTime() - new Date(b.lastAt || 0).getTime();
+    })
+    .slice(0, 10);
+}
+
 function App() {
   const [name, setName] = useState("");
   const [guess, setGuess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isHacking, setIsHacking] = useState(false);
-  const [message, setMessage] = useState(">> SYSTEM READY");
-  const [displayMessage, setDisplayMessage] = useState(">> SYSTEM READY");
+  const [message, setMessage] = useState(">> ENTER YOUR NAME AND GUESS THE CODE");
+  const [displayMessage, setDisplayMessage] = useState(">> ENTER YOUR NAME AND GUESS THE CODE");
   const [matchedChars, setMatchedChars] = useState(null);
-  const [bestPossibleDisplay, setBestPossibleDisplay] = useState(WALLET_MASK);
   const [leaderboard, setLeaderboard] = useState([]);
   const [clock, setClock] = useState(new Date());
-  
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-useEffect(() => {
-  const lb = localStorage.getItem("bitpanda_challenge_leaderboard");
-  if (lb) {
-    try {
-      setLeaderboard(JSON.parse(lb));
-    } catch (e) {}
-  }
-}, []);
+  useEffect(() => {
+    const lb = localStorage.getItem("bitpanda_challenge_leaderboard");
+    if (lb) {
+      try {
+        setLeaderboard(JSON.parse(lb));
+      } catch (e) {}
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(
@@ -77,8 +109,6 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [message]);
 
-const attemptsLeft = 1;
-
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -89,11 +119,6 @@ const attemptsLeft = 1;
 
     if (!guess.trim()) {
       setMessage(">> PLEASE ENTER A CODE");
-      return;
-    }
-
-    if (attemptsLeft <= 0) {
-      setMessage(">> ACCESS LOCKED // REGISTER AGAIN");
       return;
     }
 
@@ -122,8 +147,9 @@ const attemptsLeft = 1;
 
       setMessage(data.message);
       setMatchedChars(data.matchedChars);
-      setBestPossibleDisplay(data.bestPossibleDisplay);
-      setLeaderboard(data.leaderboard || []);
+
+      const merged = mergeLeaderboard(leaderboard, data.leaderboard || []);
+      setLeaderboard(merged);
 
       if (data.isWinner) {
         setMessage(">> ACCESS GRANTED // WIN CONFIRMED");
@@ -138,6 +164,8 @@ const attemptsLeft = 1;
     } catch (error) {
       setIsHacking(false);
       setMessage(">> ERROR: " + (error.message || "UNKNOWN ERROR"));
+      setGuess("");
+      setName("");
     } finally {
       setIsSubmitting(false);
     }
@@ -207,8 +235,7 @@ const attemptsLeft = 1;
               <div style={styles.kicker}>BITPANDA PRESENTS</div>
               <h1 style={styles.title}>CRACK THE WALLET</h1>
               <p style={styles.subtitle}>
-                Enter your name. You get one shot. Guess the code. Climb the
-                leaderboard.
+                Guess the hidden code. The closer you get, the higher you rank.
               </p>
             </div>
 
@@ -216,7 +243,7 @@ const attemptsLeft = 1;
               <div>STATUS: LIVE</div>
               <div>TIME: {clock.toLocaleTimeString("de-DE")}</div>
               <div>SPONSOR: BITPANDA</div>
-              <div>MODE: ONE SHOT ONLY</div>
+              <div>MODE: ONE SHOT PER NAME</div>
             </div>
           </header>
 
@@ -237,31 +264,6 @@ const attemptsLeft = 1;
                 >
                   KEY: {guess || WALLET_MASK}
                 </div>
-
-                <div style={styles.divider} />
-
-                <div style={styles.hintTitle}>HINTS</div>
-                <ul style={styles.hints}>
-                  <li>16 characters total</li>
-                  <li>Letters and numbers only</li>
-                  <li>Some characters are already visible</li>
-                  <li>Only one attempt per registration</li>
-                </ul>
-              </div>
-
-              <div style={styles.card}>
-                <div style={styles.cardLabel}>YOUR BEST MATCH</div>
-                <div style={styles.bestMatch}>{bestPossibleDisplay}</div>
-
-                <div style={styles.metaRow}>
-                  <span>MATCHED CHARS:</span>
-                  <strong>{matchedChars ?? 0}</strong>
-                </div>
-
-                <div style={styles.metaRow}>
-                  <span>ATTEMPTS LEFT:</span>
-                  <strong>{attemptsLeft}</strong>
-                </div>
               </div>
             </div>
 
@@ -272,21 +274,41 @@ const attemptsLeft = 1;
                   <span style={styles.cursor}>_</span>
                 </div>
 
+                <div style={styles.infoBox}>
+                  <div style={styles.infoTitle}>HOW IT WORKS</div>
+                  <div style={styles.infoText}>
+                    Enter your name and guess the hidden code. You can type the
+                    code without dashes — they will be added automatically.
+                    Every correct character in the correct position improves your
+                    ranking.
+                  </div>
+
+                  <div style={styles.divider} />
+
+                  <div style={styles.infoTitle}>HINTS</div>
+                  <ul style={styles.hints}>
+                    <li>16 characters total</li>
+                    <li>Letters and numbers only</li>
+                    <li>Some characters are already visible</li>
+                    <li>One attempt per name</li>
+                  </ul>
+                </div>
+
                 <form onSubmit={handleSubmit} style={styles.form}>
                   <label style={styles.label}>NAME</label>
                   <input
-                    style={styles.input}
+                    style={styles.bigInput}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="YOUR NAME"
                     maxLength={24}
-                    disabled={attemptsLeft <= 0 || isSubmitting}
+                    disabled={isSubmitting}
                   />
 
                   <label style={styles.label}>YOUR CODE</label>
                   <input
                     style={{
-                      ...styles.input,
+                      ...styles.bigInput,
                       boxShadow: isHacking
                         ? "0 0 18px rgba(44,236,154,.45), 0 0 30px rgba(44,236,154,.15)"
                         : "none",
@@ -295,20 +317,17 @@ const attemptsLeft = 1;
                     onChange={(e) => setGuess(formatCode(e.target.value))}
                     placeholder="BP-XXXX-XXXX-XXXX"
                     maxLength={17}
-                    disabled={attemptsLeft <= 0 || isSubmitting}
+                    disabled={isSubmitting}
                   />
 
                   <button
                     type="submit"
                     style={{
                       ...styles.button,
-                      opacity: isSubmitting || attemptsLeft <= 0 ? 0.65 : 1,
-                      cursor:
-                        isSubmitting || attemptsLeft <= 0
-                          ? "not-allowed"
-                          : "pointer",
+                      opacity: isSubmitting ? 0.65 : 1,
+                      cursor: isSubmitting ? "not-allowed" : "pointer",
                     }}
-                    disabled={isSubmitting || attemptsLeft <= 0}
+                    disabled={isSubmitting}
                   >
                     {isSubmitting ? "VERIFYING..." : "SUBMIT GUESS"}
                   </button>
@@ -320,6 +339,9 @@ const attemptsLeft = 1;
                     {displayMessage}
                     <span style={styles.consoleCursor}>█</span>
                   </div>
+                  {matchedChars !== null && (
+                    <div style={styles.hitInfo}>LAST RESULT: {matchedChars} HITS</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -346,13 +368,6 @@ const attemptsLeft = 1;
                       </div>
                     ))
                   )}
-                </div>
-
-                <div style={styles.divider} />
-
-                <div style={styles.smallInfo}>
-                  Ranking by highest number of correct characters in the correct
-                  position.
                 </div>
               </div>
             </aside>
@@ -388,7 +403,7 @@ const styles = {
     mixBlendMode: "screen",
   },
   wrapper: {
-    maxWidth: 1440,
+    maxWidth: 1500,
     margin: "0 auto",
     padding: "28px 20px 28px",
     position: "relative",
@@ -427,7 +442,7 @@ const styles = {
   topRightBox: {
     border: `1px solid ${BITPANDA_GREEN}`,
     padding: 14,
-    minWidth: 240,
+    minWidth: 260,
     background: "rgba(0,0,0,0.35)",
     boxShadow: `0 0 14px rgba(44,236,154,.18) inset`,
     lineHeight: 1.8,
@@ -436,7 +451,7 @@ const styles = {
   },
   heroGrid: {
     display: "grid",
-    gridTemplateColumns: "1.1fr 1.15fr 0.85fr",
+    gridTemplateColumns: "0.9fr 1.5fr 0.85fr",
     gap: 18,
   },
   leftCol: {
@@ -455,17 +470,14 @@ const styles = {
     padding: 18,
     boxShadow: `0 0 18px rgba(44,236,154,.12)`,
     animation: "fadeUp .8s ease-out",
-    transition:
-      "transform .18s ease, box-shadow .18s ease, border-color .18s ease",
   },
   formCard: {
     background: "rgba(0,0,0,0.55)",
     border: `1px solid ${BITPANDA_GREEN}`,
-    padding: 22,
+    padding: 28,
     minHeight: "100%",
     boxShadow: `0 0 24px rgba(44,236,154,.15)`,
     animation: "fadeUp .95s ease-out",
-    transition: "transform .18s ease, box-shadow .18s ease",
   },
   cardLabel: {
     color: BITPANDA_GREEN,
@@ -503,9 +515,22 @@ const styles = {
     background: "rgba(44,236,154,.22)",
     margin: "16px 0",
   },
-  hintTitle: {
-    marginBottom: 10,
+  infoBox: {
+    padding: 18,
+    border: `1px solid rgba(44,236,154,.25)`,
+    background: "#06100d",
+    marginBottom: 20,
+  },
+  infoTitle: {
     color: "#eafff5",
+    fontSize: 14,
+    marginBottom: 8,
+    letterSpacing: 1.2,
+  },
+  infoText: {
+    color: DIM,
+    lineHeight: 1.7,
+    fontSize: 14,
   },
   hints: {
     margin: 0,
@@ -514,57 +539,43 @@ const styles = {
     lineHeight: 1.8,
     fontSize: 14,
   },
-  bestMatch: {
-    fontSize: 28,
-    color: BITPANDA_GREEN,
-    marginBottom: 16,
-    wordBreak: "break-all",
-  },
-  metaRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    color: DIM,
-    marginTop: 8,
-    gap: 12,
-  },
   form: {
     display: "grid",
-    gap: 12,
+    gap: 14,
   },
   label: {
     fontSize: 13,
     color: DIM,
     letterSpacing: 1.4,
   },
-  input: {
+  bigInput: {
     width: "100%",
-    padding: "14px 14px",
+    padding: "18px 18px",
     borderRadius: 0,
     border: `1px solid ${BITPANDA_GREEN}`,
     background: "#010302",
     color: BITPANDA_GREEN,
     outline: "none",
-    fontSize: 18,
+    fontSize: 22,
     fontFamily: "'Courier New', monospace",
   },
   button: {
-    marginTop: 6,
-    padding: "16px 18px",
+    marginTop: 10,
+    padding: "18px 18px",
     border: `1px solid ${BITPANDA_GREEN}`,
     background: BITPANDA_GREEN,
     color: "#04110b",
     fontWeight: 800,
-    fontSize: 16,
+    fontSize: 18,
     letterSpacing: 1.2,
     boxShadow: `0 0 18px rgba(44,236,154,.22)`,
-    transition: "transform .15s ease, box-shadow .15s ease, filter .15s ease",
   },
   console: {
-    marginTop: 18,
-    padding: 14,
+    marginTop: 22,
+    padding: 16,
     border: `1px solid rgba(44,236,154,.35)`,
     background: "#020403",
-    minHeight: 90,
+    minHeight: 110,
     color: BITPANDA_GREEN,
     boxShadow: `0 0 10px rgba(44,236,154,.08) inset`,
     letterSpacing: 0.4,
@@ -580,6 +591,11 @@ const styles = {
     display: "inline-block",
     marginLeft: 4,
     animation: "blinkCursor 1s steps(1) infinite",
+  },
+  hitInfo: {
+    marginTop: 12,
+    color: "#eafff5",
+    fontSize: 13,
   },
   lbHeader: {
     display: "grid",
@@ -608,11 +624,6 @@ const styles = {
   empty: {
     color: DIM,
     padding: "12px 0",
-  },
-  smallInfo: {
-    color: DIM,
-    fontSize: 12,
-    lineHeight: 1.6,
   },
   footer: {
     marginTop: 20,
