@@ -18,7 +18,9 @@ function countCorrectPositions(guess, secret) {
   const max = Math.min(guessRaw.length, secretRaw.length);
 
   for (let i = 0; i < max; i++) {
-    if (guessRaw[i] === secretRaw[i]) score++;
+    if (guessRaw[i] === secretRaw[i]) {
+      score++;
+    }
   }
 
   return score;
@@ -33,17 +35,23 @@ Deno.serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
   }
 
   if (req.method !== "POST") {
     return new Response(
-      JSON.stringify({ error: "Method Not Allowed" }),
+      JSON.stringify({
+        error: "Method Not Allowed",
+      }),
       {
         status: 405,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
   }
@@ -59,7 +67,9 @@ Deno.serve(async (req) => {
         }),
         {
           status: 200,
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
     }
@@ -69,10 +79,14 @@ Deno.serve(async (req) => {
 
     if (!guess) {
       return new Response(
-        JSON.stringify({ error: "Missing guess" }),
+        JSON.stringify({
+          error: "Missing guess",
+        }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
     }
@@ -93,7 +107,9 @@ Deno.serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (error) {
@@ -104,7 +120,9 @@ Deno.serve(async (req) => {
       }),
       {
         status: 400,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
   }
