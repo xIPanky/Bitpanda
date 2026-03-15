@@ -13,8 +13,7 @@ const SLOT_MASK = "BP-____-____-____";
 
 function formatCode(value) {
   const clean = String(value || "")
-    .replace(/[^A-Z0-9]/gi, "")
-    .toUpperCase()
+    .replace(/[^a-zA-Z0-9]/g, "")
     .slice(0, 14);
 
   const p1 = clean.slice(0, 2);
