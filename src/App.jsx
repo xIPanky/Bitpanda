@@ -331,7 +331,13 @@ export default function App() {
           <div style={styles.winGlowB} />
 
           <div style={styles.winWrap}>
-            <img src={bitpandaLogo} alt="Bitpanda" style={styles.winLogo} />
+            <a
+              href="https://www.bitpanda.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img src={bitpandaLogo} alt="Bitpanda" style={styles.winLogo} />
+            </a>
 
             <div style={styles.winTopLine}>
               {winnerJustFound ? "ACCESS GRANTED" : "JACKPOT CLAIMED"}
@@ -356,7 +362,7 @@ export default function App() {
                 : "THE FINAL PRIZE HAS ALREADY BEEN CLAIMED"}
             </div>
 
-           <div style={styles.winFooter}>{">>> SPONSORED BY BITPANDA"}</div>
+            <div style={styles.winFooter}>{">>> SPONSORED BY BITPANDA"}</div>
           </div>
         </div>
       </>
@@ -412,15 +418,17 @@ export default function App() {
 
           <div style={styles.lengthInfo}>14 CHARACTERS REQUIRED</div>
 
-          <div style={styles.codeDisplay}>{displayCode}</div>
-
           <form onSubmit={handleSubmit} style={styles.form}>
             <input
               ref={inputRef}
               autoFocus
               className="input-main"
-              value={guess}
-              onChange={(e) => setGuess(formatCode(e.target.value))}
+              value={isDecrypting ? displayCode : guess}
+              onChange={(e) => {
+                if (!isDecrypting) {
+                  setGuess(formatCode(e.target.value));
+                }
+              }}
               placeholder="ENTER ACCESS CODE"
               maxLength={17}
               disabled={isSubmitting || winnerLocked}
@@ -429,7 +437,10 @@ export default function App() {
                 borderColor: errorFlash ? RED : GREEN,
                 boxShadow: errorFlash
                   ? `0 0 0 1px rgba(255,77,79,.35), 0 0 18px rgba(255,77,79,.18), 0 0 36px rgba(255,77,79,.08)`
+                  : isDecrypting
+                  ? `0 0 24px rgba(44,236,154,.35), 0 0 50px rgba(44,236,154,.12)`
                   : `0 0 14px rgba(44,236,154,.28)`,
+                letterSpacing: "2px",
               }}
             />
 
@@ -448,7 +459,7 @@ export default function App() {
           </form>
 
           <div style={{ ...styles.console, color: GREEN }}>
-             {">>> SPONSORED BY BITPANDA"}
+            {">>> SPONSORED BY BITPANDA"}
             <span style={styles.cursor}>█</span>
           </div>
         </div>
@@ -684,14 +695,6 @@ const styles = {
     marginBottom: 18,
   },
 
-  codeDisplay: {
-    fontSize: 42,
-    color: GREEN,
-    marginBottom: 28,
-    letterSpacing: 2,
-    textShadow: "0 0 12px rgba(44,236,154,.22)",
-  },
-
   form: {
     display: "grid",
     gap: 14,
@@ -700,8 +703,8 @@ const styles = {
   },
 
   input: {
-    padding: "24px",
-    fontSize: 30,
+    padding: "28px",
+    fontSize: 34,
     textAlign: "center",
     border: `2px solid ${GREEN}`,
     background: "#010302",
