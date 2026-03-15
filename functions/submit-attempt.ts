@@ -1,71 +1,103 @@
-const SECRET_CODE = "BP-7X9A-11Q4-22K8";
+const SECRET_CODE = "BP-7x9A-11Q4-2aK8";
+const MAX_ATTEMPTS_PER_PLAYER = 1;
 
 const globalAny = globalThis;
 
-if (typeof globalAny.__winnerLocked === "undefined") {
-  globalAny.__winnerLocked = false;
+if (!globalAny.__bitpandaLeaderboard) {
+  globalAny.__bitpandaLeaderboard = [];
+}
+
+if (!globalAny.__bitpandaAttempts) {
+  globalAny.__bitpandaAttempts = {};
 }
 
 function normalize(input) {
-  return String(input || "").trim().toUpperCase().replace(/\s+/g, "");
+  return String(input || "").trim().replace(/\s+/g, "");
 }
 
 function countCorrectPositions(guess, secret) {
-  const guessRaw = guess.replace(/-/g, "");
-  const secretRaw = secret.replace(/-/g, "");
-
+  const max = Math.max(guess.length, secret.length);
   let score = 0;
-  const max = Math.min(guessRaw.length, secretRaw.length);
 
   for (let i = 0; i < max; i++) {
-    if (guessRaw[i] === secretRaw[i]) score++;
+    if (guess[i] && secret[i] && guess[i] === secret[i]) {
+      score++;
+    }
   }
 
   return score;
 }
 
-function buildCharResults(guess, secret) {
-  const guessRaw = guess.replace(/-/g, "");
-  const secretRaw = secret.replace(/-/g, "");
-  const results = [];
+function revealMatchedCharacters(guess, secret) {
+  const max = Math.max(guess.length, secret.length);
+  let out = "";
 
-  for (let i = 0; i < guessRaw.length; i++) {
-    results.push(guessRaw[i] === secretRaw[i] ? "correct" : "wrong");
+  for (let i = 0; i < max; i++) {
+    const g = guess[i] ?? "";
+    const s = secret[i] ?? "";
+
+    if (!s) continue;
+
+    if (s === "-") {
+      out += "-";
+      continue;
+    }
+
+    out += g === s ? s : "_";
   }
 
-  return results;
+  return out;
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "GET") {
+  if (req.method !== "POST") {
     return new Response(
-      JSON.stringify({
-        ok: true,
-        winnerLocked: globalAny.__winnerLocked,
-      }),
+      JSON.stringify({ error: "Method Not Allowed" }),
       {
-        status: 200,
+        status: 405,
         headers: { "Content-Type": "application/json" },
       }
     );
   }
 
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
   try {
-    if (globalAny.__winnerLocked) {
+    const body = await req.json();
+
+    if (!body?.name || !body?.guess) {
+      return new Response(
+        JSON.stringify({ error: "Missing name or guess" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const name = body.name.trim().slice(0, 24);
+    const guess = normalize(body.guess);
+
+    const leaderboard = globalAny.__bitpandaLeaderboard;
+    const attemptsMap = globalAny.__bitpandaAttempts;
+
+    const usedAttempts = attemptsMap[name] ?? 0;
+
+    if (usedAttempts >= MAX_ATTEMPTS_PER_PLAYER) {
+      const topTen = [...leaderboard]
+        .sort((a, b) => {
+          if (b.bestScore !== a.bestScore) return b.bestScore - a.bestScore;
+          return new Date(a.lastAt).getTime() - new Date(b.lastAt).getTime();
+        })
+        .slice(0, 10);
+
       return new Response(
         JSON.stringify({
           ok: true,
-          winnerLocked: true,
           isWinner: false,
+          message: ">> ONE ATTEMPT ALREADY USED // REGISTER AGAIN",
           matchedChars: 0,
-          charResults: [],
+          bestPossibleDisplay: "BP-____-____-____",
+          leaderboard: topTen,
+          attemptsLeft: 0,
         }),
         {
           status: 200,
@@ -74,31 +106,50 @@ Deno.serve(async (req) => {
       );
     }
 
-    const body = await req.json();
-    const guess = normalize(body?.guess);
+    attemptsMap[name] = 1;
 
-    if (!guess) {
-      return new Response(JSON.stringify({ error: "Missing guess" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
+    const matchedChars = countCorrectPositions(guess, SECRET_CODE);
+    const bestPossibleDisplay = revealMatchedCharacters(guess, SECRET_CODE);
+    const isWinner = guess === SECRET_CODE;
+
+    const existingIndex = leaderboard.findIndex((entry) => entry.name === name);
+
+    if (existingIndex >= 0) {
+      leaderboard[existingIndex] = {
+        ...leaderboard[existingIndex],
+        attempts: 1,
+        lastAt: new Date().toISOString(),
+        bestScore: matchedChars,
+        bestGuess: guess,
+      };
+    } else {
+      leaderboard.push({
+        name,
+        bestScore: matchedChars,
+        bestGuess: guess,
+        attempts: 1,
+        lastAt: new Date().toISOString(),
       });
     }
 
-    const isWinner = guess === SECRET_CODE;
-    const matchedChars = countCorrectPositions(guess, SECRET_CODE);
-    const charResults = buildCharResults(guess, SECRET_CODE);
+    leaderboard.sort((a, b) => {
+      if (b.bestScore !== a.bestScore) return b.bestScore - a.bestScore;
+      return new Date(a.lastAt).getTime() - new Date(b.lastAt).getTime();
+    });
 
-    if (isWinner) {
-      globalAny.__winnerLocked = true;
-    }
+    const topTen = leaderboard.slice(0, 10);
 
     return new Response(
       JSON.stringify({
         ok: true,
-        winnerLocked: globalAny.__winnerLocked,
         isWinner,
+        message: isWinner
+          ? ">> ACCESS GRANTED // YOU WON THE BITPANDA REWARD"
+          : `>> ${matchedChars} CHARACTERS CORRECT // ONE SHOT USED`,
         matchedChars,
-        charResults,
+        bestPossibleDisplay,
+        leaderboard: topTen,
+        attemptsLeft: 0,
       }),
       {
         status: 200,
