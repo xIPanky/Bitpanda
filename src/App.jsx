@@ -9,7 +9,6 @@ const WHITE = "#EAFEF4";
 const DIM = "#7FBF9F";
 const BG = "#030504";
 const DARK_GREEN = "#10352d";
-const SLOT_MASK = "BP-____-____-____";
 
 function formatCode(value) {
   const clean = String(value || "")
@@ -33,7 +32,8 @@ function rawFromFormatted(value) {
 }
 
 function randomChar() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   return chars[Math.floor(Math.random() * chars.length)];
 }
 
@@ -41,31 +41,13 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function buildSlots(guess, statuses) {
-  const raw = rawFromFormatted(guess).split("");
-  const slots = [];
-  let rawIndex = 0;
-
-  for (let i = 0; i < SLOT_MASK.length; i++) {
-    const c = SLOT_MASK[i];
-
-    if (c === "-") {
-      slots.push({
-        kind: "separator",
-        value: "-",
-        status: "separator",
-      });
-    } else {
-      slots.push({
-        kind: "char",
-        value: raw[rawIndex] || "_",
-        status: statuses && statuses[rawIndex] ? statuses[rawIndex] : "idle",
-      });
-      rawIndex++;
-    }
-  }
-
-  return slots;
+function buildDisplayString(value) {
+  const raw = rawFromFormatted(value);
+  const p1 = raw.slice(0, 2).padEnd(2, "_");
+  const p2 = raw.slice(2, 6).padEnd(4, "_");
+  const p3 = raw.slice(6, 10).padEnd(4, "_");
+  const p4 = raw.slice(10, 14).padEnd(4, "_");
+  return `${p1}-${p2}-${p3}-${p4}`;
 }
 
 function Confetti({ count = 48 }) {
@@ -179,7 +161,8 @@ export default function App() {
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [errorFlash, setErrorFlash] = useState(false);
   const [successFlash, setSuccessFlash] = useState(false);
-  const [slots, setSlots] = useState(buildSlots("", []));
+  const [displayCode, setDisplayCode] = useState("__-____-____-____");
+  const [matchCount, setMatchCount] = useState(null);
   const [winnerLocked, setWinnerLocked] = useState(false);
   const [winnerJustFound, setWinnerJustFound] = useState(false);
   const inputRef = useRef(null);
@@ -224,40 +207,40 @@ export default function App() {
     if (!isDecrypting) return;
 
     const interval = setInterval(() => {
-      setSlots((prev) =>
-        prev.map((slot) =>
-          slot.kind === "separator"
-            ? slot
-            : { ...slot, value: randomChar(), status: "scanning" }
-        )
-      );
+      setDisplayCode(() => {
+        const chars = Array.from({ length: 14 }, () => randomChar());
+        return `${chars.slice(0, 2).join("")}-${chars.slice(2, 6).join("")}-${chars
+          .slice(6, 10)
+          .join("")}-${chars.slice(10, 14).join("")}`;
+      });
     }, 70);
 
     return () => clearInterval(interval);
   }, [isDecrypting]);
 
-  async function animateReveal(submittedGuess, charResults) {
-    const finalSlots = buildSlots(submittedGuess, charResults);
+  async function animateFinalCode(submittedGuess) {
+    const finalDisplay = buildDisplayString(submittedGuess);
+    const chars = finalDisplay.split("");
 
-    for (let i = 0; i < finalSlots.length; i++) {
-      if (finalSlots[i].kind === "separator") continue;
+    for (let i = 0; i < chars.length; i++) {
+      if (chars[i] === "-") continue;
 
       for (let j = 0; j < 5; j++) {
-        setSlots((prev) => {
-          const next = [...prev];
-          next[i] = { ...next[i], value: randomChar(), status: "scanning" };
-          return next;
+        setDisplayCode((prev) => {
+          const arr = prev.split("");
+          arr[i] = randomChar();
+          return arr.join("");
         });
         await sleep(35);
       }
 
-      setSlots((prev) => {
-        const next = [...prev];
-        next[i] = finalSlots[i];
-        return next;
+      setDisplayCode((prev) => {
+        const arr = prev.split("");
+        arr[i] = chars[i];
+        return arr.join("");
       });
 
-      await sleep(70);
+      await sleep(65);
     }
   }
 
@@ -266,13 +249,14 @@ export default function App() {
 
     if (!guess.trim() || isSubmitting || winnerLocked) return;
 
-    const submittedGuess = guess.trim().toUpperCase();
+    const submittedGuess = guess.trim();
 
     try {
       setIsSubmitting(true);
       setIsDecrypting(true);
+      setMatchCount(null);
       setMessage(">> DECRYPTING ACCESS KEY");
-      setSlots(buildSlots(submittedGuess, []));
+      setDisplayCode(buildDisplayString(submittedGuess));
 
       const request = fetch("/functions/submit-attempt", {
         method: "POST",
@@ -297,7 +281,7 @@ export default function App() {
         return;
       }
 
-      await animateReveal(submittedGuess, data.charResults || []);
+      await animateFinalCode(submittedGuess);
 
       if (data.isWinner) {
         setSuccessFlash(true);
@@ -308,26 +292,29 @@ export default function App() {
         return;
       }
 
+      setMatchCount(data.matchedChars ?? 0);
       setErrorFlash(true);
-      setMessage(">> ACCESS DENIED");
-      setTimeout(() => setErrorFlash(false), 2500);
+      setMessage(`>> ${data.matchedChars ?? 0} / 14 MATCHES`);
+      setTimeout(() => setErrorFlash(false), 1800);
 
       setTimeout(() => {
         setGuess("");
-        setSlots(buildSlots("", []));
+        setDisplayCode("__-____-____-____");
+        setMatchCount(null);
         inputRef.current?.focus();
-      }, 1200);
+      }, 2200);
     } catch {
       setIsDecrypting(false);
       setErrorFlash(true);
       setMessage(">> ACCESS DENIED");
-      setTimeout(() => setErrorFlash(false), 2500);
+      setTimeout(() => setErrorFlash(false), 1800);
 
       setTimeout(() => {
         setGuess("");
-        setSlots(buildSlots("", []));
+        setDisplayCode("__-____-____-____");
+        setMatchCount(null);
         inputRef.current?.focus();
-      }, 1200);
+      }, 2200);
     } finally {
       setIsSubmitting(false);
     }
@@ -369,7 +356,7 @@ export default function App() {
                 : "THE FINAL PRIZE HAS ALREADY BEEN CLAIMED"}
             </div>
 
-            <div style={styles.winFooter}>SPONSORED BY BITPANDA</div>
+           <div style={styles.winFooter}>{">>> SPONSORED BY BITPANDA"}</div>
           </div>
         </div>
       </>
@@ -392,7 +379,9 @@ export default function App() {
               <div className="error-title" style={styles.errorTitle}>
                 ACCESS DENIED
               </div>
-              <div style={styles.errorSub}>INVALID CODE</div>
+              <div style={styles.errorSub}>
+                {matchCount !== null ? `${matchCount} / 14 MATCHES` : "INVALID CODE"}
+              </div>
             </div>
           </div>
         )}
@@ -404,7 +393,13 @@ export default function App() {
           }}
         >
           <div style={styles.header}>
-            <img src={bitpandaLogo} alt="Bitpanda" style={styles.logo} />
+            <a
+              href="https://www.bitpanda.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img src={bitpandaLogo} alt="Bitpanda" style={styles.logo} />
+            </a>
           </div>
 
           <div className="prize" style={styles.prize}>
@@ -417,49 +412,7 @@ export default function App() {
 
           <div style={styles.lengthInfo}>14 CHARACTERS REQUIRED</div>
 
-          <div style={styles.slotRow}>
-            {slots.map((slot, index) => {
-              if (slot.kind === "separator") {
-                return (
-                  <div key={index} className="slot-sep" style={styles.slotSep}>
-                    -
-                  </div>
-                );
-              }
-
-              const borderColor =
-                slot.status === "correct"
-                  ? GREEN
-                  : slot.status === "wrong"
-                  ? RED
-                  : "rgba(44,236,154,.25)";
-
-              const textColor =
-                slot.status === "correct"
-                  ? GREEN
-                  : slot.status === "wrong"
-                  ? RED
-                  : WHITE;
-
-              return (
-                <div
-                  key={index}
-                  className="slot-char"
-                  style={{
-                    ...styles.slotChar,
-                    borderColor,
-                    color: textColor,
-                    animation:
-                      slot.status === "scanning"
-                        ? "matrixPulse .7s infinite"
-                        : "none",
-                  }}
-                >
-                  {slot.value}
-                </div>
-              );
-            })}
-          </div>
+          <div style={styles.codeDisplay}>{displayCode}</div>
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <input
@@ -495,7 +448,7 @@ export default function App() {
           </form>
 
           <div style={{ ...styles.console, color: GREEN }}>
-            SPONSORED BY BITPANDA
+             {">>> SPONSORED BY BITPANDA"}
             <span style={styles.cursor}>█</span>
           </div>
         </div>
@@ -557,12 +510,6 @@ const globalStyles = `
     100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 1px; }
   }
 
-  @keyframes matrixPulse {
-    0% { opacity: .7; }
-    50% { opacity: 1; }
-    100% { opacity: .7; }
-  }
-
   @keyframes goldPulse {
     0% { transform: scale(1); box-shadow: 0 0 30px rgba(247,215,116,.18); }
     50% { transform: scale(1.03); box-shadow: 0 0 80px rgba(247,215,116,.35), 0 0 140px rgba(247,215,116,.15); }
@@ -591,8 +538,6 @@ const globalStyles = `
     .title { font-size: 34px !important; }
     .input-main { font-size: 22px !important; padding: 20px !important; }
     .button-main { font-size: 22px !important; padding: 20px !important; }
-    .slot-char { width: 38px !important; height: 50px !important; font-size: 24px !important; }
-    .slot-sep { width: 16px !important; font-size: 24px !important; }
     .error-title { font-size: 32px !important; }
   }
 `;
@@ -739,34 +684,12 @@ const styles = {
     marginBottom: 18,
   },
 
-  slotRow: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 30,
-    flexWrap: "wrap",
-  },
-
-  slotChar: {
-    width: 48,
-    height: 62,
-    border: "2px solid rgba(44,236,154,.25)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 30,
-    fontWeight: 700,
-    background: "rgba(255,255,255,.02)",
-  },
-
-  slotSep: {
-    width: 20,
-    fontSize: 30,
+  codeDisplay: {
+    fontSize: 42,
     color: GREEN,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    marginBottom: 28,
+    letterSpacing: 2,
+    textShadow: "0 0 12px rgba(44,236,154,.22)",
   },
 
   form: {
@@ -887,8 +810,8 @@ const styles = {
   },
 
   winLogo: {
-    width: 120,
-    height: 120,
+    width: 260,
+    height: 260,
     objectFit: "contain",
     display: "block",
     margin: "0 auto 22px",
