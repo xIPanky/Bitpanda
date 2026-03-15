@@ -416,7 +416,10 @@ export default function App() {
             CRACK THE WALLET
           </div>
 
-          <div style={styles.lengthInfo}>14 CHARACTERS REQUIRED</div>
+          <div style={styles.inputHintWrap}>
+            <div style={styles.inputHintMain}>Enter 14 characters</div>
+            <div style={styles.inputHintSub}>Letters and numbers</div>
+          </div>
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <input
@@ -452,9 +455,11 @@ export default function App() {
               style={{
                 ...styles.button,
                 opacity: isSubmitting || winnerLocked ? 0.78 : 1,
+                transform: isSubmitting ? "scale(.995)" : "scale(1)",
+                filter: isSubmitting ? "saturate(.9)" : "none",
               }}
             >
-              {isSubmitting ? "DECRYPTING..." : "UNLOCK WALLET"}
+              {isSubmitting ? "Decrypting..." : "Unlock Wallet"}
             </button>
           </form>
 
@@ -658,7 +663,7 @@ const styles = {
   },
 
   header: {
-    marginBottom: 20,
+    marginBottom: 16,
     display: "flex",
     justifyContent: "center",
   },
@@ -683,16 +688,27 @@ const styles = {
 
   title: {
     fontSize: 44,
-    marginBottom: 20,
+    marginBottom: 18,
     color: WHITE,
     letterSpacing: 1.4,
   },
 
-  lengthInfo: {
-    color: DIM,
-    fontSize: 16,
-    letterSpacing: 1.3,
+  inputHintWrap: {
     marginBottom: 18,
+  },
+
+  inputHintMain: {
+    color: WHITE,
+    fontSize: 20,
+    fontWeight: 700,
+    letterSpacing: 0.2,
+    marginBottom: 4,
+  },
+
+  inputHintSub: {
+    color: DIM,
+    fontSize: 14,
+    letterSpacing: 0.6,
   },
 
   form: {
@@ -720,14 +736,19 @@ const styles = {
   },
 
   button: {
-    padding: "24px",
-    fontSize: 26,
-    background: GREEN,
-    border: `2px solid ${GREEN}`,
+    padding: "22px 28px",
+    fontSize: 24,
+    background:
+      "linear-gradient(180deg, rgba(44,236,154,1) 0%, rgba(31,201,130,1) 100%)",
+    border: "1px solid rgba(255,255,255,0.12)",
     color: "#04110b",
-    fontWeight: 900,
+    fontWeight: 800,
     cursor: "pointer",
-    letterSpacing: 1.2,
+    letterSpacing: 0.6,
+    borderRadius: 18,
+    boxShadow:
+      "0 12px 30px rgba(44,236,154,.18), inset 0 1px 0 rgba(255,255,255,.28)",
+    transition: "transform .18s ease, box-shadow .18s ease, filter .18s ease",
   },
 
   console: {
