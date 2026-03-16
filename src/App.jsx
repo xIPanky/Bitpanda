@@ -269,7 +269,7 @@ export default function App() {
         }),
       });
 
-      await sleep(1200);
+      await sleep(1600);
 
       const res = await request;
       const data = await res.json();
@@ -296,26 +296,26 @@ export default function App() {
       setMatchCount(data.matchedChars ?? 0);
       setErrorFlash(true);
       setMessage(`>> ${data.matchedChars ?? 0} / 14 MATCHES`);
-      setTimeout(() => setErrorFlash(false), 40000);
+      setTimeout(() => setErrorFlash(false), 3500);
 
       setTimeout(() => {
         setGuess("");
         setDisplayCode("__-____-____-____");
         setMatchCount(null);
         inputRef.current?.focus();
-      }, 4200);
+      }, 3800);
     } catch {
       setIsDecrypting(false);
       setErrorFlash(true);
       setMessage(">> ACCESS DENIED");
-      setTimeout(() => setErrorFlash(false), 1800);
+      setTimeout(() => setErrorFlash(false), 3500);
 
       setTimeout(() => {
         setGuess("");
         setDisplayCode("__-____-____-____");
         setMatchCount(null);
         inputRef.current?.focus();
-      }, 2200);
+      }, 3800);
     } finally {
       setIsSubmitting(false);
     }
