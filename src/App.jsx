@@ -269,7 +269,7 @@ export default function App() {
         }),
       });
 
-      await sleep(1200);
+      await sleep(1000);
 
       const res = await request;
       const data = await res.json();
