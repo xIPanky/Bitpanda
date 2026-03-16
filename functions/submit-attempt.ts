@@ -1,4 +1,4 @@
-const SECRET_CODE = "Bp-7x9A-11Q4-22k8";
+const SECRET_CODE = "BP-7X9A-11Q4-22K8";
 
 const globalAny = globalThis;
 
@@ -7,7 +7,10 @@ if (typeof globalAny.__winnerLocked === "undefined") {
 }
 
 function normalize(input) {
-  return String(input || "").trim().replace(/\s+/g, "");
+  return String(input || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
 }
 
 function countCorrectPositions(guess, secret) {
