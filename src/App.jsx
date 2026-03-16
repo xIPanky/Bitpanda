@@ -12,7 +12,8 @@ const DARK_GREEN = "#10352d";
 
 function formatCode(value) {
   const clean = String(value || "")
-    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
     .slice(0, 14);
 
   const p1 = clean.slice(0, 2);
@@ -24,6 +25,7 @@ function formatCode(value) {
   if (p2) out += "-" + p2;
   if (p3) out += "-" + p3;
   if (p4) out += "-" + p4;
+
   return out;
 }
 
@@ -32,8 +34,7 @@ function rawFromFormatted(value) {
 }
 
 function randomChar() {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   return chars[Math.floor(Math.random() * chars.length)];
 }
 
@@ -225,13 +226,13 @@ export default function App() {
     for (let i = 0; i < chars.length; i++) {
       if (chars[i] === "-") continue;
 
-      for (let j = 0; j < 5; j++) {
+      for (let j = 0; j < 10; j++) {
         setDisplayCode((prev) => {
           const arr = prev.split("");
           arr[i] = randomChar();
           return arr.join("");
         });
-        await sleep(35);
+        await sleep(40);
       }
 
       setDisplayCode((prev) => {
@@ -240,7 +241,7 @@ export default function App() {
         return arr.join("");
       });
 
-      await sleep(65);
+      await sleep(120);
     }
   }
 
@@ -268,20 +269,20 @@ export default function App() {
         }),
       });
 
-      await sleep(2000);
+      await sleep(1600);
 
       const res = await request;
       const data = await res.json();
 
-      setIsDecrypting(false);
-
       if (data?.winnerLocked && !data?.isWinner) {
+        setIsDecrypting(false);
         setWinnerLocked(true);
         setMessage(">> JACKPOT ALREADY CLAIMED");
         return;
       }
 
       await animateFinalCode(submittedGuess);
+      setIsDecrypting(false);
 
       if (data.isWinner) {
         setSuccessFlash(true);
