@@ -232,7 +232,7 @@ export default function App() {
           arr[i] = randomChar();
           return arr.join("");
         });
-        await sleep(40);
+        await sleep(30);
       }
 
       setDisplayCode((prev) => {
@@ -241,7 +241,7 @@ export default function App() {
         return arr.join("");
       });
 
-      await sleep(120);
+      await sleep(90);
     }
   }
 
