@@ -296,14 +296,14 @@ export default function App() {
       setMatchCount(data.matchedChars ?? 0);
       setErrorFlash(true);
       setMessage(`>> ${data.matchedChars ?? 0} / 14 MATCHES`);
-      setTimeout(() => setErrorFlash(false), 1800);
+      setTimeout(() => setErrorFlash(false), 40000);
 
       setTimeout(() => {
         setGuess("");
         setDisplayCode("__-____-____-____");
         setMatchCount(null);
         inputRef.current?.focus();
-      }, 2200);
+      }, 4200);
     } catch {
       setIsDecrypting(false);
       setErrorFlash(true);
