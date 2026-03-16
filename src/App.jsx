@@ -220,30 +220,30 @@ export default function App() {
   }, [isDecrypting]);
 
   async function animateFinalCode(submittedGuess) {
-    const finalDisplay = buildDisplayString(submittedGuess);
-    const chars = finalDisplay.split("");
+  const finalDisplay = buildDisplayString(submittedGuess);
+  const chars = finalDisplay.split("");
 
-    for (let i = 0; i < chars.length; i++) {
-      if (chars[i] === "-") continue;
+  for (let i = 0; i < chars.length; i++) {
+    if (chars[i] === "-") continue;
 
-      for (let j = 0; j < 10; j++) {
-        setDisplayCode((prev) => {
-          const arr = prev.split("");
-          arr[i] = randomChar();
-          return arr.join("");
-        });
-        await sleep(30);
-      }
-
+    for (let j = 0; j < 4; j++) {
       setDisplayCode((prev) => {
         const arr = prev.split("");
-        arr[i] = chars[i];
+        arr[i] = randomChar();
         return arr.join("");
       });
-
-      await sleep(90);
+      await sleep(18);
     }
+
+    setDisplayCode((prev) => {
+      const arr = prev.split("");
+      arr[i] = chars[i];
+      return arr.join("");
+    });
+
+    await sleep(35);
   }
+}
 
   async function handleSubmit(e) {
     e.preventDefault();
